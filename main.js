@@ -152,39 +152,35 @@
     }
 
     drawPiece() {
-      if (document.images && boardLoaded) {
-        for (var k=0;k<nSquares;k++) {
-          X=curX+dx[k];
-          Y=curY+dy[k];
-          if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-curPiece) {
-            document['s'+Y+'_'+X].src=this.imgs[curPiece].src;
-            f[Y][X]=-curPiece;
-          }
-          X=xToErase[k];
-          Y=yToErase[k];
-          if (f[Y][X]==0) document['s'+Y+'_'+X].src=this.imgs[0].src;
+      for (var k=0;k<nSquares;k++) {
+        X=curX+dx[k];
+        Y=curY+dy[k];
+        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-curPiece) {
+          document['s'+Y+'_'+X].src=this.imgs[curPiece].src;
+          f[Y][X]=-curPiece;
         }
+        X=xToErase[k];
+        Y=yToErase[k];
+        if (f[Y][X]==0) document['s'+Y+'_'+X].src=this.imgs[0].src;
       }
     }
 
     erasePiece() {
-      if (document.images && boardLoaded) {
-        for (var k=0;k<nSquares;k++) {
-          X=curX+dx[k];
-          Y=curY+dy[k];
-          if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth) {
-            xToErase[k]=X;
-            yToErase[k]=Y;
-            f[Y][X]=0;
-          }
+      for (var k=0;k<nSquares;k++) {
+        X=curX+dx[k];
+        Y=curY+dy[k];
+        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth) {
+          xToErase[k]=X;
+          yToErase[k]=Y;
+          f[Y][X]=0;
         }
       }
     }
-
   }
 
   class Game {
     constructor() {
+      this.play = this.play.bind(this);
       this.controller = new Controller(this);
       this.board = new Board(this);
       this.reset();
@@ -212,7 +208,7 @@
       this.started=1;
       this.paused=0;
       document.form1.Lines.value=nLines;
-      timerID=setTimeout(this.play.bind(this),speed);
+      timerID=setTimeout(this.play,speed);
     }
     pause() {
       if (this.paused) {this.play(); this.paused=0; return;}
@@ -221,15 +217,15 @@
     }
 
     play() {
-      if (this.doDown()) { timerID=setTimeout(this.play.bind(this),speed); return; }
-      else {
+      if (!this.doDown()) {
         this.board.fillMatrix();
         this.board.removeLines();
-        if (skyline>0 && this.getPiece()) { timerID=setTimeout(this.play.bind(this),speed); return; }
-        else {
+        if (!skyline>0 || !this.getPiece()) {
           this.gameOver();
+          return
         }
       }
+      timerID=setTimeout(this.play,speed);
     }
     getPiece(N) {
       curPiece=(N == undefined) ? Math.floor(nTypes*Math.random()):N;
@@ -273,15 +269,20 @@
       }
     }
 
+    getGhost() {
+      this.ghostY = curY;
+      while (this.pieceFits(curX,this.ghostY+1)) { this.ghostY++; }
+    }
 
     doFall() {
       for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
       if (!this.pieceFits(curX,curY+1)) return;
       clearTimeout(timerID);
       this.board.erasePiece();
-      while (this.pieceFits(curX,curY+1)) curY++;
+      this.getGhost();
+      curY = this.ghostY;
       this.board.drawPiece();
-      timerID=setTimeout(GAME.play(),speed);
+      timerID=setTimeout(this.play,speed);
     }
 
     getLevel() {
