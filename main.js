@@ -77,9 +77,7 @@
     }
     
     makeUI() {
-      var buf='<center><form name=form1><table border=0 cellspacing=3 cellpadding=3><tr>'
-        +'<td><font face="Arial,Helvetica,sans-serif" size=2 point-size=10'
-        +'><nobr>Level:</font>&nbsp;<select name=s1 onchange="getLevel();this.blur();">'
+      var buf='<center>Level: <select name=s1 onchange="getLevel();this.blur();">'
         +'<option value=1 selected>1'
         +'<option value=2>2'
         +'<option value=3>3'
@@ -93,15 +91,10 @@
         +'</select>'
         +'</nobr></font></td>'
 
-        +'<td>'
-        +'<font face="Arial,Helvetica,sans-serif"'
-        +'size=2 point-size=10'
-        +'><nobr>Lines:&nbsp;<input name=Lines type=text value="0" size=2 readonly'
-        +'></nobr></font></td>'
+        +'Lines: <input name=Lines type=text value="0" size=2 readonly />'
 
-        +'<td><input type=button value="Start" onCLick="GAME.start()"></td>'
-        +'<td><input type=button value="Pause" onCLick="GAME.pause()"></td>'
-        +'</tr></table></form>'
+        +'<input type=button value="Start" onCLick="GAME.start()">'
+        +'<input type=button value="Pause" onCLick="GAME.pause()">'
 
       buf+='<pre>';
       for (var i=0;i<boardHeight;i++) {
@@ -180,7 +173,7 @@
 
   class Game {
     constructor() {
-      this.play = this.play.bind(this);
+      this.nextTurn = this.nextTurn.bind(this);
       this.controller = new Controller(this);
       this.board = new Board(this);
       this.reset();
@@ -208,15 +201,16 @@
       this.started=1;
       this.paused=0;
       document.form1.Lines.value=nLines;
-      timerID=setTimeout(this.play,speed);
+      clearTimeout(timerID);
+      timerID=setTimeout(this.nextTurn,speed);
     }
     pause() {
-      if (this.paused) {this.play(); this.paused=0; return;}
+      if (this.paused) {this.nextTurn(); this.paused=0; return;}
       clearTimeout(timerID);
       this.paused=1;
     }
 
-    play() {
+    nextTurn() {
       if (!this.doDown()) {
         this.board.fillMatrix();
         this.board.removeLines();
@@ -225,10 +219,12 @@
           return
         }
       }
-      timerID=setTimeout(this.play,speed);
+      clearTimeout(timerID);
+      timerID=setTimeout(this.nextTurn,speed);
     }
     getPiece(N) {
-      curPiece=(N == undefined) ? Math.floor(nTypes*Math.random()):N;
+      curPiece=(N == undefined) ? Math.floor(nTypes*Math.random()):N; // this is still off, breaks with 0
+      console.log(curPiece);
       curX=5;
       curY=0;
       for (var k=0;k<nSquares;k++) {
@@ -277,12 +273,12 @@
     doFall() {
       for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
       if (!this.pieceFits(curX,curY+1)) return;
-      clearTimeout(timerID);
       this.board.erasePiece();
       this.getGhost();
       curY = this.ghostY;
       this.board.drawPiece();
-      timerID=setTimeout(this.play,speed);
+      clearTimeout(timerID);
+      timerID=setTimeout(this.nextTurn,speed);
     }
 
     getLevel() {
