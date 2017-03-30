@@ -1,24 +1,60 @@
 //(function() {
   // PARAMETERS
-var curPiece,X,Y;
-  nSquares=4;
-  nTypes=7;
-  boardHeight=16;
-  boardWidth =10;
-  Level=1;
-  speed0=700;
-  speedK=60;
-  speed=speed0-speedK*Level;
+var curPiece,X,Y,
+  nSquares=4,
+  nTypes=7,
+  boardHeight=16,
+  boardWidth =10,
+  Level=1,
+  speed0=700,
+  speedK=60,
+  speed=speed0-speedK*Level,
   nLines=0;
 
-  // GLOBAL VARIABLES
+// GLOBAL VARIABLES
 
-  curX=1; curY=1;
-  skyline=boardHeight-1;
-  serialN=0;
+var curX=1, curY=1,
+    skyline=boardHeight-1,
+    serialN=0;
 
-  boardLoaded=1;
-  timerID=null;
+var boardLoaded=1,
+    timerID=null;
+// ARRAYS
+var f = new Array();
+for (i=0;i<20;i++) {
+  f[i]=new Array();
+  for (j=0;j<20;j++) {
+    f[i][j]=0;
+  }
+}
+
+var xToErase = [0,0,0,0];
+var yToErase = [0,0,0,0];
+var dx = [0,0,0,0];
+var dy = [0,0,0,0];
+var dx_ = [0,0,0,0];
+var dy_ = [0,0,0,0];
+
+var dxBank = [
+ [0, 1,-1, 0],
+ [0, 1,-1,-1],
+ [0, 1,-1, 1],
+ [0,-1, 1, 0],
+ [0, 1,-1, 0],
+ [0, 1,-1,-2],
+ [0, 1, 1, 0],
+];
+
+var dyBank = [
+  [0, 0, 0, 1],
+  [0, 0, 0, 1],
+  [0, 0, 0, 1],
+  [0, 0, 1, 1],
+  [0, 0, 1, 1],
+  [0, 0, 0, 0],
+  [0, 0, 1, 1],
+];
+
 // IMAGES
 class Board {
   constructor(game) {
@@ -29,8 +65,47 @@ class Board {
       img.src = `s${i}.gif`;
       this.imgs.push(img);
     }
+    this.makeUI();
   }
 
+  makeUI() {
+    var buf='<center><form name=form1><table border=0 cellspacing=3 cellpadding=3><tr>'
+      +'<td><font face="Arial,Helvetica,sans-serif" size=2 point-size=10'
+      +'><nobr>Level:</font>&nbsp;<select name=s1 onchange="getLevel();this.blur();">'
+      +'<option value=1 selected>1'
+      +'<option value=2>2'
+      +'<option value=3>3'
+      +'<option value=4>4'
+      +'<option value=5>5'
+      +'<option value=6>6'
+      +'<option value=7>7'
+      +'<option value=8>8'
+      +'<option value=9>9'
+      +'<option value=10>10'
+      +'</select>'
+      +'</nobr></font></td>'
+
+      +'<td>'
+      +'<font face="Arial,Helvetica,sans-serif"'
+      +'size=2 point-size=10'
+      +'><nobr>Lines:&nbsp;<input name=Lines type=text value="0" size=2 readonly'
+      +'></nobr></font></td>'
+
+      +'<td><input type=button value="Start" onCLick="GAME.start()"></td>'
+      +'<td><input type=button value="Pause" onCLick="GAME.pause()"></td>'
+      +'</tr></table></form>'
+
+    buf+='<pre>';
+    for (var i=0;i<boardHeight;i++) {
+      for (var j=0;j<boardWidth;j++) {
+        buf+='<img name="s'+i+'_'+j+'" src="s'+Math.abs(f[i][j])+'.gif" width=16 height=16 border=0>'; 
+      }
+      buf+='<img src="g.gif" width=1 height=16><br/>';
+    }
+    buf+='<img src="g.gif" width='+(boardWidth*16+1)+' height=1></pre></center>';
+    document.getElementById("board").innerHTML=buf;
+  }
+  
   fillMatrix() {
     for (var k=0;k<nSquares;k++) {
       X=curX+dx[k];
@@ -99,40 +174,6 @@ class Board {
   }
 
 }
-
-  // ARRAYS
-
-var f = new Array();
-for (i=0;i<20;i++) {
-  f[i]=new Array();
-  for (j=0;j<20;j++) {
-    f[i][j]=0;
-  }
-}
-
-xToErase =new Array(0,0,0,0);     yToErase =new Array(0,0,0,0);
-dx       =new Array(0,0,0,0);     dy       =new Array(0,0,0,0);
-dx_      =new Array(0,0,0,0);     dy_      =new Array(0,0,0,0);
-
-var dxBank = [
- [0, 1,-1, 0],
- [0, 1,-1,-1],
- [0, 1,-1, 1],
- [0,-1, 1, 0],
- [0, 1,-1, 0],
- [0, 1,-1,-2],
- [0, 1, 1, 0],
-];
-
-var dyBank = [
-  [0, 0, 0, 1],
-  [0, 0, 0, 1],
-  [0, 0, 0, 1],
-  [0, 0, 1, 1],
-  [0, 0, 1, 1],
-  [0, 0, 0, 0],
-  [0, 0, 1, 1],
-];
 
 class Game {
   constructor() {
