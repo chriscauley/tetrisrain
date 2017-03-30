@@ -80,7 +80,7 @@ class Game {
     this.started=1;
     this.paused=0;
     document.form1.Lines.value=nLines;
-    timerID=setTimeout(this.play,speed);
+    timerID=setTimeout(this.play.bind(this),speed);
   }
   pause() {
     if (boardLoaded && this.started) {
@@ -98,11 +98,11 @@ class Game {
   }
 
   play() {
-    if (movedown()) { timerID=setTimeout(this.play,speed); return; }
+    if (movedown()) { timerID=setTimeout(this.play.bind(this),speed); return; }
     else {
       fillMatrix();
       removeLines();
-      if (skyline>0 && getPiece()) { timerID=setTimeout(this.play,speed); return; }
+      if (skyline>0 && getPiece()) { timerID=setTimeout(this.play.bind(this),speed); return; }
       else {
         activeL_=0;  activeU_=0;
         activeR_=0;  activeD_=0;
