@@ -95,13 +95,25 @@
         this.imgs.push(img);
       }
       this.makeUI();
+      this._draw = this._draw.bind(this);
+      this.draw();
     }
     draw() {
+      cancelAnimationFrame(this._frame);
+      this._frame = requestAnimationFrame(this._draw);
+    }
+    _draw() {
+      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+      var color;
       for (var i=0;i<f.length;i++) {
-        for (var j=0;i<j.length;j++) {
-          drawRect(this.ctx,i*squareSize,j*squareSize,(i+1)*squareSize,(j+1)*squareSize)
+        for (var j=0;j<f[i].length;j++) {
+          var _f = f[i][j];
+          if (_f == 0) { color = this.pallet.bg; }
+          else { color = this.pallet[Math.abs(_f)-1]; }
+          drawBox(this.ctx,j*squareSize,i*squareSize,(j+1)*squareSize,(i+1)*squareSize,color)
         }
       }
+      this.ctx.drawImage(this.grid,0,0);
     }
 
     makeCanvas() {
@@ -111,7 +123,7 @@
       this.canvas.height = this.grid.height = boardHeight*squareSize + 1;
       this.ctx = this.canvas.getContext("2d");
       document.getElementById("debug").appendChild(this.canvas);
-      document.getElementById("debug").appendChild(this.grid);
+      //document.getElementById("debug").appendChild(this.grid);
       for (var i=0;i<=boardWidth;i++) {
         drawLine(this.ctx,i*squareSize,0,i*squareSize,this.canvas.height,this.pallet.border);
       }
@@ -183,7 +195,6 @@
         for (var k=i;k>=skyline;k--) {
           for (var j=0;j<boardWidth;j++) {
             f[k][j]=f[k-1][j]; //eliminate line by moving eveything down a line
-            console.log(f[k][j]);
             document['s'+k+'_'+j].src=this.imgs[f[k][j]].src;
           }
         }
@@ -213,6 +224,7 @@
         Y=yToErase[k];
         if (f[Y][X]==0) document['s'+Y+'_'+X].src=this.imgs[0].src;
       }
+      this.draw();
     }
 
     erasePiece() {
@@ -225,12 +237,14 @@
           f[Y][X]=0;
         }
       }
+      this.draw();
     }
   }
 
   class Game {
     constructor() {
       this.nextTurn = this.nextTurn.bind(this);
+      this.makeActions();
       this.controller = new Controller(this);
       this.board = new Board(this);
       this.reset();
@@ -269,7 +283,7 @@
     }
 
     nextTurn() {
-      if (!this.doDown()) {
+      if (!this.act.down()) {
         this.board.fillMatrix();
         this.board.removeLines();
         if (!skyline>0 || !this.getPiece()) {
@@ -277,6 +291,7 @@
           return
         }
       }
+      this.board.draw();
       clearTimeout(timerID);
       timerID=setTimeout(this.nextTurn,speed);
     }
@@ -298,45 +313,50 @@
       this.reset();
     }
 
-    doLeft() {
-      for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-      if (this.pieceFits(curX-1,curY)) {this.board.erasePiece(); curX--; this.board.drawPiece();}
-    }
+    makeActions() {
+      this.act = {
+        left: function() {
+          for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
+          if (this.pieceFits(curX-1,curY)) {this.board.erasePiece(); curX--; this.board.drawPiece();}
+        },
 
-    doRight() {
-      for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-      if (this.pieceFits(curX+1,curY)) {this.board.erasePiece(); curX++; this.board.drawPiece();}
-    }
+        right: function() {
+          for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
+          if (this.pieceFits(curX+1,curY)) {this.board.erasePiece(); curX++; this.board.drawPiece();}
+        },
 
-    doDown() {
-      for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-      if (this.pieceFits(curX,curY+1)) {this.board.erasePiece(); curY++; this.board.drawPiece(); return 1; }
-      return 0;
-    }
+        down: function() {
+          for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
+          if (this.pieceFits(curX,curY+1)) {this.board.erasePiece(); curY++; this.board.drawPiece(); return 1; }
+          return 0;
+        },
 
-    doRotate() {
-      for (var k=0;k<nSquares;k++) {dx_[k]=dy[k]; dy_[k]=-dx[k];}
-      if (this.pieceFits(curX,curY)) {
-        this.board.erasePiece();
-        for (var k=0;k<nSquares;k++) {dx[k]=dx_[k]; dy[k]=dy_[k];}
-        this.board.drawPiece();
+        rotate: function() {
+          for (var k=0;k<nSquares;k++) {dx_[k]=dy[k]; dy_[k]=-dx[k];}
+          if (this.pieceFits(curX,curY)) {
+            this.board.erasePiece();
+            for (var k=0;k<nSquares;k++) {dx[k]=dx_[k]; dy[k]=dy_[k];}
+            this.board.drawPiece();
+          }
+        },
+
+        drop: function() {
+          for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
+          if (!this.pieceFits(curX,curY+1)) return;
+          this.board.erasePiece();
+          this.getGhost();
+          curY = this.ghostY;
+          this.board.drawPiece();
+          clearTimeout(timerID);
+          timerID=setTimeout(this.nextTurn,speed);
+        }
       }
+      for (var k in this.act) { this.act[k] = this.act[k].bind(this); }
     }
 
     getGhost() {
       this.ghostY = curY;
       while (this.pieceFits(curX,this.ghostY+1)) { this.ghostY++; }
-    }
-
-    doFall() {
-      for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-      if (!this.pieceFits(curX,curY+1)) return;
-      this.board.erasePiece();
-      this.getGhost();
-      curY = this.ghostY;
-      this.board.drawPiece();
-      clearTimeout(timerID);
-      timerID=setTimeout(this.nextTurn,speed);
     }
 
     getLevel() {
@@ -360,12 +380,7 @@
 
   initialDelay_=200;
   repeat_Delay_=20;
-
-  activeL_=0; timerL_ = null;
-  activeR_=0; timerR_ = null;
-  activeU_=0; timerU_ = null;
-  activeD_=0; timerD_ = null;
-  activeSp=0; timerSp = null;
+  initialDelay_=200;
 
   class Controller {
     constructor(game) {
@@ -380,11 +395,13 @@
         '32': 'space',
       }
       this._action_map = {
-        'up': this.game.doRotate.bind(this.game),
-        'left': this.game.doLeft.bind(this.game),
-        'right': this.game.doRight.bind(this.game),
-        'down': this.game.doDown.bind(this.game),
-        'space': this.game.doFall.bind(this.game),
+        'up': 'rotate',
+        'space': 'drop',
+      }
+      this.action_map = {};
+      for (var k in this._key_map) {
+        var a = this._key_map[k];
+        this.action_map[a] = this.game.act[this._action_map[a] || a];
       }
       this.reset();
     }
@@ -397,7 +414,7 @@
       var event = this._key_map[e.keyCode];
       if (!this.game.started || this.game.paused || !event) return;
       this.active[event] = true;
-      this._action_map[event]();
+      this.action_map[event]();
       //setTimeOut(function() { this.onKeyDown(e) },initialDelay);
     }
 
@@ -406,7 +423,6 @@
       //clearTimeout(this.timer[e.keyCode]);
     }
   }
-  initialDelay_=200;
 
   window.GAME = new Game();
 })()
