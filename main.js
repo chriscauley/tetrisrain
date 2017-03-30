@@ -1,4 +1,4 @@
-(function() {
+//(function() {
   function silentError(){return true}
   window.onerror=silentError;
 
@@ -434,4 +434,4 @@
   }
 
   //-->
-})()
+//})()
