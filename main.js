@@ -1,7 +1,4 @@
 //(function() {
-  function silentError(){return true}
-  window.onerror=silentError;
-
   // PARAMETERS
 
   nSquares=4;
@@ -21,8 +18,6 @@
   serialN=0;
 
   boardLoaded=1;
-  gamePaused=0;
-  gameStarted=0;
   timerID=null;
 // IMAGES
 var imgs = [];
@@ -31,7 +26,6 @@ for (var i=0;i<8;i++) {
   img.src = `s${i}.gif`;
   imgs.push(img);
 }
-console.log(0);
 
   // ARRAYS
 
@@ -42,7 +36,6 @@ console.log(0);
       f[i][j]=0;
     }
   }
-console.log(f);
 
   xToErase =new Array(0,0,0,0);     yToErase =new Array(0,0,0,0);
   dx       =new Array(0,0,0,0);     dy       =new Array(0,0,0,0);
@@ -58,67 +51,70 @@ console.log(f);
 
 
   // FUNCTIONS
-
-function resetGame() {
-  for (var i=0;i<boardHeight;i++) {
-    for (var j=0;j<boardWidth;j++) {
-      f[i][j]=0;
-      document['s'+i+'_'+j].src="s0.gif";
+class Game {
+  constructor() {
+  }
+  reset() {
+    for (var i=0;i<boardHeight;i++) {
+      for (var j=0;j<boardWidth;j++) {
+        f[i][j]=0;
+        document['s'+i+'_'+j].src="s0.gif";
+      }
     }
+    this.started = this.paused = 0;
+    nLines=0;
+    serialN=0;
+    skyline=boardHeight-1;
+
+    document.form1.Lines.value=nLines;
   }
-  gameStarted=0;
-  gamePaused=0;
-  nLines=0;
-  serialN=0;
-  skyline=boardHeight-1;
 
-  if (boardLoaded) console.error(document.form1.Lines.value=nLines);
-}
-
-function start() {
-  if (gameStarted) {
-    console.log(1);
-    if (!boardLoaded) return;
-    if (gamePaused) resume();
-    return;
+  start() {
+    if (this.started) {
+      //if (!boardLoaded) return;
+      if (this.paused) resume();
+      return;
+    }
+    getPiece();
+    drawPiece();
+    this.started=1;
+    this.paused=0;
+    document.form1.Lines.value=nLines;
+    timerID=setTimeout(this.play,speed);
   }
-  getPiece();
-  drawPiece();
-  gameStarted=1;
-  gamePaused=0;
-  document.form1.Lines.value=nLines;
-  timerID=setTimeout(play,speed);
-}
-
-  function pause() {
-    if (boardLoaded && gameStarted) {
-      if (gamePaused) {resume(); return;}
+  pause() {
+    if (boardLoaded && this.started) {
+      if (this.paused) {resume(); return;}
       clearTimeout(timerID)
-      gamePaused=1;
+      this.paused=1;
     }
   }
 
-  function resume() {
-    if (boardLoaded && gameStarted && gamePaused) {
-      play();
-      gamePaused=0;
+  resume() {
+    if (boardLoaded && this.started && this.paused) {
+      this.play();
+      this.paused=0;
     }
   }
 
-  function play() {
-    if (movedown()) { timerID=setTimeout("play()",speed); return; }
+  play() {
+    if (movedown()) { timerID=setTimeout(this.play,speed); return; }
     else {
       fillMatrix();
       removeLines();
-      if (skyline>0 && getPiece()) { timerID=setTimeout("play()",speed); return; }
+      if (skyline>0 && getPiece()) { timerID=setTimeout(this.play,speed); return; }
       else {
         activeL_=0;  activeU_=0;
         activeR_=0;  activeD_=0;
-        if (confirm('Game over!\n\nPlay again?')) { init(); } 
-        else { self.close(); }
+        gameOver();
       }
     }
   }
+}
+
+function gameOver() {
+  self.init();
+}
 
   function fillMatrix() {
     for (var k=0;k<nSquares;k++) {
@@ -234,7 +230,7 @@ function start() {
     erasePiece();
     while (pieceFits(curX,curY+1)) curY++;
     drawPiece();
-    timerID=setTimeout("play()",speed);
+    timerID=setTimeout(GAME.play(),speed);
   }
 
   function getPiece(N) {
@@ -264,8 +260,8 @@ function start() {
   }
 
   function clk(yClk,xClk) {
-    if (!gameStarted || !boardLoaded) return;
-    if (gamePaused) resume();
+    if (!this.started || !boardLoaded) return;
+    if (this.paused) resume();
     getMinMax();
     if (yClk>yMax) {movedown(); return;}
     if (xClk<xMin) {moveleft(); return;}
@@ -306,7 +302,7 @@ function start() {
     KeyNN_=evt.keyCode;
     KeyIE_=evt.keyCode;
 
-    if (!gameStarted || !boardLoaded || gamePaused) return;
+    if (!this.started || !boardLoaded || this.paused) return;
 
     //self.status='KeyNN_='+KeyNN_+', KeyIE_='+KeyIE_;
     //alert('KeyNN_='+KeyNN_+', KeyIE_='+KeyIE_);
@@ -402,10 +398,11 @@ function start() {
   //}
 
 function init() {
-    document.onkeydown = keyDown;
-    document.onkeyup = keyUp;
-    resetGame();
-  }
+  document.onkeydown = keyDown;
+  document.onkeyup = keyUp;
+  window.GAME.reset()
+}
 
+  window.GAME = new Game();
   //-->
   //})()

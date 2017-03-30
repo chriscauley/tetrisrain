@@ -3,15 +3,13 @@
     <title>JavaScript Tetris</title>
   </head>
 
-  <div id="board"></div>
-  <div id="legend">
-    <h3><font color="#000099" face="Verdana,Arial,Helvetica,Geneva" size=4 style="font-size:14pt" point-size=14
-              ><b><i>JavaScript Tetris</i></b><br></font></h3>
+  <div id="game">
+    <div class="legend">
+      <h3><font color="#000099" face="Verdana,Arial,Helvetica,Geneva" size=4 style="font-size:14pt" point-size=14
+                ><b><i>JavaScript Tetris</i></b><br></font></h3>
 
-    <font face="Arial,Helvetica,Geneva" size=2 style="font-size:9pt" point-size=9>
-      <b>Goal:</b> fill as many rows as possible!
+      <font face="Arial,Helvetica,Geneva" size=2 style="font-size:9pt" point-size=9>
 
-      <p>
         <b>Control Keys</b><br>
         <table border=0 cellpadding=1 cellspacing=1>
           <tr>
@@ -34,34 +32,11 @@
             <td>press <b>space</b> or &darr;</td>
           </tr>
         </table>
-
-      <p>
-        <b>Mouse Control</b>
-        <table border=0 cellpadding=1 cellspacing=1>
-
-          <tr>
-            <td>To move left</td>
-            <td>click to the left of the piece</td>
-          </tr>
-
-          <tr>
-            <td>To move right</td>
-            <td>click to the right of the piece</td>
-          </tr>
-
-          <tr>
-            <td>To rotate</td>
-            <td>click on<code>/</code>above the piece</td>
-          </tr>
-
-          <tr>
-            <td>To drop faster&nbsp;&nbsp;</td>
-            <td>click below the piece</td>
-          </tr>
-        </table>
-
-    </font>
+      </font>
+    </div>
+    <div id="board"></div>
   </div>
+  <link href="base.css" rel="stylesheet"></link>
   <script src="main.js"></script>
   <script src="board.js"></script>
   <script>init()</script>
