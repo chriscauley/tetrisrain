@@ -27,6 +27,7 @@
     +'<td><input type=button value="Pause" onCLick="pause()"></td>'
     +'</tr></table></form>'
 
+  console.log(1);
   buf+='<pre>';
   for (var i=0;i<boardHeight;i++) {
     for (var j=0;j<boardWidth;j++) {
@@ -36,4 +37,5 @@
   }
   buf+='<img src="g.gif" width='+(boardWidth*16+1)+' height=1></pre></center>';
   document.getElementById("board").innerHTML=buf;
+  console.log(document.getElementById("board"));
 })()

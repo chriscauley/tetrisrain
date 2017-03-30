@@ -24,30 +24,25 @@
   gamePaused=0;
   gameStarted=0;
   timerID=null;
-
-  // IMAGES
-
-  if (document.images) {
-    Img0=new Image(); Img0.src='s0.gif';
-    Img1=new Image(); Img1.src='s1.gif';
-    Img2=new Image(); Img2.src='s2.gif';
-    Img3=new Image(); Img3.src='s3.gif';
-    Img4=new Image(); Img4.src='s4.gif';
-    Img5=new Image(); Img5.src='s5.gif';
-    Img6=new Image(); Img6.src='s6.gif';
-    Img7=new Image(); Img7.src='s7.gif';
-  }
-
+// IMAGES
+var imgs = [];
+for (var i=0;i<8;i++) {
+  var img = document.createElement('img');
+  img.src = `s${i}.gif`;
+  imgs.push(img);
+}
+console.log(0);
 
   // ARRAYS
 
-  f=new Array();
+  f = new Array();
   for (i=0;i<20;i++) {
     f[i]=new Array();
     for (j=0;j<20;j++) {
       f[i][j]=0;
     }
   }
+console.log(f);
 
   xToErase =new Array(0,0,0,0);     yToErase =new Array(0,0,0,0);
   dx       =new Array(0,0,0,0);     dy       =new Array(0,0,0,0);
@@ -146,12 +141,12 @@ function start() {
       for (var k=i;k>=skyline;k--) {
         for (var j=0;j<boardWidth;j++) {
           f[k][j]=f[k-1][j];
-          eval('document.s'+k+'_'+j+'.src=Img'+f[k][j]+'.src');
+          document['s'+k+'_'+j].src=imgs[f[k][j]].src;
         }
       }
       for (var j=0;j<boardWidth;j++) {
         f[0][j]=0;
-        eval('document.s'+0+'_'+j+'.src=Img0.src');
+        document['s'+0+'_'+j].src=img[0].src;
       }
       nLines++;
       skyline++;
@@ -173,16 +168,16 @@ function start() {
         X=curX+dx[k];
         Y=curY+dy[k];
         if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-curPiece) {
-          eval('document.s'+Y+'_'+X+'.src=Img'+curPiece+'.src');
+          document['s'+Y+'_'+X].src=imgs[curPiece].src;
           f[Y][X]=-curPiece;
         }
         X=xToErase[k];
         Y=yToErase[k];
-        if (f[Y][X]==0) eval('document.s'+Y+'_'+X+'.src=Img0.src');
+        if (f[Y][X]==0) document['s'+Y+'_'+X].src=imgs[0].src;
       }
     }
   }
-
+  
   function erasePiece() {
     if (document.images && boardLoaded) {
       for (var k=0;k<nSquares;k++) {
@@ -406,11 +401,11 @@ function start() {
   // }
   //}
 
-  function init() {
+function init() {
     document.onkeydown = keyDown;
     document.onkeyup = keyUp;
     resetGame();
   }
 
   //-->
-//})()
+  //})()
