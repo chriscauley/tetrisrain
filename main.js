@@ -99,7 +99,7 @@ class Game {
   }
 
   play() {
-    if (movedown()) { timerID=setTimeout(this.play.bind(this),speed); return; }
+    if (this.doDown()) { timerID=setTimeout(this.play.bind(this),speed); return; }
     else {
       fillMatrix();
       removeLines();
@@ -113,6 +113,42 @@ class Game {
   }
   gameOver() {
     self.init();
+  }
+
+  doLeft() {
+    for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
+    if (pieceFits(curX-1,curY)) {erasePiece(); curX--; drawPiece();}
+  }
+
+  doRight() {
+    for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
+    if (pieceFits(curX+1,curY)) {erasePiece(); curX++; drawPiece();}
+  }
+
+  doDown() {
+    for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
+    if (pieceFits(curX,curY+1)) {erasePiece(); curY++; drawPiece(); return 1; }
+    return 0;
+  }
+
+  doRotate() {
+    for (var k=0;k<nSquares;k++) {dx_[k]=dy[k]; dy_[k]=-dx[k];}
+    if (pieceFits(curX,curY)) {
+      erasePiece(); 
+      for (var k=0;k<nSquares;k++) {dx[k]=dx_[k]; dy[k]=dy_[k];}
+      drawPiece();
+    }
+  }
+
+
+  doFall() {
+    for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
+    if (!pieceFits(curX,curY+1)) return;
+    clearTimeout(timerID);
+    erasePiece();
+    while (pieceFits(curX,curY+1)) curY++;
+    drawPiece();
+    timerID=setTimeout(GAME.play(),speed);
   }
 }
 
@@ -198,42 +234,6 @@ class Game {
     }
     return 1;
   }
-
-  function moveleft() {
-    for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-    if (pieceFits(curX-1,curY)) {erasePiece(); curX--; drawPiece();}
-  }
-
-  function moveright() {
-    for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-    if (pieceFits(curX+1,curY)) {erasePiece(); curX++; drawPiece();}
-  }
-
-  function rotate() {
-    for (var k=0;k<nSquares;k++) {dx_[k]=dy[k]; dy_[k]=-dx[k];}
-    if (pieceFits(curX,curY)) {
-      erasePiece(); 
-      for (var k=0;k<nSquares;k++) {dx[k]=dx_[k]; dy[k]=dy_[k];}
-      drawPiece();
-    }
-  }
-
-  function movedown() {
-    for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-    if (pieceFits(curX,curY+1)) {erasePiece(); curY++; drawPiece(); return 1; }
-    return 0;
-  }
-
-  function fall() {
-    for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-    if (!pieceFits(curX,curY+1)) return;
-    clearTimeout(timerID);
-    erasePiece();
-    while (pieceFits(curX,curY+1)) curY++;
-    drawPiece();
-    timerID=setTimeout(GAME.play(),speed);
-  }
-
   function getPiece(N) {
     curPiece=(getPiece.arguments.length==0) ? 1+Math.floor(nTypes*Math.random()):N;
     curX=5;
@@ -245,29 +245,6 @@ class Game {
     for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
     if (pieceFits(curX,curY)) { drawPiece(); return 1; }
     return 0;
-  }
-
-  // mouse clicks processing
-
-  function getMinMax() {
-    xMax=curX; 
-    xMin=curX; 
-    yMax=curY;
-    for (var k=1;k<nSquares;k++) {
-      if (curX+dx[k]>xMax) xMax=curX+dx[k];
-      if (curX+dx[k]<xMin) xMin=curX+dx[k];
-      if (curY+dy[k]>yMax) yMax=curY+dy[k];
-    }
-  }
-
-  function clk(yClk,xClk) {
-    if (!this.started || !boardLoaded) return;
-    if (this.paused) resume();
-    getMinMax();
-    if (yClk>yMax) {movedown(); return;}
-    if (xClk<xMin) {moveleft(); return;}
-    if (xClk>xMax) {moveright(); return;}
-    rotate(); return;
   }
 
   // onresize=function(){if(navigator.appName=="Netscape" && parseInt(navigator.appVersion)==4)setTimeout("f1.location=''+f1.location",150);}
@@ -299,112 +276,38 @@ class Game {
 class Controller {
   constructor(game) {
     this.game = game;
-    document.addEventListener("keydown",this.down.bind(this));
-    document.addEventListener("keyup",this.up.bind(this));
-  }
-  down(e) {
-    var KeyNN_=0;
-    var KeyIE_=0;
-    var evt = e ? e:event;
-    KeyNN_=evt.keyCode;
-    KeyIE_=evt.keyCode;
-
-    if (!this.game.started || this.game.paused) return;
-
-    //self.status='KeyNN_='+KeyNN_+', KeyIE_='+KeyIE_;
-    //alert('KeyNN_='+KeyNN_+', KeyIE_='+KeyIE_);
-
-    if (!activeL_ && ( LeftNN_.indexOf(' '+KeyNN_+' ')!=-1  
-                       || LeftIE_.indexOf(' '+KeyIE_+' ')!=-1)) 
-    {
-      activeL_ = 1;
-      activeR_ = 0;
-      moveleft();
-      timerL_=setTimeout("slideL_()",initialDelay_);
+    document.addEventListener("keydown",this.onKeyDown.bind(this));
+    document.addEventListener("keyup",this.onKeyUp.bind(this));
+    this._key_map = {
+      '38': 'up',
+      '40': 'down',
+      '37': 'left',
+      '39': 'right',
+      '32': 'space',
     }
-
-    if (!activeR_ && (RightNN_.indexOf(' '+KeyNN_+' ')!=-1 
-                      || RightIE_.indexOf(' '+KeyIE_+' ')!=-1)) 
-    {
-      activeR_ = 1;
-      activeL_ = 0;
-      moveright();
-      timerR_=setTimeout("slideR_()",initialDelay_);
-    }
-
-    if (!activeU_ && (UpNN_.indexOf(' '+KeyNN_+' ')!=-1
-                      || UpIE_.indexOf(' '+KeyIE_+' ')!=-1)) 
-    {
-      activeU_ = 1;
-      activeD_ = 0;
-      rotate();
-    }
-
-    if (!activeSp && (SpaceNN_.indexOf(' '+KeyNN_+' ')!=-1
-                      || SpaceIE_.indexOf(' '+KeyIE_+' ')!=-1)) 
-    {
-      activeSp = 1;
-      activeD_ = 0;
-      fall();
-    }
-
-    if (!activeD_ && (DownNN_.indexOf(' '+KeyNN_+' ')!=-1
-                      || DownIE_.indexOf(' '+KeyIE_+' ')!=-1)) 
-    {
-      activeD_ = 1
-      activeU_ = 0
-      movedown();
-      timerD_=setTimeout("slideD_()",initialDelay_);
+    this.active = {};
+    this.timer = {};
+    this._action_map = {
+      'up': this.game.doRotate,
+      'left': this.game.doLeft,
+      'right': this.game.doRight,
+      'down': this.game.doDown,
+      'space': this.game.doFall,
     }
   }
+  onKeyDown(e) {
+    var event = this._key_map[e.keyCode];
+    if (!this.game.started || this.game.paused || !event) return;
+    this.active[event] = true;
+    //this.timer[event] = setTimeout(function() { this.onKeyDown(e) }.bind(this),initialDelay_);
+    this._action_map[event]();
+  }
 
-  up(e) {
-    var KeyNN_=0;
-    var KeyIE_=0;
-
-    var evt = e?e:event;
-    //alert('evt.keyCode='+evt.keyCode);
-
-    KeyNN_=evt.keyCode;
-    KeyIE_=evt.keyCode;
-
-    if (LeftNN_.indexOf(' '+KeyNN_+' ')!=-1  || LeftIE_.indexOf(' '+KeyIE_+' ')!=-1)  {activeL_=0; clearTimeout(timerL_)}
-    if (RightNN_.indexOf(' '+KeyNN_+' ')!=-1 || RightIE_.indexOf(' '+KeyIE_+' ')!=-1) {activeR_=0; clearTimeout(timerR_)}
-    if (UpNN_.indexOf(' '+KeyNN_+' ')!=-1    || UpIE_.indexOf(' '+KeyIE_+' ')!=-1)    {activeU_=0; clearTimeout(timerU_)}
-    if (DownNN_.indexOf(' '+KeyNN_+' ')!=-1  || DownIE_.indexOf(' '+KeyIE_+' ')!=-1)  {activeD_=0; clearTimeout(timerD_)}
-    if (SpaceNN_.indexOf(' '+KeyNN_+' ')!=-1 || SpaceIE_.indexOf(' '+KeyIE_+' ')!=-1) {activeSp=0; clearTimeout(timerSp)}
-
+  onKeyUp(e) {
+    this.active[e.keyCode] = false;
+    clearTimeout(this.timer[e.keyCode]);
   }
 }
-
-  function slideL_() {
-    if (activeL_) {
-      moveleft();
-      timerL_=setTimeout("slideL_()",repeat_Delay_);
-    }
-  }
-
-  function slideR_() {
-    if (activeR_) {
-      moveright();
-      timerR_=setTimeout("slideR_()",repeat_Delay_);
-    }
-  }
-
-  function slideD_() {
-    if (activeD_) {
-      movedown();
-      timerD_=setTimeout("slideD_()",repeat_Delay_);
-    }
-  }
-
-  //function slideU_() {
-  // if (activeU_) {
-  //  moveup();
-  //  timerU_=setTimeout("slideU_()",repeat_Delay_);
-  // }
-  //}
-
 function init() {
   window.GAME.reset()
 }
