@@ -53,6 +53,7 @@ for (var i=0;i<8;i++) {
   // FUNCTIONS
 class Game {
   constructor() {
+    this.controller = new Controller(this);
   }
   reset() {
     for (var i=0;i<boardHeight;i++) {
@@ -106,15 +107,15 @@ class Game {
       else {
         activeL_=0;  activeU_=0;
         activeR_=0;  activeD_=0;
-        gameOver();
+        this.gameOver();
       }
     }
   }
+  gameOver() {
+    self.init();
+  }
 }
 
-function gameOver() {
-  self.init();
-}
 
   function fillMatrix() {
     for (var k=0;k<nSquares;k++) {
@@ -295,14 +296,20 @@ function gameOver() {
   DownIE_ =' 40 50 98 ';
   SpaceIE_=' 32 ';
 
-  function keyDown(e) {
+class Controller {
+  constructor(game) {
+    this.game = game;
+    document.addEventListener("keydown",this.down.bind(this));
+    document.addEventListener("keyup",this.up.bind(this));
+  }
+  down(e) {
     var KeyNN_=0;
     var KeyIE_=0;
     var evt = e ? e:event;
     KeyNN_=evt.keyCode;
     KeyIE_=evt.keyCode;
 
-    if (!this.started || !boardLoaded || this.paused) return;
+    if (!this.game.started || this.game.paused) return;
 
     //self.status='KeyNN_='+KeyNN_+', KeyIE_='+KeyIE_;
     //alert('KeyNN_='+KeyNN_+', KeyIE_='+KeyIE_);
@@ -351,7 +358,7 @@ function gameOver() {
     }
   }
 
-  function keyUp(e) {
+  up(e) {
     var KeyNN_=0;
     var KeyIE_=0;
 
@@ -368,6 +375,7 @@ function gameOver() {
     if (SpaceNN_.indexOf(' '+KeyNN_+' ')!=-1 || SpaceIE_.indexOf(' '+KeyIE_+' ')!=-1) {activeSp=0; clearTimeout(timerSp)}
 
   }
+}
 
   function slideL_() {
     if (activeL_) {
@@ -398,8 +406,6 @@ function gameOver() {
   //}
 
 function init() {
-  document.onkeydown = keyDown;
-  document.onkeyup = keyUp;
   window.GAME.reset()
 }
 
