@@ -2,6 +2,7 @@
   var curPiece,X,Y,
       nSquares=4,
       nTypes=7,
+      squareSize=20,
       boardHeight=16,
       boardWidth =10,
       Level=1,
@@ -26,6 +27,7 @@
       f[i][j]=0;
     }
   }
+  window.f = f;
 
   var xToErase = [0,0,0,0];
   var yToErase = [0,0,0,0];
@@ -54,9 +56,37 @@
     [0, 0, 1, 1],
   ];
 
+  function drawLine(context,x1,y1,x2,y2,color) {
+    context.strokeStyle = color;
+    context.beginPath();
+    context.moveTo(x1+0.5,y1+0.5);
+    context.lineTo(x2+0.5,y2+0.5);
+    context.stroke();
+  }
+
+  function drawBox(context,x1,y1,x2,y2,color) {
+    context.fillStyle = color;
+    context.fillRect(x1,y1,x2,y2);
+  }
+  
   // IMAGES
   class Board {
     constructor(game) {
+      // pallet should be a constructor option
+      var pallet = [
+        "#000099",
+        "#0000FF",
+        "#006666",
+        "#006600",
+        "#660066",
+        "#990000",
+      ];
+      pallet.border = "#cccccc";
+      pallet.bg = "white";
+      pallet.fg = "#333";
+
+      this.pallet = pallet;
+      this.makeCanvas();
       this.game = game;
       this.imgs = [];
       for (var i=0;i<8;i++) {
@@ -65,6 +95,31 @@
         this.imgs.push(img);
       }
       this.makeUI();
+    }
+    draw() {
+      for (var i=0;i<f.length;i++) {
+        for (var j=0;i<j.length;j++) {
+          drawRect(this.ctx,i*squareSize,j*squareSize,(i+1)*squareSize,(j+1)*squareSize)
+        }
+      }
+    }
+
+    makeCanvas() {
+      this.canvas = document.createElement("canvas");
+      this.grid = document.createElement("img");
+      this.canvas.width = this.grid.width = boardWidth*squareSize + 1;
+      this.canvas.height = this.grid.height = boardHeight*squareSize + 1;
+      this.ctx = this.canvas.getContext("2d");
+      document.getElementById("debug").appendChild(this.canvas);
+      document.getElementById("debug").appendChild(this.grid);
+      for (var i=0;i<=boardWidth;i++) {
+        drawLine(this.ctx,i*squareSize,0,i*squareSize,this.canvas.height,this.pallet.border);
+      }
+      for (var i=0;i<=boardHeight;i++) {
+        drawLine(this.ctx,0,i*squareSize,this.canvas.width,i*squareSize,this.pallet.border);
+      }
+      this.grid.src = this.canvas.toDataURL();
+      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
     }
 
     reset() {
@@ -77,7 +132,7 @@
     }
     
     makeUI() {
-      var buf='<center>Level: <select name=s1 onchange="getLevel();this.blur();">'
+      var buf='<center>Level: <select name="level" onchange="getLevel();this.blur();">'
         +'<option value=1 selected>1'
         +'<option value=2>2'
         +'<option value=3>3'
@@ -89,9 +144,9 @@
         +'<option value=9>9'
         +'<option value=10>10'
         +'</select>'
-        +'</nobr></font></td>'
+        +'</nobr></font>'
 
-        +'Lines: <input name=Lines type=text value="0" size=2 readonly />'
+        +'Lines: <span id="lines"></span>'
 
         +'<input type=button value="Start" onCLick="GAME.start()">'
         +'<input type=button value="Pause" onCLick="GAME.pause()">'
@@ -124,10 +179,11 @@
         for (var j=0;j<boardWidth;j++) {
           if (f[i][j]==0) {gapFound=1;break;}
         }
-        if (gapFound) continue;
+        if (gapFound) continue; // gapFound in previous loop
         for (var k=i;k>=skyline;k--) {
           for (var j=0;j<boardWidth;j++) {
-            f[k][j]=f[k-1][j];
+            f[k][j]=f[k-1][j]; //eliminate line by moving eveything down a line
+            console.log(f[k][j]);
             document['s'+k+'_'+j].src=this.imgs[f[k][j]].src;
           }
         }
@@ -137,10 +193,11 @@
         }
         nLines++;
         skyline++;
-        document.form1.Lines.value=nLines;
+        document.getElementById("lines").innerHTML=nLines;
         if (nLines%5==0) {Level++; if(Level>10) Level=10;}
         speed=speed0-speedK*Level;
-        document.form1.s1.selectedIndex=Level-1;
+        var select = document.querySelector("[name=level]");
+        select.selectedIndex=Level-1;
       }
     }
 
@@ -185,7 +242,7 @@
       skyline=boardHeight-1;
       clearTimeout(timerID);
 
-      document.form1.Lines.value=nLines;
+      document.getElementById("lines").innerHTML = 0;
       this.controller.reset();
       this.board.reset();
     }
@@ -196,11 +253,12 @@
         if (this.paused) { this.pause(); console.log('pause-start'); }
         return;
       }
+      this.nextPiece = 0;
       this.getPiece();
       this.board.drawPiece();
       this.started=1;
       this.paused=0;
-      document.form1.Lines.value=nLines;
+      document.getElementById("lines").innerHTML=nLines;
       clearTimeout(timerID);
       timerID=setTimeout(this.nextTurn,speed);
     }
@@ -224,7 +282,7 @@
     }
     getPiece(N) {
       curPiece=(N == undefined) ? Math.floor(nTypes*Math.random()):N; // this is still off, breaks with 0
-      console.log(curPiece);
+      //curPiece = this.nextPiece++;
       curX=5;
       curY=0;
       for (var k=0;k<nSquares;k++) {
@@ -282,7 +340,8 @@
     }
 
     getLevel() {
-      Level=parseInt(document.form1.s1.options[document.form1.s1.selectedIndex].value);
+      var select = document.querySelector("[name=level]");
+      Level=parseInt(select.value);
       speed=speed0-speedK*Level;
     }
 
