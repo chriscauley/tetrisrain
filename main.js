@@ -92,12 +92,6 @@
       this.pallet = pallet;
       this.makeCanvas();
       this.game = game;
-      this.imgs = [];
-      for (var i=0;i<8;i++) {
-        var img = document.createElement('img');
-        img.src = `s${i}.gif`;
-        this.imgs.push(img);
-      }
       this.makeUI();
       this._draw = this._draw.bind(this);
       this.draw();
@@ -141,7 +135,6 @@
       for (var i=0;i<boardHeight;i++) {
         for (var j=0;j<boardWidth;j++) {
           f[i][j]=0;
-          document['s'+i+'_'+j].src="s0.gif";
         }
       }
     }
@@ -166,14 +159,6 @@
         +'<input type=button value="Start" onCLick="GAME.start()">'
         +'<input type=button value="Pause" onCLick="GAME.pause()">'
 
-      buf+='<pre>';
-      for (var i=0;i<boardHeight;i++) {
-        for (var j=0;j<boardWidth;j++) {
-          buf+='<img name="s'+i+'_'+j+'" src="s'+Math.abs(f[i][j])+'.gif" width=16 height=16 border=0>'; 
-        }
-        buf+='<img src="g.gif" width=1 height=16><br/>';
-      }
-      buf+='<img src="g.gif" width='+(boardWidth*16+1)+' height=1></pre></center>';
       document.getElementById("board").innerHTML=buf;
     }
     
@@ -198,12 +183,10 @@
         for (var k=i;k>=skyline;k--) {
           for (var j=0;j<boardWidth;j++) {
             f[k][j]=f[k-1][j]; //eliminate line by moving eveything down a line
-            document['s'+k+'_'+j].src=this.imgs[f[k][j]].src;
           }
         }
         for (var j=0;j<boardWidth;j++) {
-          f[0][j]=0;
-          document['s'+0+'_'+j].src=this.imgs[0].src;
+          f[0][j]=0; // set top to zero
         }
         nLines++;
         skyline++;
@@ -220,12 +203,10 @@
         X=curX+dx[k];
         Y=curY+dy[k];
         if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-curPiece) {
-          document['s'+Y+'_'+X].src=this.imgs[curPiece].src;
           f[Y][X]=-curPiece;
         }
         X=xToErase[k];
         Y=yToErase[k];
-        if (f[Y][X]==0) document['s'+Y+'_'+X].src=this.imgs[0].src;
       }
       this.draw();
     }
@@ -267,7 +248,7 @@
     start() {
       if (this.started) {
         //if (!boardLoaded) return;
-        if (this.paused) { this.pause(); console.log('pause-start'); }
+        if (this.paused) { this.pause(); }
         return;
       }
       this.nextPiece = 0;
@@ -300,7 +281,6 @@
     }
     getPiece(N) {
       curPiece=(N == undefined) ? Math.floor(nTypes*Math.random()+1):N; // 0 is empty space
-      console.log('piece',curPiece)
       //curPiece = this.nextPiece++;
       curX=5;
       curY=0;
@@ -336,6 +316,7 @@
         },
 
         rotate: function() {
+          if (curPiece == 7) { return } // can't rotate a square
           for (var k=0;k<nSquares;k++) {dx_[k]=dy[k]; dy_[k]=-dx[k];}
           if (this.pieceFits(curX,curY)) {
             this.board.erasePiece();
