@@ -2,14 +2,6 @@
   function silentError(){return true}
   window.onerror=silentError;
 
-  if (self.location!=top.location) top.location=''+self.location;
-
-  // BROWSER DETECTION
-
-  ie4 = (navigator.appName.indexOf("Microsoft")>=0 && parseInt(navigator.appVersion)>3) ? true:false;
-  ns4 = ((navigator.appName=="Netscape" || navigator.appName=="Opera") && parseInt(navigator.appVersion)>3) ? true:false;
-
-
   // PARAMETERS
 
   nSquares=4;
@@ -28,10 +20,9 @@
   skyline=boardHeight-1;
   serialN=0;
 
-  boardLoaded=0;
+  boardLoaded=1;
   gamePaused=0;
   gameStarted=0;
-  sayingBye=0;
   timerID=null;
 
   // IMAGES
@@ -73,43 +64,42 @@
 
   // FUNCTIONS
 
-  function resetGame() {
-    for (var i=0;i<boardHeight;i++) {
-      for (var j=0;j<boardWidth;j++) {
-        f[i][j]=0;
-        if (boardLoaded) eval('top.f1.document.s'+i+'_'+j+'.src="s0.gif"');
-      }
+function resetGame() {
+  for (var i=0;i<boardHeight;i++) {
+    for (var j=0;j<boardWidth;j++) {
+      f[i][j]=0;
+      document['s'+i+'_'+j].src="s0.gif";
     }
-    gameStarted=0;
-    gamePaused=0;
-    nLines=0;
-    serialN=0;
-    skyline=boardHeight-1;
-    if (boardLoaded) self.f1.document.form1.Lines.value=nLines;
   }
+  gameStarted=0;
+  gamePaused=0;
+  nLines=0;
+  serialN=0;
+  skyline=boardHeight-1;
 
-  function start() {
-    if (sayingBye) { top.f0.history.back(); sayingBye=0; }
-    top.focus();
-    if (gameStarted) {
-      if (!boardLoaded) return;
-      if (gamePaused) resume();
-      return;
-    }
-    getPiece();
-    drawPiece();
-    gameStarted=1;
-    gamePaused=0;
-    self.f1.document.form1.Lines.value=nLines;
-    timerID=setTimeout("play()",speed);
+  if (boardLoaded) console.error(document.form1.Lines.value=nLines);
+}
+
+function start() {
+  if (gameStarted) {
+    console.log(1);
+    if (!boardLoaded) return;
+    if (gamePaused) resume();
+    return;
   }
+  getPiece();
+  drawPiece();
+  gameStarted=1;
+  gamePaused=0;
+  document.form1.Lines.value=nLines;
+  timerID=setTimeout(play,speed);
+}
 
   function pause() {
     if (boardLoaded && gameStarted) {
       if (gamePaused) {resume(); return;}
       clearTimeout(timerID)
       gamePaused=1;
-      top.focus();
     }
   }
 
@@ -117,7 +107,6 @@
     if (boardLoaded && gameStarted && gamePaused) {
       play();
       gamePaused=0;
-      top.focus();
     }
   }
 
@@ -131,10 +120,7 @@
         activeL_=0;  activeU_=0;
         activeR_=0;  activeD_=0;
         if (confirm('Game over!\n\nPlay again?')) { init(); } 
-        else {
-          if (self.sayGoodBye) { init(); sayGoodBye(); }
-          else self.close();
-        }
+        else { self.close(); }
       }
     }
   }
@@ -148,7 +134,6 @@
         if (Y<skyline) skyline=Y;
       }
     }
-    top.focus();
   }
 
   function removeLines() {
@@ -161,26 +146,25 @@
       for (var k=i;k>=skyline;k--) {
         for (var j=0;j<boardWidth;j++) {
           f[k][j]=f[k-1][j];
-          eval('self.f1.document.s'+k+'_'+j+'.src=Img'+f[k][j]+'.src');
+          eval('document.s'+k+'_'+j+'.src=Img'+f[k][j]+'.src');
         }
       }
       for (var j=0;j<boardWidth;j++) {
         f[0][j]=0;
-        eval('self.f1.document.s'+0+'_'+j+'.src=Img0.src');
+        eval('document.s'+0+'_'+j+'.src=Img0.src');
       }
       nLines++;
       skyline++;
-      self.f1.document.form1.Lines.value=nLines;
+      document.form1.Lines.value=nLines;
       if (nLines%5==0) {Level++; if(Level>10) Level=10;}
       speed=speed0-speedK*Level;
-      self.f1.document.form1.s1.selectedIndex=Level-1;
+      document.form1.s1.selectedIndex=Level-1;
     }
   }
 
   function getLevel() {
-    Level=parseInt(self.f1.document.form1.s1.options[self.f1.document.form1.s1.selectedIndex].value);
+    Level=parseInt(document.form1.s1.options[document.form1.s1.selectedIndex].value);
     speed=speed0-speedK*Level;
-    top.focus();
   }
 
   function drawPiece() {
@@ -189,12 +173,12 @@
         X=curX+dx[k];
         Y=curY+dy[k];
         if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-curPiece) {
-          eval('self.f1.document.s'+Y+'_'+X+'.src=Img'+curPiece+'.src');
+          eval('document.s'+Y+'_'+X+'.src=Img'+curPiece+'.src');
           f[Y][X]=-curPiece;
         }
         X=xToErase[k];
         Y=yToErase[k];
-        if (f[Y][X]==0) eval('self.f1.document.s'+Y+'_'+X+'.src=Img0.src');
+        if (f[Y][X]==0) eval('document.s'+Y+'_'+X+'.src=Img0.src');
       }
     }
   }
@@ -287,7 +271,6 @@
   function clk(yClk,xClk) {
     if (!gameStarted || !boardLoaded) return;
     if (gamePaused) resume();
-    top.focus();
     getMinMax();
     if (yClk>yMax) {movedown(); return;}
     if (xClk<xMin) {moveleft(); return;}
@@ -295,7 +278,7 @@
     rotate(); return;
   }
 
-  // onresize=function(){if(navigator.appName=="Netscape" && parseInt(navigator.appVersion)==4)setTimeout("top.f1.location=''+top.f1.location",150);}
+  // onresize=function(){if(navigator.appName=="Netscape" && parseInt(navigator.appVersion)==4)setTimeout("f1.location=''+f1.location",150);}
 
 
   // keystroke processing
@@ -393,7 +376,6 @@
     if (DownNN_.indexOf(' '+KeyNN_+' ')!=-1  || DownIE_.indexOf(' '+KeyIE_+' ')!=-1)  {activeD_=0; clearTimeout(timerD_)}
     if (SpaceNN_.indexOf(' '+KeyNN_+' ')!=-1 || SpaceIE_.indexOf(' '+KeyIE_+' ')!=-1) {activeSp=0; clearTimeout(timerSp)}
 
-    top.focus();
   }
 
   function slideL_() {
@@ -427,10 +409,7 @@
   function init() {
     document.onkeydown = keyDown;
     document.onkeyup = keyUp;
-    // if (ns4) document.captureEvents(Event.KEYDOWN | Event.KEYUP);
-
     resetGame();
-    top.focus();
   }
 
   //-->
