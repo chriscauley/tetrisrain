@@ -37,23 +37,25 @@
   var dy_ = [0,0,0,0];
 
   var dxBank = [
-    [0, 1,-1, 0],
-    [0, 1,-1,-1],
-    [0, 1,-1, 1],
-    [0,-1, 1, 0],
-    [0, 1,-1, 0],
-    [0, 1,-1,-2],
-    [0, 1, 1, 0],
+    undefined, // empty
+    [0, 1,-1, 0], // t
+    [0, 1,-1,-1], // q
+    [0, 1,-1, 1], // p
+    [0,-1, 1, 0], // z
+    [0, 1,-1, 0], // s
+    [0, 1,-1,-2], // l
+    [0, 1, 1, 0], // o
   ];
 
   var dyBank = [
-    [0, 0, 0, 1],
-    [0, 0, 0, 1],
-    [0, 0, 0, 1],
-    [0, 0, 1, 1],
-    [0, 0, 1, 1],
-    [0, 0, 0, 0],
-    [0, 0, 1, 1],
+    undefined, // empty
+    [0, 0, 0, 1], // t
+    [0, 0, 0, 1], // q
+    [0, 0, 0, 1], // p
+    [0, 0, 1, 1], // z
+    [0, 0, 1, 1], // s
+    [0, 0, 0, 0], // s
+    [0, 0, 1, 1], // o
   ];
 
   function drawLine(context,x1,y1,x2,y2,color) {
@@ -74,12 +76,14 @@
     constructor(game) {
       // pallet should be a constructor option
       var pallet = [
-        "#000099",
-        "#0000FF",
-        "#006666",
-        "#006600",
-        "#660066",
-        "#990000",
+        "white", // empty
+        "#000099", // t
+        "#0000FF", // q
+        "#006666", // p
+        "#006600", // z
+        "#660066", // s
+        "#990000", // l
+        "#CC0099", // o
       ];
       pallet.border = "#cccccc";
       pallet.bg = "white";
@@ -108,8 +112,7 @@
       for (var i=0;i<f.length;i++) {
         for (var j=0;j<f[i].length;j++) {
           var _f = f[i][j];
-          if (_f == 0) { color = this.pallet.bg; }
-          else { color = this.pallet[Math.abs(_f)-1]; }
+          var color = this.pallet[Math.abs(_f)];
           drawBox(this.ctx,j*squareSize,i*squareSize,(j+1)*squareSize,(i+1)*squareSize,color)
         }
       }
@@ -296,7 +299,8 @@
       timerID=setTimeout(this.nextTurn,speed);
     }
     getPiece(N) {
-      curPiece=(N == undefined) ? Math.floor(nTypes*Math.random()):N; // this is still off, breaks with 0
+      curPiece=(N == undefined) ? Math.floor(nTypes*Math.random()+1):N; // 0 is empty space
+      console.log('piece',curPiece)
       //curPiece = this.nextPiece++;
       curX=5;
       curY=0;
