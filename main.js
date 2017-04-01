@@ -1,21 +1,7 @@
 (function() {
-  var X,Y,
-      Level=1,
-      speed0=700,
-      speedK=60,
-      speed=speed0-speedK*Level;
-
   // GLOBAL VARIABLES
 
   // ARRAYS
-  var f = new Array();
-  for (i=0;i<20;i++) {
-    f[i]=new Array();
-    for (j=0;j<20;j++) {
-      f[i][j]=0;
-    }
-  }
-  window.f = f;
 
   function drawLine(context,x1,y1,x2,y2,color) {
     context.strokeStyle = color;
@@ -59,6 +45,7 @@
       this._draw = this._draw.bind(this);
       this.draw();
     }
+
     draw() {
       cancelAnimationFrame(this._frame);
       this._frame = requestAnimationFrame(this._draw);
@@ -66,9 +53,9 @@
     _draw() {
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       var color;
-      for (var i=0;i<f.length;i++) {
-        for (var j=0;j<f[i].length;j++) {
-          var _f = f[i][j];
+      for (var i=0;i<this.f.length;i++) {
+        for (var j=0;j<this.f[i].length;j++) {
+          var _f = this.f[i][j];
           var color = this.pallet[Math.abs(_f)];
           drawBox(this.ctx,j*this.scale,i*this.scale,(j+1)*this.scale,(i+1)*this.scale,color)
         }
@@ -95,10 +82,11 @@
     }
 
     reset() {
-      for (var i=0;i<this.height;i++) {
-        for (var j=0;j<this.width;j++) {
-          f[i][j]=0;
-        }
+      this.skyline=this.height-1;
+      this.f = new Array();
+      for (var i=0;i<20;i++) {
+        this.f[i]=new Array();
+        for (var j=0;j<20;j++) { this.f[i][j]=0; }
       }
     }
     
@@ -106,37 +94,34 @@
     }
     
     removeLines() {
+      var lines_scored = 0;
       for (var i=0;i<this.height;i++) {
         var gapFound=0;
         for (var j=0;j<this.width;j++) {
-          if (f[i][j]==0) {gapFound=1;break;}
+          if (this.f[i][j]==0) {gapFound=1;break;}
         }
         if (gapFound) continue; // gapFound in previous loop
         for (var k=i;k>=this.skyline;k--) {
           for (var j=0;j<this.width;j++) {
-            f[k][j]=f[k-1][j]; //eliminate line by moving eveything down a line
+            this.f[k][j]=this.f[k-1][j]; //eliminate line by moving eveything down a line
           }
         }
         for (var j=0;j<this.width;j++) {
-          f[0][j]=0; // set top to zero
+          this.f[0][j]=0; // set top to zero
         }
-        this.game.score.lines++;
+        lines_scored ++;
         this.skyline++;
-        document.getElementById("lines").innerHTML=this.game.score.lines;
-        if (this.game.score.lines%5==0) {Level++; if(Level>10) Level=10;}
-        speed=speed0-speedK*Level;
-        var select = document.querySelector("[name=level]");
-        select.selectedIndex=Level-1;
       }
+      this.game.scoreLines(lines_scored);
     }
 
     drawPiece() {
       var p = this.game.piece;
       for (var k=0;k<this.game.n;k++) {
-        X=p.curX+p.dx[k];
-        Y=p.curY+p.dy[k];
-        if (0<=Y && Y<this.height && 0<=X && X<this.width && f[Y][X]!=-p.n) {
-          f[Y][X]=-p.n;
+        var X=p.curX+p.dx[k];
+        var Y=p.curY+p.dy[k];
+        if (0<=Y && Y<this.height && 0<=X && X<this.width && this.f[Y][X]!=-p.n) {
+          this.f[Y][X]=-p.n;
         }
       }
       this.draw();
@@ -145,10 +130,10 @@
     erasePiece() {
       var p = this.game.piece;
       for (var k=0;k<this.game.n;k++) {
-        X=p.curX+p.dx[k];
-        Y=p.curY+p.dy[k];
+        var X=p.curX+p.dx[k];
+        var Y=p.curY+p.dy[k];
         if (0<=Y && Y<this.height && 0<=X && X<this.width) {
-          f[Y][X]=0;
+          this.f[Y][X]=0;
         }
       }
       this.draw();
@@ -165,6 +150,10 @@
       this.reset();
     }
     makeVars() {
+      this.level=1;
+      this.speed = this.speed0=700;
+      this.speedK=60;
+
       this.n = 4; // Number of squares... it's tetris!
       this.pieces_xyr = [
         undefined, // empty
@@ -181,7 +170,6 @@
     reset() {
       this.started = this.paused = 0;
       this.score = {lines: 0};
-      this.board.skyline=this.board.height-1;
       clearTimeout(this.timeout);
 
       document.getElementById("lines").innerHTML = 0;
@@ -202,7 +190,7 @@
       this.paused=0;
       document.getElementById("lines").innerHTML=this.score.lines;
       clearTimeout(this.timeout);
-      this.timeout=setTimeout(this.nextTurn,speed);
+      this.timeout=setTimeout(this.nextTurn,this.speed);
     }
     pause() {
       if (this.paused) {this.nextTurn(); this.paused=0; return;}
@@ -221,16 +209,16 @@
       }
       //this.board.draw();
       clearTimeout(this.timeout);
-      this.timeout=setTimeout(this.nextTurn,speed);
+      this.timeout=setTimeout(this.nextTurn,this.speed);
     }
 
     getSkyline() {
       var p = this.piece;
       for (var k=0;k<this.n;k++) {
-        X=p.curX+p.dx[k];
-        Y=p.curY+p.dy[k];
+        var X=p.curX+p.dx[k];
+        var Y=p.curY+p.dy[k];
         if (0<=Y && Y<this.board.height && 0<=X && X<this.board.width) {
-          f[Y][X] = p.n;
+          this.board.f[Y][X] = p.n;
           if (Y<this.board.skyline) this.board.skyline=Y;
         }
       }
@@ -274,7 +262,9 @@
         down: function() {
           var p = this.piece;
           for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
-          if (this.pieceFits(p.curX,p.curY+1)) {this.board.erasePiece(); p.curY++; this.board.drawPiece(); return 1; }
+          if (this.pieceFits(p.curX,p.curY+1)) {
+            this.board.erasePiece(); p.curY++; this.board.drawPiece(); return 1;
+          }
           return 0;
         },
 
@@ -305,7 +295,7 @@
           p.curY = this.ghostY;
           this.board.drawPiece();
           clearTimeout(this.timeout);
-          this.timeout=setTimeout(this.nextTurn,speed);
+          this.timeout=setTimeout(this.nextTurn,this.speed);
         }
       }
       for (var k in this.act) { this.act[k] = this.act[k].bind(this); }
@@ -318,8 +308,16 @@
 
     getLevel() {
       var select = document.querySelector("[name=level]");
-      Level=parseInt(select.value);
-      speed=speed0-speedK*Level;
+      this.level=parseInt(select.value);
+      this.scoreLines(0);
+    }
+
+    scoreLines(lines) {
+      this.score.lines+= lines;
+      document.getElementById("lines").innerHTML=this.score.lines;
+      this.level = Math.floor(this.score.lines / 10);
+      this.speed=this.speed0-this.speedK*(this.level-1);
+      document.querySelector("[name=level]").value=this.level-1;
     }
 
     pieceFits(X,Y) {
@@ -329,17 +327,12 @@
         if (
           theX<0 || theX>=this.board.width || // square is contained in X
           theY>=this.board.height || // square is above bottom of board
-          (theY>-1 && f[theY][theX]>0) // square is not occupied, if square is not above board
+          (theY>-1 && this.board.f[theY][theX]>0) // square is not occupied, if square is not above board
         ) return 0;
       }
       return 1;
     }
   }
-
-  // keystroke processing
-
-  initialDelay_=200;
-  repeat_Delay_=20;
 
   class Controller {
     constructor(game) {
@@ -366,6 +359,8 @@
     }
     reset() {
       this.active = {};
+      // the comment lines on this and onKeyDown and onKeyDown are because it's better to not use the
+      // browsers natural key repeat rate. may need to be added back in at some point.
       //for (key in this.timer) { clearTimeout(this.timer[key]) }
       //this.timer = {};
     }
