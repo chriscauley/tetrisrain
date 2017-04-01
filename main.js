@@ -1,22 +1,12 @@
 (function() {
-  var curPiece,X,Y,
-      nTypes=7,
-      squareSize=20,
-      boardHeight=16,
-      boardWidth =10,
+  var X,Y,
       Level=1,
       speed0=700,
       speedK=60,
-      speed=speed0-speedK*Level,
-      nLines=0;
+      speed=speed0-speedK*Level;
 
   // GLOBAL VARIABLES
 
-  var skyline=boardHeight-1,
-      serialN=0;
-
-  var boardLoaded=1,
-      timerID=null;
   // ARRAYS
   var f = new Array();
   for (i=0;i<20;i++) {
@@ -43,6 +33,10 @@
   // IMAGES
   class Board {
     constructor(game) {
+      this.scale = 20;
+      this.height=16,
+      this.width =10,
+      this.skyline=this.height-1;
       // pallet should be a constructor option
       var pallet = [
         "white", // empty
@@ -76,7 +70,7 @@
         for (var j=0;j<f[i].length;j++) {
           var _f = f[i][j];
           var color = this.pallet[Math.abs(_f)];
-          drawBox(this.ctx,j*squareSize,i*squareSize,(j+1)*squareSize,(i+1)*squareSize,color)
+          drawBox(this.ctx,j*this.scale,i*this.scale,(j+1)*this.scale,(i+1)*this.scale,color)
         }
       }
       this.ctx.drawImage(this.grid,0,0);
@@ -85,24 +79,24 @@
     makeCanvas() {
       this.canvas = document.createElement("canvas");
       this.grid = document.createElement("img");
-      this.canvas.width = this.grid.width = boardWidth*squareSize + 1;
-      this.canvas.height = this.grid.height = boardHeight*squareSize + 1;
+      this.canvas.width = this.grid.width = this.width*this.scale + 1;
+      this.canvas.height = this.grid.height = this.height*this.scale + 1;
       this.ctx = this.canvas.getContext("2d");
       document.getElementById("debug").appendChild(this.canvas);
       //document.getElementById("debug").appendChild(this.grid);
-      for (var i=0;i<=boardWidth;i++) {
-        drawLine(this.ctx,i*squareSize,0,i*squareSize,this.canvas.height,this.pallet.border);
+      for (var i=0;i<=this.width;i++) {
+        drawLine(this.ctx,i*this.scale,0,i*this.scale,this.canvas.height,this.pallet.border);
       }
-      for (var i=0;i<=boardHeight;i++) {
-        drawLine(this.ctx,0,i*squareSize,this.canvas.width,i*squareSize,this.pallet.border);
+      for (var i=0;i<=this.height;i++) {
+        drawLine(this.ctx,0,i*this.scale,this.canvas.width,i*this.scale,this.pallet.border);
       }
       this.grid.src = this.canvas.toDataURL();
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
     }
 
     reset() {
-      for (var i=0;i<boardHeight;i++) {
-        for (var j=0;j<boardWidth;j++) {
+      for (var i=0;i<this.height;i++) {
+        for (var j=0;j<this.width;j++) {
           f[i][j]=0;
         }
       }
@@ -112,24 +106,24 @@
     }
     
     removeLines() {
-      for (var i=0;i<boardHeight;i++) {
+      for (var i=0;i<this.height;i++) {
         var gapFound=0;
-        for (var j=0;j<boardWidth;j++) {
+        for (var j=0;j<this.width;j++) {
           if (f[i][j]==0) {gapFound=1;break;}
         }
         if (gapFound) continue; // gapFound in previous loop
-        for (var k=i;k>=skyline;k--) {
-          for (var j=0;j<boardWidth;j++) {
+        for (var k=i;k>=this.skyline;k--) {
+          for (var j=0;j<this.width;j++) {
             f[k][j]=f[k-1][j]; //eliminate line by moving eveything down a line
           }
         }
-        for (var j=0;j<boardWidth;j++) {
+        for (var j=0;j<this.width;j++) {
           f[0][j]=0; // set top to zero
         }
-        nLines++;
-        skyline++;
-        document.getElementById("lines").innerHTML=nLines;
-        if (nLines%5==0) {Level++; if(Level>10) Level=10;}
+        this.game.score.lines++;
+        this.skyline++;
+        document.getElementById("lines").innerHTML=this.game.score.lines;
+        if (this.game.score.lines%5==0) {Level++; if(Level>10) Level=10;}
         speed=speed0-speedK*Level;
         var select = document.querySelector("[name=level]");
         select.selectedIndex=Level-1;
@@ -141,7 +135,7 @@
       for (var k=0;k<this.game.n;k++) {
         X=p.curX+p.dx[k];
         Y=p.curY+p.dy[k];
-        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-p.n) {
+        if (0<=Y && Y<this.height && 0<=X && X<this.width && f[Y][X]!=-p.n) {
           f[Y][X]=-p.n;
         }
       }
@@ -153,7 +147,7 @@
       for (var k=0;k<this.game.n;k++) {
         X=p.curX+p.dx[k];
         Y=p.curY+p.dy[k];
-        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth) {
+        if (0<=Y && Y<this.height && 0<=X && X<this.width) {
           f[Y][X]=0;
         }
       }
@@ -182,13 +176,13 @@
         [[0, 1,-1,-2],[0, 0, 0, 0],2], // l
         [[0, 1, 1, 0],[0, 0, 1, 1],1], // o
       ];
+      this.n_types = this.pieces_xyr.length - 1;
     }
     reset() {
       this.started = this.paused = 0;
-      nLines=0;
-      serialN=0;
-      skyline=boardHeight-1;
-      clearTimeout(timerID);
+      this.score = {lines: 0};
+      this.board.skyline=this.board.height-1;
+      clearTimeout(this.timeout);
 
       document.getElementById("lines").innerHTML = 0;
       this.controller.reset();
@@ -206,13 +200,13 @@
       this.board.drawPiece();
       this.started=1;
       this.paused=0;
-      document.getElementById("lines").innerHTML=nLines;
-      clearTimeout(timerID);
-      timerID=setTimeout(this.nextTurn,speed);
+      document.getElementById("lines").innerHTML=this.score.lines;
+      clearTimeout(this.timeout);
+      this.timeout=setTimeout(this.nextTurn,speed);
     }
     pause() {
       if (this.paused) {this.nextTurn(); this.paused=0; return;}
-      clearTimeout(timerID);
+      clearTimeout(this.timeout);
       this.paused=1;
     }
 
@@ -220,14 +214,14 @@
       if (!this.act.down()) {
         this.getSkyline();
         this.board.removeLines();
-        if (!skyline>0 || !this.getPiece()) {
+        if (!this.board.skyline>0 || !this.getPiece()) {
           this.gameOver();
           return
         }
       }
       //this.board.draw();
-      clearTimeout(timerID);
-      timerID=setTimeout(this.nextTurn,speed);
+      clearTimeout(this.timeout);
+      this.timeout=setTimeout(this.nextTurn,speed);
     }
 
     getSkyline() {
@@ -235,16 +229,16 @@
       for (var k=0;k<this.n;k++) {
         X=p.curX+p.dx[k];
         Y=p.curY+p.dy[k];
-        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth) {
+        if (0<=Y && Y<this.board.height && 0<=X && X<this.board.width) {
           f[Y][X] = p.n;
-          if (Y<skyline) skyline=Y;
+          if (Y<this.board.skyline) this.board.skyline=Y;
         }
       }
     }
 
     getPiece(N) {
-      N = N || Math.floor(nTypes*Math.random()+1); // 0 is empty space
-      //N = ((this.piece||{n: 0}).n)%nTypes+1; //uncomment this line to test pieces in order
+      N = N || Math.floor(this.n_types*Math.random()+1); // 0 is empty space
+      //N = ((this.piece||{n: 0}).n)%this.n_types+1; //uncomment this line to test pieces in order
       this.piece = {
         n: N,
         curX: 5,
@@ -310,8 +304,8 @@
           this.getGhost();
           p.curY = this.ghostY;
           this.board.drawPiece();
-          clearTimeout(timerID);
-          timerID=setTimeout(this.nextTurn,speed);
+          clearTimeout(this.timeout);
+          this.timeout=setTimeout(this.nextTurn,speed);
         }
       }
       for (var k in this.act) { this.act[k] = this.act[k].bind(this); }
@@ -333,8 +327,8 @@
         var theX=X+this.piece.dx_[k];
         var theY=Y+this.piece.dy_[k];
         if (
-          theX<0 || theX>=boardWidth || // square is contained in X
-          theY>=boardHeight || // square is above bottom of board
+          theX<0 || theX>=this.board.width || // square is contained in X
+          theY>=this.board.height || // square is above bottom of board
           (theY>-1 && f[theY][theX]>0) // square is not occupied, if square is not above board
         ) return 0;
       }
