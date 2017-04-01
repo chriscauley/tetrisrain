@@ -27,9 +27,6 @@
   }
   window.f = f;
 
-  var xToErase = [0,0,0,0];
-  var yToErase = [0,0,0,0];
-
   function drawLine(context,x1,y1,x2,y2,color) {
     context.strokeStyle = color;
     context.beginPath();
@@ -147,8 +144,6 @@
         if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-p.n) {
           f[Y][X]=-p.n;
         }
-        X=xToErase[k];
-        Y=yToErase[k];
       }
       this.draw();
     }
@@ -159,8 +154,6 @@
         X=p.curX+p.dx[k];
         Y=p.curY+p.dy[k];
         if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth) {
-          xToErase[k]=X;
-          yToErase[k]=Y;
           f[Y][X]=0;
         }
       }
