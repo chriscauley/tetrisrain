@@ -1,6 +1,5 @@
 (function() {
   var curPiece,X,Y,
-      nSquares=4,
       nTypes=7,
       squareSize=20,
       boardHeight=16,
@@ -13,8 +12,7 @@
 
   // GLOBAL VARIABLES
 
-  var curX=1, curY=1,
-      skyline=boardHeight-1,
+  var skyline=boardHeight-1,
       serialN=0;
 
   var boardLoaded=1,
@@ -31,32 +29,6 @@
 
   var xToErase = [0,0,0,0];
   var yToErase = [0,0,0,0];
-  var dx = [0,0,0,0];
-  var dy = [0,0,0,0];
-  var dx_ = [0,0,0,0];
-  var dy_ = [0,0,0,0];
-
-  var dxBank = [
-    undefined, // empty
-    [0, 1,-1, 0], // t
-    [0, 1,-1,-1], // q
-    [0, 1,-1, 1], // p
-    [0,-1, 1, 0], // z
-    [0, 1,-1, 0], // s
-    [0, 1,-1,-2], // l
-    [0, 1, 1, 0], // o
-  ];
-
-  var dyBank = [
-    undefined, // empty
-    [0, 0, 0, 1], // t
-    [0, 0, 0, 1], // q
-    [0, 0, 0, 1], // p
-    [0, 0, 1, 1], // z
-    [0, 0, 1, 1], // s
-    [0, 0, 0, 0], // s
-    [0, 0, 1, 1], // o
-  ];
 
   function drawLine(context,x1,y1,x2,y2,color) {
     context.strokeStyle = color;
@@ -140,39 +112,8 @@
     }
     
     makeUI() {
-      var buf='<center>Level: <select name="level" onchange="getLevel();this.blur();">'
-        +'<option value=1 selected>1'
-        +'<option value=2>2'
-        +'<option value=3>3'
-        +'<option value=4>4'
-        +'<option value=5>5'
-        +'<option value=6>6'
-        +'<option value=7>7'
-        +'<option value=8>8'
-        +'<option value=9>9'
-        +'<option value=10>10'
-        +'</select>'
-        +'</nobr></font>'
-
-        +'Lines: <span id="lines"></span>'
-
-        +'<input type=button value="Start" onCLick="GAME.start()">'
-        +'<input type=button value="Pause" onCLick="GAME.pause()">'
-
-      document.getElementById("board").innerHTML=buf;
     }
     
-    fillMatrix() {
-      for (var k=0;k<nSquares;k++) {
-        X=curX+dx[k];
-        Y=curY+dy[k];
-        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth) {
-          f[Y][X]=curPiece;
-          if (Y<skyline) skyline=Y;
-        }
-      }
-    }
-
     removeLines() {
       for (var i=0;i<boardHeight;i++) {
         var gapFound=0;
@@ -199,11 +140,12 @@
     }
 
     drawPiece() {
-      for (var k=0;k<nSquares;k++) {
-        X=curX+dx[k];
-        Y=curY+dy[k];
-        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-curPiece) {
-          f[Y][X]=-curPiece;
+      var p = this.game.piece;
+      for (var k=0;k<this.game.n;k++) {
+        X=p.curX+p.dx[k];
+        Y=p.curY+p.dy[k];
+        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth && f[Y][X]!=-p.n) {
+          f[Y][X]=-p.n;
         }
         X=xToErase[k];
         Y=yToErase[k];
@@ -212,9 +154,10 @@
     }
 
     erasePiece() {
-      for (var k=0;k<nSquares;k++) {
-        X=curX+dx[k];
-        Y=curY+dy[k];
+      var p = this.game.piece;
+      for (var k=0;k<this.game.n;k++) {
+        X=p.curX+p.dx[k];
+        Y=p.curY+p.dy[k];
         if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth) {
           xToErase[k]=X;
           yToErase[k]=Y;
@@ -227,11 +170,25 @@
 
   class Game {
     constructor() {
+      this.makeVars();
       this.nextTurn = this.nextTurn.bind(this);
       this.makeActions();
       this.controller = new Controller(this);
       this.board = new Board(this);
       this.reset();
+    }
+    makeVars() {
+      this.n = 4; // Number of squares... it's tetris!
+      this.pieces_xyr = [
+        undefined, // empty
+        [[0, 1,-1, 0],[0, 0, 0, 1],4], // t
+        [[0, 1,-1,-1],[0, 0, 0, 1],4], // q
+        [[0, 1,-1, 1],[0, 0, 0, 1],4], // p
+        [[0,-1, 1, 0],[0, 0, 1, 1],2], // z
+        [[0, 1,-1, 0],[0, 0, 1, 1],2], // s
+        [[0, 1,-1,-2],[0, 0, 0, 0],2], // l
+        [[0, 1, 1, 0],[0, 0, 1, 1],1], // o
+      ];
     }
     reset() {
       this.started = this.paused = 0;
@@ -268,29 +225,45 @@
 
     nextTurn() {
       if (!this.act.down()) {
-        this.board.fillMatrix();
+        this.getSkyline();
         this.board.removeLines();
         if (!skyline>0 || !this.getPiece()) {
           this.gameOver();
           return
         }
       }
-      this.board.draw();
+      //this.board.draw();
       clearTimeout(timerID);
       timerID=setTimeout(this.nextTurn,speed);
     }
-    getPiece(N) {
-      curPiece=(N == undefined) ? Math.floor(nTypes*Math.random()+1):N; // 0 is empty space
-      //curPiece = this.nextPiece++;
-      curX=5;
-      curY=0;
-      for (var k=0;k<nSquares;k++) {
-        dx[k]=dxBank[curPiece][k];
-        dy[k]=dyBank[curPiece][k];
+
+    getSkyline() {
+      var p = this.piece;
+      for (var k=0;k<this.n;k++) {
+        X=p.curX+p.dx[k];
+        Y=p.curY+p.dy[k];
+        if (0<=Y && Y<boardHeight && 0<=X && X<boardWidth) {
+          f[Y][X] = p.n;
+          if (Y<skyline) skyline=Y;
+        }
       }
-      for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-      if (this.pieceFits(curX,curY)) { this.board.drawPiece(); return 1; }
-      return 0;
+    }
+
+    getPiece(N) {
+      N = N || Math.floor(nTypes*Math.random()+1); // 0 is empty space
+      //N = ((this.piece||{n: 0}).n)%nTypes+1; //uncomment this line to test pieces in order
+      this.piece = {
+        n: N,
+        curX: 5,
+        curY: 0,
+        dx: this.pieces_xyr[N][0].slice(),
+        dy: this.pieces_xyr[N][1].slice(),
+        dx_: this.pieces_xyr[N][0].slice(),
+        dy_: this.pieces_xyr[N][1].slice(),
+        n_rotations: 0,
+        allowed_rotations: this.pieces_xyr[N][2],
+      };
+      if (this.pieceFits(this.piece.curX,this.piece.curY)) { this.board.drawPiece(); return true; }
     }
 
     gameOver() {
@@ -300,37 +273,49 @@
     makeActions() {
       this.act = {
         left: function() {
-          for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-          if (this.pieceFits(curX-1,curY)) {this.board.erasePiece(); curX--; this.board.drawPiece();}
+          var p = this.piece;
+          for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
+          if (this.pieceFits(p.curX-1,p.curY)) {this.board.erasePiece(); p.curX--; this.board.drawPiece();}
         },
 
         right: function() {
-          for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-          if (this.pieceFits(curX+1,curY)) {this.board.erasePiece(); curX++; this.board.drawPiece();}
+          var p = this.piece;
+          for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
+          if (this.pieceFits(p.curX+1,p.curY)) {this.board.erasePiece(); p.curX++; this.board.drawPiece();}
         },
 
         down: function() {
-          for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-          if (this.pieceFits(curX,curY+1)) {this.board.erasePiece(); curY++; this.board.drawPiece(); return 1; }
+          var p = this.piece;
+          for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
+          if (this.pieceFits(p.curX,p.curY+1)) {this.board.erasePiece(); p.curY++; this.board.drawPiece(); return 1; }
           return 0;
         },
 
         rotate: function() {
-          if (curPiece == 7) { return } // can't rotate a square
-          for (var k=0;k<nSquares;k++) {dx_[k]=dy[k]; dy_[k]=-dx[k];}
-          if (this.pieceFits(curX,curY)) {
+          var p = this.piece;
+          if (!p.allowed_rotations) { return }
+          p.n_rotations++;
+          if (p.n_rotations%p.allowed_rotations == 0) {
+            // t, s, z, and o pieces don't have only 2 rotations allowed. reset to original
+            p.dx_ = this.pieces_xyr[p.n][0].slice();
+            p.dy_ = this.pieces_xyr[p.n][1].slice();
+          } else {
+            for (var k=0;k<this.n;k++) {p.dx_[k]=p.dy[k]; p.dy_[k]=-p.dx[k];}
+          }
+          if (this.pieceFits(p.curX,p.curY)) {
             this.board.erasePiece();
-            for (var k=0;k<nSquares;k++) {dx[k]=dx_[k]; dy[k]=dy_[k];}
+            for (var k=0;k<this.n;k++) {p.dx[k]=p.dx_[k]; p.dy[k]=p.dy_[k];}
             this.board.drawPiece();
           }
         },
 
         drop: function() {
-          for (var k=0;k<nSquares;k++) {dx_[k]=dx[k]; dy_[k]=dy[k];}
-          if (!this.pieceFits(curX,curY+1)) return;
+          var p = this.piece;
+          for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
+          if (!this.pieceFits(p.curX,p.curY+1)) return;
           this.board.erasePiece();
           this.getGhost();
-          curY = this.ghostY;
+          p.curY = this.ghostY;
           this.board.drawPiece();
           clearTimeout(timerID);
           timerID=setTimeout(this.nextTurn,speed);
@@ -340,8 +325,8 @@
     }
 
     getGhost() {
-      this.ghostY = curY;
-      while (this.pieceFits(curX,this.ghostY+1)) { this.ghostY++; }
+      this.ghostY = this.piece.curY;
+      while (this.pieceFits(this.piece.curX,this.ghostY+1)) { this.ghostY++; }
     }
 
     getLevel() {
@@ -351,11 +336,14 @@
     }
 
     pieceFits(X,Y) {
-      for (var k=0;k<nSquares;k++) {
-        var theX=X+dx_[k];
-        var theY=Y+dy_[k];
-        if (theX<0 || theX>=boardWidth || theY>=boardHeight) return 0;
-        if (theY>-1 && f[theY][theX]>0) return 0;
+      for (var k=0;k<this.n;k++) {
+        var theX=X+this.piece.dx_[k];
+        var theY=Y+this.piece.dy_[k];
+        if (
+          theX<0 || theX>=boardWidth || // square is contained in X
+          theY>=boardHeight || // square is above bottom of board
+          (theY>-1 && f[theY][theX]>0) // square is not occupied, if square is not above board
+        ) return 0;
       }
       return 1;
     }
@@ -365,7 +353,6 @@
 
   initialDelay_=200;
   repeat_Delay_=20;
-  initialDelay_=200;
 
   class Controller {
     constructor(game) {
