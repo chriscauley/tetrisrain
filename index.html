@@ -1,11 +1,43 @@
 <html>
   <head>
-    <title>TetriSmash</title>
+    <title>Project Zoidberg</title>
   </head>
 
-  <h3><b>Tetri<i>Smash</i></b></h3>
+  <h3><b>Project<i> Zoidberg</i></b></h3>
   <hr />
   <div id="game">
+    <div id="settings" style="width: 100px;">
+      <p>
+        Level:
+        <select name="level" onchange="GAME.getLevel();this.blur();">
+          <option value="1" selected="">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </p>
+      <p>
+        Lines: <span id="lines">0</span>
+      </p>
+      <p>
+        <input type="button" value="Start" onclick="GAME.start();this.blur();">
+      </p>
+      <p>
+        <input type="button" value="Pause" onclick="GAME.pause();this.blur();">
+      </p>
+    </div>
+    <div id="board"></div>
+    <div id="debug"></div>
+  </div>
+  <link href="base.css" rel="stylesheet"></link>
+  <script src="main.js"></script>
+</html>
     <!--
       <b>Control Keys</b><br>
       <table border=0 cellpadding=1 cellspacing=1>
@@ -30,10 +62,4 @@
         </tr>
       </table>
       -->
-    <div id="board"></div>
-    <div id="debug"></div>
-  </div>
-  <link href="base.css" rel="stylesheet"></link>
-  <script src="main.js"></script>
-</html>
 
