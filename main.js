@@ -296,6 +296,9 @@
           this.board.drawPiece();
           clearTimeout(this.timeout);
           this.timeout=setTimeout(this.nextTurn,this.speed);
+        },
+        lock: function() {
+          this.nextTurn();
         }
       }
       for (var k in this.act) { this.act[k] = this.act[k].bind(this); }
@@ -350,10 +353,16 @@
         'up': 'rotate',
         'space': 'drop',
       }
+      this.action_up_map = {
+        'space': 'lock',
+      }
       this.action_map = {};
       for (var k in this._key_map) {
         var a = this._key_map[k];
         this.action_map[a] = this.game.act[this._action_map[a] || a];
+        if (this.action_up_map[a]) {
+          this.action_up_map[a] = this.game.act[this.action_up_map[a]];
+        }
       }
       this.reset();
     }
@@ -366,14 +375,17 @@
     }
     onKeyDown(e) {
       var event = this._key_map[e.keyCode];
-      if (!this.game.started || this.game.paused || !event) return;
+      if (!this.game.started || this.game.paused || !event) { return; }
       this.active[event] = true;
-      this.action_map[event]();
+      this.action_map[event](e);
       //setTimeOut(function() { this.onKeyDown(e) },initialDelay);
     }
 
     onKeyUp(e) {
-      this.active[e.keyCode] = false;
+      var event = this._key_map[e.keyCode];
+      if (!this.game.started || this.game.paused || !event) { return; }
+      this.active[event] = false;
+      this.action_up_map[event] && this.action_up_map[event](e);
       //clearTimeout(this.timer[e.keyCode]);
     }
   }
