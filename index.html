@@ -5,7 +5,7 @@
 
   <h3><b>Project<i> Zoidberg</i></b></h3>
   <hr />
-  <div id="game">
+  <div id="main">
     <div id="settings" style="width: 100px;">
       <p>
         Level:
@@ -32,10 +32,14 @@
         <input type="button" value="Pause" onclick="GAME.pause();this.blur();">
       </p>
     </div>
-    <div id="board"></div>
+    <div id="game"></div>
     <div id="debug"></div>
   </div>
   <link href="base.css" rel="stylesheet"></link>
+  <link href="http://unrest.io/.dist/unrest-built.css" rel="stylesheet"></link>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/riot/2.6.7/riot+compiler.min.js"></script>
+  <script src="http://unrest.io/.dist/unrest-built.js"></script>
+  <script>uR.auth.reset = function() { return };</script>
   <script src="main.js"></script>
 </html>
     <!--

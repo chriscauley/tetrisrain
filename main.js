@@ -19,10 +19,11 @@
   // IMAGES
   class Board {
     constructor(game) {
-      this.scale = 20;
-      this.height=16,
-      this.width =10,
-      this.skyline=this.height-1;
+      this.game = game;
+      this.scale = this.game.config.scale;
+      this.height = 66;
+      this.width = game.config.board_width;
+      this.skyline = this.height-1;
       // pallet should be a constructor option
       var pallet = [
         "white", // empty
@@ -40,7 +41,6 @@
 
       this.pallet = pallet;
       this.makeCanvas();
-      this.game = game;
       this.makeUI();
       this._draw = this._draw.bind(this);
       this.draw();
@@ -60,11 +60,12 @@
           drawBox(this.ctx,j*this.scale,i*this.scale,(j+1)*this.scale,(i+1)*this.scale,color)
         }
       }
-      this.ctx.drawImage(this.grid,0,0);
+      this.game.draw();
     }
 
     makeCanvas() {
       this.canvas = document.createElement("canvas");
+      this.canvas.id = "board";
       this.grid = document.createElement("img");
       this.canvas.width = this.grid.width = this.width*this.scale + 1;
       this.canvas.height = this.grid.height = this.height*this.scale + 1;
@@ -84,7 +85,7 @@
     reset() {
       this.skyline=this.height-1;
       this.f = new Array();
-      for (var i=0;i<20;i++) {
+      for (var i=0;i<this.height;i++) {
         this.f[i]=new Array();
         for (var j=0;j<20;j++) { this.f[i][j]=0; }
       }
@@ -143,13 +144,43 @@
   class Game {
     constructor() {
       this.makeVars();
+      this.makeCanvas();
       this.nextTurn = this.nextTurn.bind(this);
       this.makeActions();
       this.controller = new Controller(this);
       this.board = new Board(this);
       this.reset();
+      this.start();
+    }
+    draw() {
+      var top = (this.board.skyline-this.config.visible_height-this.config.b_level)*this.board.scale;
+      this.ctx.drawImage(
+        this.board.canvas,
+        0,Math.max(top,0), // sx, sy,
+        this.canvas.width,this.canvas.height, // sWidth, sHeight,
+        0,0, // dx, dy,
+        this.canvas.width,this.canvas.height // dWidth, dHeight
+      )
+      console.log(0,Math.min(top,0),this.canvas.width,this.canvas.height);
+      this.ctx.drawImage(this.board.grid,0,0);
+    }
+    makeCanvas() {
+      this.canvas = document.createElement('canvas');
+      this.canvas.id = "game_canvas";
+      this.canvas.height = this.config.scale*this.config.visible_height+1;
+      this.canvas.width = this.config.scale*this.config.board_width+1;
+      console.log(this.canvas.height);
+      document.getElementById("game").appendChild(this.canvas);
+      this.ctx = this.canvas.getContext("2d");
     }
     makeVars() {
+      this.config = {
+        scale: 20,
+        b_level: -8,
+        game_width: 10,
+        board_width: 10,
+        visible_height: 20,
+      }
       this.level=1;
       this.speed = this.speed0=700;
       this.speedK=60;
@@ -166,6 +197,7 @@
         [[0, 1, 1, 0],[0, 0, 1, 1],1], // o
       ];
       this.n_types = this.pieces_xyr.length - 1;
+      this.turns = [];
     }
     reset() {
       this.started = this.paused = 0;
@@ -202,6 +234,11 @@
       if (!this.act.down()) {
         this.getSkyline();
         this.board.removeLines();
+        this.turns.push({
+          n: this.piece.n,
+          x: this.piece.curX,
+          y: this.piece.curY,
+        });
         if (!this.board.skyline>0 || !this.getPiece()) {
           this.gameOver();
           return
@@ -230,7 +267,7 @@
       this.piece = {
         n: N,
         curX: 5,
-        curY: 0,
+        curY: this.board.skyline + this.config.b_level,
         dx: this.pieces_xyr[N][0].slice(),
         dy: this.pieces_xyr[N][1].slice(),
         dx_: this.pieces_xyr[N][0].slice(),
@@ -268,7 +305,7 @@
           return 0;
         },
 
-        rotate: function() {
+        rotate: function(e) {
           var p = this.piece;
           if (!p.allowed_rotations) { return }
           p.n_rotations++;
@@ -286,7 +323,8 @@
           }
         },
 
-        drop: function() {
+        drop: function(e) {
+          e.preventDefault();
           var p = this.piece;
           for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
           if (!this.pieceFits(p.curX,p.curY+1)) return;
