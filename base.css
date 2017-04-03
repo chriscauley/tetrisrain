@@ -1,7 +1,12 @@
-#main { display: flex; }
+#main {
+  align-items: stretch;
+  display: flex;
+  height: 100%;
+}
 h3 {
   font-family: Helvetica;
   font-size: 18px;
 }
 h3 i { color: #C09; }
 #settings { width: 200px; }
+#game { flex-grow: 1; }

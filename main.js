@@ -152,6 +152,7 @@
       this.start();
     }
     draw() {
+      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       var top = (this.board.skyline-this.config.visible_height-this.config.b_level)*this.board.scale;
       top = Math.min((this.board.height-this.config.visible_height)*this.board.scale,top)
       top = Math.max(top,0)
@@ -163,14 +164,21 @@
         this.canvas.width,this.canvas.height // dWidth, dHeight
       )
       this.ctx.drawImage(this.board.grid,0,0);
+      drawBox(
+        this.ctx,
+        0,this.config.visible_height*this.board.scale,
+        this.board.canvas.width,this.canvas.height,
+        "rgba(0,0,0,0.25)"
+      )
     }
     makeCanvas() {
       this.canvas = document.createElement('canvas');
       this.canvas.id = "game_canvas";
-      this.canvas.height = this.config.scale*this.config.visible_height+1;
-      this.canvas.width = this.config.scale*this.config.board_width+1;
-      document.getElementById("game").appendChild(this.canvas);
+      var game_container = document.getElementById("game");
+      this.canvas.height = game_container.scrollHeight;
+      this.canvas.width = game_container.scrollWidth;
       this.ctx = this.canvas.getContext("2d");
+      game_container.appendChild(this.canvas);
     }
     makeVars() {
       this.config = {
@@ -320,7 +328,7 @@
           if (this.pieceFits(p.curX+1,p.curY)) {this.board.erasePiece(); p.curX++; this.board.drawPiece();}
         },
 
-        down: function() {
+        down: function(e) {
           var p = this.piece;
           for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
           if (this.pieceFits(p.curX,p.curY+1)) {
@@ -330,6 +338,7 @@
         },
 
         rotate: function(e) {
+          e.preventDefault();
           var p = this.piece;
           if (!p.allowed_rotations) { return }
           p.n_rotations++;
