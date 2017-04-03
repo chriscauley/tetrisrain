@@ -11,16 +11,24 @@
     context.stroke();
   }
 
-  function drawBox(context,x1,y1,x2,y2,color) {
-    context.fillStyle = color;
-    context.fillRect(x1,y1,x2,y2);
+  class CanvasObject {
+    constructor() {
+
+    }
+    drawBox(x1,y1,x2,y2,color,s) {
+      if (!color) { return; } // do clearRect instead?
+      s = s || this.scale;
+      this.ctx.fillStyle = color;
+      this.ctx.fillRect(x1*s,y1*s,x2*s,y2*s);
+    }
   }
   
   // IMAGES
-  class Board {
+  class Board extends CanvasObject {
     constructor(game) {
+      super();
       this.game = game;
-      this.scale = this.game.config.scale;
+      this.scale = this.game.scale;
       this.height = 66;
       this.width = game.config.board_width;
       this.skyline = this.height-1;
@@ -58,7 +66,7 @@
           var _f = this.f[i][j];
           if (!_f) { continue; }
           var color = this.pallet[Math.abs(_f)];
-          drawBox(this.ctx,j*this.scale,i*this.scale, this.scale,this.scale,color);
+          this.drawBox(j,i,1,1,color);
         }
       }
       this.game.draw();
@@ -71,7 +79,12 @@
       this.canvas.width = this.grid.width = this.width*this.scale + 1;
       this.canvas.height = this.grid.height = this.height*this.scale + 1;
       this.ctx = this.canvas.getContext("2d");
-      //document.getElementById("debug").appendChild(this.grid);
+      this.small_canvas = document.createElement("canvas");
+      this.small_canvas.width = 4*this.scale+1;
+      this.small_canvas.height = 2*this.scale+1;
+      this.small_ctx = this.small_canvas.getContext("2d");
+
+      // make grid
       for (var i=0;i<=this.width;i++) {
         drawLine(this.ctx,i*this.scale,0,i*this.scale,this.canvas.height,this.pallet.border);
       }
@@ -80,6 +93,27 @@
       }
       this.grid.src = this.canvas.toDataURL();
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+
+      // make pieces
+      this.imgs = {}
+      uR.forEach(this.game.pieces_xyr,function(p,n) {
+        if (!p) { return }
+        var dx = p[0];
+        var dy = p[1];
+        this.ctx.clearRect(0,0,this.small_canvas.width,this.small_canvas.height)
+        uR.forEach(dx,function(_,i) {
+          this.drawBox(2+dx[i],dy[i],1,1,this.pallet[n])
+        }.bind(this));
+        var img = document.createElement("img");
+        this.small_ctx.clearRect(0,0,this.small_canvas.width,this.small_canvas.height)
+        this.small_ctx.drawImage(
+          this.canvas,
+          0,0,this.small_canvas.width,this.small_canvas.height,
+          0,0,this.small_canvas.width,this.small_canvas.height
+        )
+        img.src = this.small_canvas.toDataURL();
+        this.imgs[n] = img
+      }.bind(this));
     }
 
     reset() {
@@ -141,8 +175,9 @@
     }
   }
 
-  class Game {
+  class Game extends CanvasObject {
     constructor() {
+      super();
       this.makeVars();
       this.makeCanvas();
       this.nextTurn = this.nextTurn.bind(this);
@@ -166,19 +201,38 @@
         this.canvas.width,this.canvas.height // dWidth, dHeight
       )
       this.ctx.drawImage(this.board.grid,0,0);
-      drawBox(
-        this.ctx,
+      this.drawBox(
         0,this.config.visible_height*this.board.scale,
         this.board.canvas.width,this.canvas.height,
-        "rgba(0,0,0,0.25)"
+        "rgba(0,0,0,0.25)",
+        1 // scale of 1
       )
-      var floor = (this.board.height)*this.board.scale-top;
-      drawBox(
-        this.ctx,
+      var floor = this.board.height-top/this.scale;
+      this.drawBox(
         0, floor,
-        this.board.canvas.width,2*this.board.scale,
+        this.board.canvas.width/this.scale,2,
         "brown"
       )
+      var s = 0.75;
+      var y_offset = 0;
+      var img = this.board.imgs[this.pieces[this.piece_number]];
+      var x_offset = this.scale;
+      this.ctx.drawImage(
+        img,
+        this.board.canvas.width+x_offset, y_offset,
+        img.width,img.height
+      )
+      y_offset += img.height+this.scale;
+      for (var i=0;i<this.config.n_preview;i++) {
+        img = this.board.imgs[this.pieces[this.piece_number+i+1]];
+        var x_offset = this.scale+img.width*(1-s)/2;
+        this.ctx.drawImage(
+          img,
+          this.board.canvas.width+x_offset, y_offset,
+          img.width*s,img.height*s
+        )
+        y_offset += img.height*s+this.scale;
+      }
     }
 
     makeCanvas() {
@@ -192,8 +246,8 @@
     }
 
     makeVars() {
+      this.scale = 20,
       this.config = {
-        scale: 20,
         b_level: -8,
         game_width: 10,
         board_width: 10,
@@ -308,7 +362,7 @@
 
     getPiece(N) {
       if (!N) {
-        while (this.pieces.length <= this.piece_number+this.config.n_preview) {
+        while (this.pieces.length <= this.piece_number+this.config.n_preview+1) {
           this.pieces.push(Math.floor(this.n_types*Math.random()+1));
         }
         N = this.pieces[this.piece_number];
