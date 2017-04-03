@@ -226,7 +226,7 @@
       this.timeout=setTimeout(this.nextTurn,this.speed);
     }
     pause() {
-      if (this.paused) {this.nextTurn(); this.paused=0; return;}
+      if (this.paused) { this.nextTurn(); this.paused=0; return;}
       clearTimeout(this.timeout);
       this.paused=1;
     }
@@ -363,7 +363,8 @@
         },
         lock: function() {
           this.nextTurn();
-        }
+        },
+        pause: this.pause.bind(this)
       }
       for (var k in this.act) { this.act[k] = this.act[k].bind(this); }
     }
@@ -373,18 +374,11 @@
       while (this.pieceFits(this.piece.curX,this.ghostY+1)) { this.ghostY++; }
     }
 
-    getLevel() {
-      var select = document.querySelector("[name=level]");
-      this.level=parseInt(select.value);
-      this.scoreLines(0);
-    }
-
     scoreLines(lines) {
       this.score.lines+= lines;
       document.getElementById("lines").innerHTML=this.score.lines;
       this.level = Math.floor(this.score.lines / 10);
       this.speed=this.speed0-this.speedK*(this.level-1);
-      document.querySelector("[name=level]").value=this.level-1;
     }
 
     pieceFits(X,Y) {
@@ -407,15 +401,20 @@
       document.addEventListener("keydown",this.onKeyDown.bind(this));
       document.addEventListener("keyup",this.onKeyUp.bind(this));
       this._key_map = {
-        '38': 'up',
-        '40': 'down',
-        '37': 'left',
-        '39': 'right',
-        '32': 'space',
+        38: 'up',
+        40: 'down',
+        37: 'left',
+        39: 'right',
+        32: 'space',
       }
+      var letters = 'abcdefghijklmnopqrstuvwxyz';
       this._action_map = {
+        'p': 'pause',
         'up': 'rotate',
         'space': 'drop',
+      }
+      for (var i=0;i<letters.length;i++) {
+        if (this._action_map[letters[i]]) { this._key_map[i+65] = letters[i]; }
       }
       this.action_up_map = {
         'space': 'lock',
@@ -439,7 +438,7 @@
     }
     onKeyDown(e) {
       var event = this._key_map[e.keyCode];
-      if (!this.game.started || this.game.paused || !event) { return; }
+      if (!this.game.started || (this.game.paused && event != 'p') || !event) { return; }
       this.active[event] = true;
       this.action_map[event](e);
       //setTimeOut(function() { this.onKeyDown(e) },initialDelay);
@@ -447,7 +446,7 @@
 
     onKeyUp(e) {
       var event = this._key_map[e.keyCode];
-      if (!this.game.started || this.game.paused || !event) { return; }
+      if (!this.game.started || (this.game.paused && event != 'p') || !event) { return; }
       this.active[event] = false;
       this.action_up_map[event] && this.action_up_map[event](e);
       //clearTimeout(this.timer[e.keyCode]);
