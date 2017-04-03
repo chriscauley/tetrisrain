@@ -70,7 +70,6 @@
       this.canvas.width = this.grid.width = this.width*this.scale + 1;
       this.canvas.height = this.grid.height = this.height*this.scale + 1;
       this.ctx = this.canvas.getContext("2d");
-      document.getElementById("debug").appendChild(this.canvas);
       //document.getElementById("debug").appendChild(this.grid);
       for (var i=0;i<=this.width;i++) {
         drawLine(this.ctx,i*this.scale,0,i*this.scale,this.canvas.height,this.pallet.border);
@@ -154,14 +153,15 @@
     }
     draw() {
       var top = (this.board.skyline-this.config.visible_height-this.config.b_level)*this.board.scale;
+      top = Math.min((this.board.height-this.config.visible_height)*this.board.scale,top)
+      top = Math.max(top,0)
       this.ctx.drawImage(
         this.board.canvas,
-        0,Math.max(top,0), // sx, sy,
+        0,top, // sx, sy,
         this.canvas.width,this.canvas.height, // sWidth, sHeight,
         0,0, // dx, dy,
         this.canvas.width,this.canvas.height // dWidth, dHeight
       )
-      console.log(0,Math.min(top,0),this.canvas.width,this.canvas.height);
       this.ctx.drawImage(this.board.grid,0,0);
     }
     makeCanvas() {
@@ -169,7 +169,6 @@
       this.canvas.id = "game_canvas";
       this.canvas.height = this.config.scale*this.config.visible_height+1;
       this.canvas.width = this.config.scale*this.config.board_width+1;
-      console.log(this.canvas.height);
       document.getElementById("game").appendChild(this.canvas);
       this.ctx = this.canvas.getContext("2d");
     }
@@ -203,6 +202,7 @@
       this.started = this.paused = 0;
       this.score = {lines: 0};
       clearTimeout(this.timeout);
+      this.piece_number = 0;
 
       document.getElementById("lines").innerHTML = 0;
       this.controller.reset();
@@ -215,6 +215,7 @@
         if (this.paused) { this.pause(); }
         return;
       }
+      this.pieces = [2,3,2,3,2,3,2,3,2,3];
       this.nextPiece = 0;
       this.getPiece();
       this.board.drawPiece();
@@ -249,6 +250,27 @@
       this.timeout=setTimeout(this.nextTurn,this.speed);
     }
 
+    saveGame(name,folder) {
+      folder = folder || "trash";
+      var j;
+      for (var i =0;i<this.board.f.length;i++) {
+        for (j=0;j<this.board.f[i].length;j++) { if (this.board.f[i][j]>0) break }
+        if (this.board.f[i][j]) { break }
+      }
+      uR.storage.set(folder + "/" + name,this.board.f.slice(i))
+    }
+
+    loadGame(name,folder,reset) {
+      folder = folder || "trash";
+      if (reset === undefined) { reset = true; }
+      reset && this.reset();
+      var _f = uR.storage.get(folder + "/" + name);
+      uR.forEach(_f,function(line,i) {
+        this.board.f[i+this.board.skyline-_f.length] = line;
+      });
+      this.nextTurn()
+    }
+
     getSkyline() {
       var p = this.piece;
       for (var k=0;k<this.n;k++) {
@@ -262,12 +284,16 @@
     }
 
     getPiece(N) {
-      N = N || Math.floor(this.n_types*Math.random()+1); // 0 is empty space
+      if (!N) {
+        if (this.pieces.length == this.piece_number) { this.pieces.push(Math.floor(this.n_types*Math.random()+1)) }
+        N = this.pieces[this.piece_number];
+        this.piece_number++;
+      }
       //N = ((this.piece||{n: 0}).n)%this.n_types+1; //uncomment this line to test pieces in order
       this.piece = {
         n: N,
         curX: 5,
-        curY: this.board.skyline + this.config.b_level,
+        curY: Math.max(this.board.skyline + this.config.b_level,0),
         dx: this.pieces_xyr[N][0].slice(),
         dy: this.pieces_xyr[N][1].slice(),
         dx_: this.pieces_xyr[N][0].slice(),
