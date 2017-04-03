@@ -250,25 +250,23 @@
       this.timeout=setTimeout(this.nextTurn,this.speed);
     }
 
-    saveGame(name,folder) {
-      folder = folder || "trash";
+    saveGame(name) {
       var j;
       for (var i =0;i<this.board.f.length;i++) {
         for (j=0;j<this.board.f[i].length;j++) { if (this.board.f[i][j]>0) break }
         if (this.board.f[i][j]) { break }
       }
-      uR.storage.set(folder + "/" + name,this.board.f.slice(i))
+      uR.storage.set(name,this.board.f.slice(i))
     }
 
-    loadGame(name,folder,reset) {
-      folder = folder || "trash";
+    loadGame(name,reset) {
       if (reset === undefined) { reset = true; }
       reset && this.reset();
-      var _f = uR.storage.get(folder + "/" + name);
+      var _f = uR.storage.get(name);
       uR.forEach(_f,function(line,i) {
         this.board.f[i+this.board.skyline-_f.length] = line;
       });
-      this.nextTurn()
+      this.nextTurn();
     }
 
     getSkyline() {
