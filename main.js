@@ -199,7 +199,7 @@
       this.turns = [];
     }
     reset() {
-      this.started = this.paused = 0;
+      this.paused = 0;
       this.score = {lines: 0};
       clearTimeout(this.timeout);
       this.piece_number = 0;
@@ -265,7 +265,7 @@
       var _f = uR.storage.get(name);
       uR.forEach(_f,function(line,i) {
         this.board.f[i+this.board.skyline-_f.length] = line;
-      });
+      }.bind(this));
       this.nextTurn();
     }
 

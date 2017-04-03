@@ -4,7 +4,7 @@
   <p each={ name in files }>
     <a onclick={ trash } class="fa fa-trash"></a>
     <a onclick={ save } class="fa fa-save"></a>
-    <a onclick={ load } class="fa fa-load"></a>
+    <a onclick={ load } class="fa fa-folder-open-o"></a>
     { name }
   </p>
 
