@@ -59,8 +59,22 @@
       this._frame = requestAnimationFrame(this._draw);
     }
     _draw() {
+      // ghost stuff may not go here
+      this.game.getGhost();
+
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       var color;
+
+      // draw ghost
+      this.ctx.globalAlpha = 0.5;
+      var p = this.game.piece;
+      var color = this.pallet[p.n];
+      uR.forEach(p.dx,function(_,j) {
+        this.drawBox(p.curX+p.dx[j],this.game.ghostY+p.dy[j],1,1,color);
+      }.bind(this));
+      this.ctx.globalAlpha = 1;
+
+      // draw all pieces
       for (var i=0;i<this.f.length;i++) {
         for (var j=0;j<this.f[i].length;j++) {
           var _f = this.f[i][j];
@@ -435,7 +449,6 @@
           for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
           if (!this.pieceFits(p.curX,p.curY+1)) return;
           this.board.erasePiece();
-          this.getGhost();
           p.curY = this.ghostY;
           this.board.drawPiece();
           clearTimeout(this.timeout);
