@@ -26,7 +26,7 @@
       this.skyline = this.height-1;
       // pallet should be a constructor option
       var pallet = [
-        "white", // empty
+        undefined, // empty
         "#000099", // t
         "#0000FF", // q
         "#006666", // p
@@ -56,8 +56,9 @@
       for (var i=0;i<this.f.length;i++) {
         for (var j=0;j<this.f[i].length;j++) {
           var _f = this.f[i][j];
+          if (!_f) { continue; }
           var color = this.pallet[Math.abs(_f)];
-          drawBox(this.ctx,j*this.scale,i*this.scale,(j+1)*this.scale,(i+1)*this.scale,color)
+          drawBox(this.ctx,j*this.scale,i*this.scale, this.scale,this.scale,color);
         }
       }
       this.game.draw();
@@ -151,6 +152,7 @@
       this.reset();
       this.start();
     }
+
     draw() {
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       var top = (this.board.skyline-this.config.visible_height-this.config.b_level)*this.board.scale;
@@ -170,7 +172,15 @@
         this.board.canvas.width,this.canvas.height,
         "rgba(0,0,0,0.25)"
       )
+      var floor = (this.board.height)*this.board.scale-top;
+      drawBox(
+        this.ctx,
+        0, floor,
+        this.board.canvas.width,2*this.board.scale,
+        "brown"
+      )
     }
+
     makeCanvas() {
       this.canvas = document.createElement('canvas');
       this.canvas.id = "game_canvas";
@@ -180,6 +190,7 @@
       this.ctx = this.canvas.getContext("2d");
       game_container.appendChild(this.canvas);
     }
+
     makeVars() {
       this.config = {
         scale: 20,
@@ -187,6 +198,7 @@
         game_width: 10,
         board_width: 10,
         visible_height: 20,
+        n_preview: 5,
       }
       this.level=1;
       this.speed = this.speed0=700;
@@ -206,6 +218,7 @@
       this.n_types = this.pieces_xyr.length - 1;
       this.turns = [];
     }
+
     reset() {
       this.paused = 0;
       this.score = {lines: 0};
@@ -233,6 +246,7 @@
       clearTimeout(this.timeout);
       this.timeout=setTimeout(this.nextTurn,this.speed);
     }
+
     pause() {
       if (this.paused) { this.nextTurn(); this.paused=0; return;}
       clearTimeout(this.timeout);
@@ -248,12 +262,11 @@
           x: this.piece.curX,
           y: this.piece.curY,
         });
-        if (!this.board.skyline>0 || !this.getPiece()) {
+        if (this.board.skyline<=0 || !this.getPiece()) {
           this.gameOver();
           return
         }
       }
-      //this.board.draw();
       clearTimeout(this.timeout);
       this.timeout=setTimeout(this.nextTurn,this.speed);
     }
@@ -278,20 +291,26 @@
     }
 
     getSkyline() {
+      // this should all be cleaned up a bit.
       var p = this.piece;
       for (var k=0;k<this.n;k++) {
         var X=p.curX+p.dx[k];
         var Y=p.curY+p.dy[k];
         if (0<=Y && Y<this.board.height && 0<=X && X<this.board.width) {
           this.board.f[Y][X] = p.n;
-          if (Y<this.board.skyline) this.board.skyline=Y;
+          if (Y<this.board.skyline) {
+            this.board.skyline=Y;
+            this.board.floor=this.board.height-Y;
+          }
         }
       }
     }
 
     getPiece(N) {
       if (!N) {
-        if (this.pieces.length == this.piece_number) { this.pieces.push(Math.floor(this.n_types*Math.random()+1)) }
+        while (this.pieces.length <= this.piece_number+this.config.n_preview) {
+          this.pieces.push(Math.floor(this.n_types*Math.random()+1));
+        }
         N = this.pieces[this.piece_number];
         this.piece_number++;
       }
