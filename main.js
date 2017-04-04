@@ -266,7 +266,7 @@
         visible_height: 20,
         n_preview: 5,
       }
-      this.pieces = [2,3,2,3,2,3,2,3,2,3];
+      this.pieces = [2,3,2,3,2,3,2,3,7,7,7,7];
       this.nextPiece = 0;
       this.level=1;
       this.speed = this.speed0=700;
@@ -459,7 +459,16 @@
         lock: function() {
           this.nextTurn();
         },
-        pause: this.pause.bind(this)
+        pause: this.pause.bind(this),
+        swapPiece: function() {
+          if (this.last_swap == this.piece_number) { return }
+          this.last_swap = this.piece_number;
+          var old_piece = this.swapped_piece;
+          this.board.erasePiece();
+          this.swapped_piece = this.piece.n;
+          this.piece = undefined;
+          this.getPiece(old_piece);
+        }
       }
       for (var k in this.act) { this.act[k] = this.act[k].bind(this); }
     }
@@ -502,12 +511,14 @@
         37: 'left',
         39: 'right',
         32: 'space',
+        16: 'shift',
       }
       var letters = 'abcdefghijklmnopqrstuvwxyz';
       this._action_map = {
         'p': 'pause',
         'up': 'rotate',
         'space': 'drop',
+        'shift': 'swapPiece'
       }
       for (var i=0;i<letters.length;i++) {
         if (this._action_map[letters[i]]) { this._key_map[i+65] = letters[i]; }
