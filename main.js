@@ -353,10 +353,17 @@
       if (reset === undefined) { reset = true; }
       reset && this.reset();
       var _f = uR.storage.get(name);
+      var new_skyline = this.board.height;
       uR.forEach(_f,function(line,i) {
-        this.board.f[1+i+this.board.skyline-_f.length] = line;
+        var line_no = 1+i+this.board.skyline-_f.length
+        this.board.f[line_no] = line;
+        uR.forEach(this.board.f[line_no],function(c) {
+          if (c && line_no<new_skyline) {
+            new_skyline = line_no;
+          }
+        }.bind(this));
       }.bind(this));
-      this.getSkyline();
+      this.board.skyline = new_skyline;
       this.nextTurn();
     }
 
