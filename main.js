@@ -201,6 +201,8 @@
     }
 
     draw() {
+      this.ctx.save();
+      this.ctx.translate(this.x_margin,this.y_margin);
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       var top = (this.board.skyline-this.config.visible_height-this.config.b_level)*this.board.scale;
       top = Math.min((this.board.height-this.config.visible_height)*this.board.scale,top)
@@ -245,6 +247,7 @@
         )
         y_offset += img.height*s+this.scale;
       }
+      this.ctx.restore()
     }
 
     makeCanvas() {
@@ -266,7 +269,9 @@
         visible_height: 20,
         n_preview: 5,
       }
-      this.pieces = [2,3,2,3,2,3,2,3,7,7,7,7];
+      this.x_margin = 100;
+      this.y_margin = 20;
+      this.pieces = [2,3,2,3,2,3,2,3,7,7,7,7,6,6,6,6];
       this.nextPiece = 0;
       this.level=1;
       this.speed = this.speed0=700;
@@ -468,6 +473,8 @@
           this.swapped_piece = this.piece.n;
           this.piece = undefined;
           this.getPiece(old_piece);
+          this.ctx.clearRect(0,this.y_margin,this.x_margin,this.x_margin);
+          this.ctx.drawImage(this.board.imgs[this.swapped_piece],0,this.y_margin);
         }
       }
       for (var k in this.act) { this.act[k] = this.act[k].bind(this); }
