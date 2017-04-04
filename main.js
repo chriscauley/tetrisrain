@@ -1,8 +1,4 @@
 (function() {
-  // GLOBAL VARIABLES
-
-  // ARRAYS
-
   function drawLine(context,x1,y1,x2,y2,color) {
     context.strokeStyle = color;
     context.beginPath();
@@ -22,7 +18,7 @@
       this.ctx.fillRect(x1*s,y1*s,x2*s,y2*s);
     }
   }
-  
+
   // IMAGES
   class Board extends CanvasObject {
     constructor(game) {
@@ -58,6 +54,7 @@
       cancelAnimationFrame(this._frame);
       this._frame = requestAnimationFrame(this._draw);
     }
+
     _draw() {
       // ghost stuff may not go here
       this.game.getGhost();
@@ -138,16 +135,17 @@
         for (var j=0;j<20;j++) { this.f[i][j]=0; }
       }
     }
-    
+
     makeUI() {
+      riot.mount('level-editor');
     }
-    
+
     removeLines() {
       var lines_scored = 0;
       for (var i=0;i<this.height;i++) {
         var gapFound=0;
         for (var j=0;j<this.width;j++) {
-          if (this.f[i][j]==0) {gapFound=1;break;}
+          if (this.f[i][j]==0) { gapFound=1; break; }
         }
         if (gapFound) continue; // gapFound in previous loop
         for (var k=i;k>=this.skyline;k--) {
@@ -268,11 +266,15 @@
         visible_height: 20,
         n_preview: 5,
       }
+      this.pieces = [2,3,2,3,2,3,2,3,2,3];
+      this.nextPiece = 0;
       this.level=1;
       this.speed = this.speed0=700;
       this.speedK=60;
 
       this.n = 4; // Number of squares... it's tetris!
+      this.started=1;
+      this.paused=0;
       this.pieces_xyr = [
         undefined, // empty
         [[0, 1,-1, 0],[0, 0, 0, 1],4], // t
@@ -289,6 +291,8 @@
 
     reset() {
       this.paused = 0;
+      this.piece = undefined;
+      this.makeVars();
       this.score = {lines: 0};
       clearTimeout(this.timeout);
       this.piece_number = 0;
@@ -296,6 +300,7 @@
       document.getElementById("lines").innerHTML = 0;
       this.controller.reset();
       this.board.reset();
+      this.getPiece();
     }
 
     start() {
@@ -304,12 +309,8 @@
         if (this.paused) { this.pause(); }
         return;
       }
-      this.pieces = [2,3,2,3,2,3,2,3,2,3];
-      this.nextPiece = 0;
       this.getPiece();
       this.board.drawPiece();
-      this.started=1;
-      this.paused=0;
       document.getElementById("lines").innerHTML=this.score.lines;
       clearTimeout(this.timeout);
       this.timeout=setTimeout(this.nextTurn,this.speed);
@@ -353,8 +354,9 @@
       reset && this.reset();
       var _f = uR.storage.get(name);
       uR.forEach(_f,function(line,i) {
-        this.board.f[i+this.board.skyline-_f.length] = line;
+        this.board.f[1+i+this.board.skyline-_f.length] = line;
       }.bind(this));
+      this.getSkyline();
       this.nextTurn();
     }
 
@@ -463,6 +465,7 @@
     }
 
     getGhost() {
+      if (! this.piece) { return; }
       this.ghostY = this.piece.curY;
       while (this.pieceFits(this.piece.curX,this.ghostY+1)) { this.ghostY++; }
     }
