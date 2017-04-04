@@ -197,7 +197,6 @@
       this.controller = new Controller(this);
       this.board = new Board(this);
       this.reset();
-      this.start();
     }
 
     draw() {
@@ -278,7 +277,6 @@
       this.speedK=60;
 
       this.n = 4; // Number of squares... it's tetris!
-      this.started=1;
       this.paused=0;
       this.pieces_xyr = [
         undefined, // empty
@@ -306,18 +304,6 @@
       this.controller.reset();
       this.board.reset();
       this.getPiece();
-    }
-
-    start() {
-      if (this.started) {
-        //if (!boardLoaded) return;
-        if (this.paused) { this.pause(); }
-        return;
-      }
-      this.getPiece();
-      this.board.drawPiece();
-      document.getElementById("lines").innerHTML=this.score.lines;
-      clearTimeout(this.timeout);
       this.timeout=setTimeout(this.nextTurn,this.speed);
     }
 
@@ -552,7 +538,7 @@
     }
     onKeyDown(e) {
       var event = this._key_map[e.keyCode];
-      if (!this.game.started || (this.game.paused && event != 'p') || !event) { return; }
+      if ((this.game.paused && event != 'p') || !event) { return; }
       this.active[event] = true;
       this.action_map[event](e);
       //setTimeOut(function() { this.onKeyDown(e) },initialDelay);
@@ -560,7 +546,7 @@
 
     onKeyUp(e) {
       var event = this._key_map[e.keyCode];
-      if (!this.game.started || (this.game.paused && event != 'p') || !event) { return; }
+      if ((this.game.paused && event != 'p') || !event) { return; }
       this.active[event] = false;
       this.action_up_map[event] && this.action_up_map[event](e);
       //clearTimeout(this.timer[e.keyCode]);
