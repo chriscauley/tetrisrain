@@ -25,9 +25,10 @@
       super();
       this.game = game;
       this.scale = this.game.scale;
-      this.height = 66;
+      this.height = 30;
       this.width = game.config.board_width;
       this.skyline = this.height-1;
+      this.DEEP = 8;
       // pallet should be a constructor option
       var pallet = [
         undefined, // empty
@@ -38,6 +39,7 @@
         "#660066", // s
         "#990000", // l
         "#CC0099", // o
+        "#000000", // deep
       ];
       pallet.border = "#cccccc";
       pallet.bg = "white";
@@ -142,20 +144,24 @@
 
     removeLines() {
       var lines_scored = 0;
-      for (var i=0;i<this.height;i++) {
+      for (var i=this.top;i<this.height;i++) {
+        if (this.f[i][j] == this.DEEP && i>this.deep_line) { continue }
         var gapFound=0;
         for (var j=0;j<this.width;j++) {
           if (this.f[i][j]==0) { gapFound=1; break; }
         }
         if (gapFound) continue; // gapFound in previous loop
+
+        if (i>this.deep_line) { // make row DEEP
+          for (var j=0;j<this.width;j++) { this.f[i][j]=this.DEEP; }
+          continue;
+        }
+
+        //eliminate line by moving eveything down a line
         for (var k=i;k>=this.skyline;k--) {
-          for (var j=0;j<this.width;j++) {
-            this.f[k][j]=this.f[k-1][j]; //eliminate line by moving eveything down a line
-          }
+          for (var j=0;j<this.width;j++) { this.f[k][j]=this.f[k-1][j]; }
         }
-        for (var j=0;j<this.width;j++) {
-          this.f[0][j]=0; // set top to zero
-        }
+        for (var j=0;j<this.width;j++) { this.f[0][j]=0; }// set top to zero
         lines_scored ++;
         this.skyline++;
       }
@@ -205,7 +211,7 @@
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       var top = (this.board.skyline-this.config.visible_height-this.config.b_level)*this.board.scale;
       top = Math.min((this.board.height-this.config.visible_height)*this.board.scale,top)
-      top = Math.max(top,0)
+      top = Math.max(top,0);
       this.ctx.drawImage(
         this.board.canvas,
         0,top, // sx, sy,
@@ -214,15 +220,17 @@
         this.canvas.width,this.canvas.height // dWidth, dHeight
       )
       this.ctx.drawImage(this.board.grid,0,0);
+      this.board.top = top/this.scale;
+      this.board.deep_line = this.board.top+this.config.visible_height;
       this.drawBox(
-        0,this.config.visible_height*this.board.scale,
+        0, this.config.visible_height*this.board.scale,
         this.board.canvas.width,this.canvas.height,
-        "rgba(0,0,0,0.25)",
+        "rgba(88,0,0,0.25)",
         1 // scale of 1
       )
-      var floor = this.board.height-top/this.scale;
+      this.floor = this.board.height-top/this.scale;
       this.drawBox(
-        0, floor,
+        0, this.floor,
         this.board.canvas.width/this.scale,2,
         "brown"
       )
@@ -271,6 +279,7 @@
       this.x_margin = 100;
       this.y_margin = 20;
       this.pieces = [2,3,2,3,2,3,2,3,7,7,7,7,6,6,6,6];
+      this.pieces = [6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];
       this.nextPiece = 0;
       this.level=1;
       this.speed = this.speed0=700;
@@ -361,7 +370,7 @@
           this.board.f[Y][X] = p.n;
           if (Y<this.board.skyline) {
             this.board.skyline=Y;
-            this.board.floor=this.board.height-Y;
+            //this.board.floor=this.board.height-Y;
           }
         }
       }
@@ -475,7 +484,7 @@
     scoreLines(lines) {
       this.score.lines+= lines;
       document.getElementById("lines").innerHTML=this.score.lines;
-      this.level = Math.floor(this.score.lines / 10);
+      this.level = Math.floor(this.score.lines / 20);
       this.speed=this.speed0-this.speedK*(this.level-1);
     }
 
