@@ -145,14 +145,14 @@
     removeLines() {
       var lines_scored = 0;
       for (var i=this.top;i<this.height;i++) {
-        if (this.f[i][j] == this.DEEP && i>this.deep_line) { continue }
+        if (this.f[i][j] == this.DEEP && i>this.deep_line+lines_scored) { continue }
         var gapFound=0;
         for (var j=0;j<this.width;j++) {
           if (this.f[i][j]==0) { gapFound=1; break; }
         }
         if (gapFound) continue; // gapFound in previous loop
 
-        if (i>this.deep_line) { // make row DEEP
+        if (i>this.deep_line+lines_scored) { // make row DEEP
           for (var j=0;j<this.width;j++) { this.f[i][j]=this.DEEP; }
           continue;
         }
