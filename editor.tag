@@ -43,7 +43,6 @@
     this.files.sort();
   });
   this.on("mount", function() {
-    console.log(this.last_game);
     this.files.length && this.opts.game.loadGame(this.last_game);
   });
   save(e) {

@@ -71,8 +71,6 @@
 
       this.pallet = pallet;
       this.makeCanvas();
-      this._draw = this._draw.bind(this);
-      this.draw();
       riot.mount("scores",{board: this});
     }
 
@@ -87,11 +85,6 @@
     }
 
     draw() {
-      cancelAnimationFrame(this._frame);
-      this._frame = requestAnimationFrame(this._draw);
-    }
-
-    _draw() {
       // ghost stuff may not go here
       this.game.getGhost();
 
@@ -256,6 +249,7 @@
       this.reset();
       this.loadGame(3476);
       this.makeUI();
+      this.board.draw();
     }
 
     makeUI() {
@@ -328,6 +322,7 @@
         y_offset += img.height*s+this.scale;
       }
       var a_opacity = this.animation_opacity && this.animation_opacity.get();
+
       if (a_opacity) {
         this.ctx.globalAlpha = a_opacity;
         this.ctx.drawImage(this.animation_canvas,0,0);
