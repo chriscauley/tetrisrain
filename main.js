@@ -154,7 +154,7 @@
         }
         if (gapFound) continue; // gapFound in previous loop
 
-        if (i>this.deep_line+_lines.length) { // make row DEEP
+        if (i>=this.deep_line+_lines.length) { // make row DEEP
           for (var j=0;j<this.width;j++) { this.f[i][j]=this.DEEP; }
           continue;
         }
