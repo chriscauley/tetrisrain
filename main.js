@@ -214,7 +214,7 @@
       this.controller = new Controller(this);
       this.board = new Board(this);
       this.reset();
-      this.loadGame(8074);
+      this.loadGame(4474);
     }
 
     draw() {
