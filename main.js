@@ -50,6 +50,17 @@
       this.makeUI();
       this._draw = this._draw.bind(this);
       this.draw();
+      riot.mount("scores",{board: this});
+    }
+
+    reset() {
+      this.skyline=this.height-1;
+      this.f = new Array();
+      for (var i=0;i<this.height;i++) {
+        this.f[i]=new Array();
+        for (var j=0;j<20;j++) { this.f[i][j]=0; }
+      }
+      this.scores && this.scores.mount();
     }
 
     draw() {
@@ -129,45 +140,45 @@
       }.bind(this));
     }
 
-    reset() {
-      this.skyline=this.height-1;
-      this.f = new Array();
-      for (var i=0;i<this.height;i++) {
-        this.f[i]=new Array();
-        for (var j=0;j<20;j++) { this.f[i][j]=0; }
-      }
-    }
-
     makeUI() {
       riot.mount('level-editor');
     }
 
     removeLines() {
-      var lines_scored = 0;
+      var _lines = [];
       for (var i=this.top;i<this.height;i++) {
-        if (this.f[i][j] == this.DEEP && i>this.deep_line+lines_scored) { continue }
+        if (this.f[i][j] == this.DEEP && i>this.deep_line+_lines.length) { continue }
         var gapFound=0;
         for (var j=0;j<this.width;j++) {
           if (this.f[i][j]==0) { gapFound=1; break; }
         }
         if (gapFound) continue; // gapFound in previous loop
 
-        if (i>this.deep_line+lines_scored) { // make row DEEP
+        if (i>this.deep_line+_lines.length) { // make row DEEP
           for (var j=0;j<this.width;j++) { this.f[i][j]=this.DEEP; }
           continue;
         }
 
+        this.scoreLine(i);
+        _lines.push(i);
+      }
+
+      //this.game.animateLines(_lines);
+      uR.forEach(_lines,function(i) {
         //eliminate line by moving eveything down a line
         for (var k=i;k>=this.skyline;k--) {
           for (var j=0;j<this.width;j++) { this.f[k][j]=this.f[k-1][j]; }
         }
         for (var j=0;j<this.width;j++) { this.f[0][j]=0; }// set top to zero
-        lines_scored ++;
         this.skyline++;
-      }
-      this.game.scoreLines(lines_scored);
+      }.bind(this));
     }
 
+    scoreLine(i) {
+      // maybe just move this logit to the scores tag?
+      if (this.f[i][0] == this.DEEP) { this.scores.add("deep") }
+      this.scores.add("lines");
+    }
     drawPiece() {
       var p = this.game.piece;
       for (var k=0;k<this.game.n;k++) {
@@ -203,6 +214,7 @@
       this.controller = new Controller(this);
       this.board = new Board(this);
       this.reset();
+      this.loadGame(8074);
     }
 
     draw() {
@@ -305,11 +317,9 @@
       this.paused = 0;
       this.piece = undefined;
       this.makeVars();
-      this.score = {lines: 0};
       clearTimeout(this.timeout);
       this.piece_number = 0;
 
-      document.getElementById("lines").innerHTML = 0;
       this.controller.reset();
       this.board.reset();
       this.getPiece();
@@ -486,13 +496,6 @@
       if (! this.piece) { return; }
       this.ghostY = this.piece.curY;
       while (this.pieceFits(this.piece.curX,this.ghostY+1)) { this.ghostY++; }
-    }
-
-    scoreLines(lines) {
-      this.score.lines+= lines;
-      document.getElementById("lines").innerHTML=this.score.lines;
-      this.level = Math.floor(this.score.lines / 20);
-      this.speed=this.speed0-this.speedK*(this.level-1);
     }
 
     pieceFits(X,Y) {
