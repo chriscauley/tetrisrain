@@ -47,7 +47,6 @@
 
       this.pallet = pallet;
       this.makeCanvas();
-      this.makeUI();
       this._draw = this._draw.bind(this);
       this.draw();
       riot.mount("scores",{board: this});
@@ -140,10 +139,6 @@
       }.bind(this));
     }
 
-    makeUI() {
-      riot.mount('level-editor');
-    }
-
     removeLines() {
       var _lines = [];
       for (var i=this.top;i<this.height;i++) {
@@ -215,6 +210,11 @@
       this.board = new Board(this);
       this.reset();
       this.loadGame(4474);
+      this.makeUI();
+    }
+
+    makeUI() {
+      riot.mount('level-editor',{game:this});
     }
 
     draw() {
@@ -313,15 +313,16 @@
       this.turns = [];
     }
 
-    reset() {
+    reset(id) {
+      this.id=id || "autosave";
       this.paused = 0;
       this.piece = undefined;
       this.makeVars();
       clearTimeout(this.timeout);
       this.piece_number = 0;
 
-      this.controller.reset();
-      this.board.reset();
+      this.controller.reset(id);
+      this.board.reset(id);
       this.getPiece();
       this.timeout=setTimeout(this.nextTurn,this.speed);
     }
@@ -343,29 +344,29 @@
         });
         if (this.board.skyline<=0 || !this.getPiece()) {
           this.gameOver();
-          return
+          return;
         }
       }
       clearTimeout(this.timeout);
       this.timeout=setTimeout(this.nextTurn,this.speed);
     }
 
-    saveGame(name) {
+    saveGame(id) {
       var j;
       for (var i =0;i<this.board.f.length;i++) {
-        for (j=0;j<this.board.f[i].length;j++) { if (this.board.f[i][j]>0) break }
-        if (this.board.f[i][j]) { break }
+        for (j=0;j<this.board.f[i].length;j++) { if (this.board.f[i][j]>0) break; }
+        if (this.board.f[i][j]) { break; }
       }
-      uR.storage.set(name,this.board.f.slice(i))
+      uR.storage.set(id,this.board.f.slice(i));
     }
 
-    loadGame(name,reset) {
+    loadGame(id,reset) {
       if (reset === undefined) { reset = true; }
-      reset && this.reset();
-      var _f = uR.storage.get(name);
+      reset && this.reset(id);
+      var _f = uR.storage.get("game/"+id);
       var new_skyline = this.board.height;
-      uR.forEach(_f,function(line,i) {
-        var line_no = 1+i+this.board.skyline-_f.length
+      uR.forEach(_f|| [],function(line,i) {
+        var line_no = 1+i+this.board.skyline-_f.length;
         this.board.f[line_no] = line;
         uR.forEach(this.board.f[line_no],function(c) {
           if (c && line_no<new_skyline) {
@@ -547,18 +548,50 @@
         }
       }
       this.reset();
+      this._autoplay = setInterval(function(that){
+        var i = 0;
+        return function() {
+          if (that._events && that._events[i].time < new Date().valueOf()-that.start) {
+            var event = new Event(that._events[i].type);
+            event.keyCode = that._events[i].keyCode;
+            document.dispatchEvent(event);
+            i++;
+            if (!that._events[i]) { clearInterval(that._autoplay) }
+          }
+        }
+      }(this),50);
+      this.loadEvents();
     }
+
+    saveEvents() {
+      uR.storage.set("events/"+this.game.id,this.events);
+    }
+
+    loadEvents() {
+      this._events = uR.storage.get("events/"+this.game.id);
+    }
+
+    record(e,type) {
+      if (e.isTrusted && this._autoplay) { this._autoplay = clearTimeout(this._autoplay); }
+      this.events.push({keyCode: e.keyCode,time:new Date().valueOf()-this.start,type:type});
+      this.saveEvents();
+    }
+
     reset() {
       this.active = {};
+      this.events = [];
+      this.start = new Date().valueOf();
       // the comment lines on this and onKeyDown and onKeyDown are because it's better to not use the
       // browsers natural key repeat rate. may need to be added back in at some point.
       //for (key in this.timer) { clearTimeout(this.timer[key]) }
       //this.timer = {};
     }
+
     onKeyDown(e) {
       var event = this._key_map[e.keyCode];
       if ((this.game.paused && event != 'p') || !event) { return; }
       this.active[event] = true;
+      this.record(e,'keydown');
       this.action_map[event](e);
       //setTimeOut(function() { this.onKeyDown(e) },initialDelay);
     }
@@ -568,6 +601,7 @@
       if ((this.game.paused && event != 'p') || !event) { return; }
       this.active[event] = false;
       this.action_up_map[event] && this.action_up_map[event](e);
+      this.record(e,'keyup');
       //clearTimeout(this.timer[e.keyCode]);
     }
   }
