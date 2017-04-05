@@ -7,15 +7,39 @@
     context.stroke();
   }
 
+  class Ease {
+    constructor(dt,x0,dx) {
+      var t0 = new Date().valueOf();
+      this.get = function() {
+        var t = new Date().valueOf();
+        if (t-t0 > dt) { return x0 + dx; }
+        return x0 + dx * (t - t0) /dt; // linear for now
+      }.bind(this);
+    }
+  }
+
   class CanvasObject {
     constructor() {
-
     }
     drawBox(x1,y1,x2,y2,color,s) {
       if (!color) { return; } // do clearRect instead?
       s = s || this.scale;
       this.ctx.fillStyle = color;
       this.ctx.fillRect(x1*s,y1*s,x2*s,y2*s);
+    }
+    newElement(tagName,attrs) {
+      var element = document.createElement(tagName);
+      if (attrs.parent) {
+        attrs.parent.appendChild(element);
+        delete attrs.parent;
+      }
+      for (var attr in attrs) { element[attr] = attrs[attr]; }
+      return element;
+    }
+    newCanvas(attrs) {
+      var canvas = this.newElement("canvas",attrs);
+      canvas.ctx = canvas.getContext("2d");
+      return canvas;
     }
   }
 
@@ -96,16 +120,20 @@
     }
 
     makeCanvas() {
-      this.canvas = document.createElement("canvas");
-      this.canvas.id = "board";
-      this.grid = document.createElement("img");
-      this.canvas.width = this.grid.width = this.width*this.scale + 1;
-      this.canvas.height = this.grid.height = this.height*this.scale + 1;
-      this.ctx = this.canvas.getContext("2d");
-      this.small_canvas = document.createElement("canvas");
-      this.small_canvas.width = 4*this.scale+1;
-      this.small_canvas.height = 2*this.scale+1;
-      this.small_ctx = this.small_canvas.getContext("2d");
+      var attrs = {
+        id: "board",
+        width: this.width*this.scale + 1,
+        height: this.height*this.scale + 1
+      }
+      this.canvas = this.newCanvas(attrs);
+      this.ctx = this.canvas.ctx;
+
+      attrs.id = "grid-img";
+      this.grid = this.newElement("img",attrs);
+      this.small_canvas = this.newCanvas({
+        width: 4*this.scale+1,
+        height: 2*this.scale+1,
+      });
 
       // make grid
       for (var i=0;i<=this.width;i++) {
@@ -121,21 +149,23 @@
       this.imgs = {}
       uR.forEach(this.game.pieces_xyr,function(p,n) {
         if (!p) { return }
-        var dx = p[0];
-        var dy = p[1];
-        this.ctx.clearRect(0,0,this.small_canvas.width,this.small_canvas.height)
+        var dx = p[0],
+            dy = p[1],
+            w = this.small_canvas.width,
+            h = this.small_canvas.height;
+        this.ctx.clearRect(0,0,w,h)
         uR.forEach(dx,function(_,i) {
           this.drawBox(2+dx[i],dy[i],1,1,this.pallet[n])
         }.bind(this));
         var img = document.createElement("img");
-        this.small_ctx.clearRect(0,0,this.small_canvas.width,this.small_canvas.height)
-        this.small_ctx.drawImage(
+        this.small_canvas.ctx.clearRect(0,0,w,h)
+        this.small_canvas.ctx.drawImage(
           this.canvas,
-          0,0,this.small_canvas.width,this.small_canvas.height,
-          0,0,this.small_canvas.width,this.small_canvas.height
+          0,0,w,h,
+          0,0,w,h
         )
         img.src = this.small_canvas.toDataURL();
-        this.imgs[n] = img
+        this.imgs[n] = img;
       }.bind(this));
     }
 
@@ -158,7 +188,7 @@
         _lines.push(i);
       }
 
-      //this.game.animateLines(_lines);
+      this.game.animateLines(_lines);
       uR.forEach(_lines,function(i) {
         //eliminate line by moving eveything down a line
         for (var k=i;k>=this.skyline;k--) {
@@ -203,18 +233,49 @@
     constructor() {
       super();
       this.makeVars();
-      this.makeCanvas();
+
+      var game_container = document.getElementById("game");
+      this.canvas = this.newCanvas({
+        id: "game_canvas",
+        width: game_container.scrollWidth,
+        height: game_container.scrollHeight,
+        parent: game_container,
+      });
+      this.ctx = this.canvas.ctx;
+
       this.nextTurn = this.nextTurn.bind(this);
       this.makeActions();
       this.controller = new Controller(this);
       this.board = new Board(this);
+      this.animation_canvas = this.newCanvas({
+        width: this.board.width*this.scale+1,
+        height: this.board.height*this.scale+1,
+        parent: game_container,
+      });
+
       this.reset();
-      this.loadGame(4474);
+      this.loadGame(3476);
       this.makeUI();
     }
 
     makeUI() {
       riot.mount('level-editor',{game:this});
+    }
+
+    animateLines(lines) {
+      if (!lines.length) { return; }
+      var ctx = this.animation_canvas.ctx;
+      ctx.clearRect(0,0,this.animation_canvas.width,this.animation_canvas.height)
+      uR.forEach(lines,function(line_no) {
+        ctx.drawImage(
+          this.board.canvas,
+          0,line_no*this.scale, // sx, sy,
+          this.board.canvas.width,this.scale, // sw, sh,
+          0,(line_no-this.board.top)*this.scale, // dx, dy,
+          this.board.canvas.width,this.scale // dw, dh
+        )
+      }.bind(this));
+      this.animation_opacity = new Ease(1500,1,-1);
     }
 
     draw() {
@@ -266,17 +327,13 @@
         )
         y_offset += img.height*s+this.scale;
       }
-      this.ctx.restore()
-    }
-
-    makeCanvas() {
-      this.canvas = document.createElement('canvas');
-      this.canvas.id = "game_canvas";
-      var game_container = document.getElementById("game");
-      this.canvas.height = game_container.scrollHeight;
-      this.canvas.width = game_container.scrollWidth;
-      this.ctx = this.canvas.getContext("2d");
-      game_container.appendChild(this.canvas);
+      var a_opacity = this.animation_opacity && this.animation_opacity.get();
+      if (a_opacity) {
+        this.ctx.globalAlpha = a_opacity;
+        this.ctx.drawImage(this.animation_canvas,0,0);
+        this.ctx.globalAlpha = 1;
+      }
+      this.ctx.restore();
     }
 
     makeVars() {
