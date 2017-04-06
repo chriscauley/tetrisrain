@@ -14,6 +14,12 @@ h3 {
   flex-grow: 1;
   position: relative;
 }
+#controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  td:first-child { text-align: center; }
+}
 
 .ui {
   bottom: 0;
@@ -40,8 +46,15 @@ h3 {
         display: block;
         padding-top: 75%;
       }
-      &:first-child { border-radius: 10px; border-width: 8px; width: 100%; }
-      &:last-child { border-radius: 0 0 10px 10px; border-bottom-width: 8px; }
+      &:last-child {
+        border-radius: 0 0 10px 10px;
+        border-bottom-width: 8px;
+      }
+      &:first-child {
+        border-radius: 10px !important; /* apparently last-child is stronger than first */
+        border-width: 8px;
+        width: 100%;
+      }
     }
   }
 }

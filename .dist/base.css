@@ -21,6 +21,14 @@ h3 i {
   flex-grow: 1;
   position: relative;
 }
+#controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+#controls td:first-child {
+  text-align: center;
+}
 .ui {
   bottom: 0;
   left: 0;
@@ -54,12 +62,13 @@ h3 i {
   display: block;
   padding-top: 75%;
 }
-.ui piece-stack .piece:first-child {
-  border-radius: 10px;
-  border-width: 8px;
-  width: 100%;
-}
 .ui piece-stack .piece:last-child {
   border-radius: 0 0 10px 10px;
   border-bottom-width: 8px;
+}
+.ui piece-stack .piece:first-child {
+  border-radius: 10px !important;
+  /* apparently last-child is stronger than first */
+  border-width: 8px;
+  width: 100%;
 }
