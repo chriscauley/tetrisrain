@@ -1,3 +1,4 @@
+* { box-sizing: border-box; }
 #main {
   align-items: stretch;
   display: flex;
@@ -6,13 +7,41 @@
 h3 {
   font-family: Helvetica;
   font-size: 18px;
+  i { color: #C09; }
 }
-h3 i { color: #C09; }
 #settings { width: 200px; }
-#debug,#game { flex-grow: 1; }
+#debug,#game {
+  flex-grow: 1;
+  position: relative;
+}
 
 .ui {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
   piece-stack {
-    .piece { border: 8px solid double }
+    top: 0;
+    position: absolute;
+    width: 100px;
+    &.next_piece { right: 0; }
+    &.piece_stash { left: 0; }
+    .piece {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 80% auto;
+      border: double gray;
+      border-width: 0 8px;
+      margin: 0 auto;
+      width: 80%;
+      &:before { /* make square */
+        content: "";
+        display: block;
+        padding-top: 75%;
+      }
+      &:first-child { border-radius: 10px; border-width: 8px; width: 100%; }
+      &:last-child { border-radius: 0 0 10px 10px; border-bottom-width: 8px; }
+    }
   }
 }

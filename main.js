@@ -27,13 +27,18 @@
       this.ctx.fillStyle = color;
       this.ctx.fillRect(x1*s,y1*s,x2*s,y2*s);
     }
-    newElement(tagName,attrs) {
+    newElement(tagName,attrs,options) {
       var element = document.createElement(tagName);
       if (attrs.parent) {
         attrs.parent.appendChild(element);
         delete attrs.parent;
       }
+
+      element.innerHTML = attrs.innerHTML || "";
+      delete attrs.innerHTML;
+
       for (var attr in attrs) { element[attr] = attrs[attr]; }
+      if (options) { riot.mount(element,options); }
       return element;
     }
     newCanvas(attrs) {
@@ -76,6 +81,7 @@
 
     reset() {
       this.skyline=this.height-1;
+      this.top = 0;
       this.f = new Array();
       for (var i=0;i<this.height;i++) {
         this.f[i]=new Array();
@@ -109,14 +115,14 @@
           this.drawBox(j,i,1,1,color);
         }
       }
-      this.game.draw();
     }
 
     makeCanvas() {
       var attrs = {
         id: "board",
         width: this.width*this.scale + 1,
-        height: this.height*this.scale + 1
+        height: this.height*this.scale + 1,
+        parent: document.getElementById("debug"),
       }
       this.canvas = this.newCanvas(attrs);
       this.ctx = this.canvas.ctx;
@@ -140,6 +146,7 @@
 
       // make pieces
       this.imgs = {}
+      var style = "";
       uR.forEach(this.game.pieces_xyr,function(p,n) {
         if (!p) { return }
         var dx = p[0],
@@ -159,20 +166,23 @@
         )
         img.src = this.small_canvas.toDataURL();
         this.imgs[n] = img;
+        style += `piece-stack .p${ n } { background-image: url(${ img.src }); }\n`
       }.bind(this));
+      this.newElement("style",{parent: document.head, innerHTML: style, type: "text/css"});
     }
 
     removeLines() {
       var _lines = [];
+      var deep_line = this.top+this.game.config.visible_height;
       for (var i=this.top;i<this.height;i++) {
-        if (this.f[i][j] == this.DEEP && i>this.deep_line+_lines.length) { continue }
+        if (this.f[i][j] == this.DEEP && i>deep_line+_lines.length) { continue }
         var gapFound=0;
         for (var j=0;j<this.width;j++) {
           if (this.f[i][j]==0) { gapFound=1; break; }
         }
         if (gapFound) continue; // gapFound in previous loop
 
-        if (i>=this.deep_line+_lines.length) { // make row DEEP
+        if (i>=deep_line+_lines.length) { // make row DEEP
           for (var j=0;j<this.width;j++) { this.f[i][j]=this.DEEP; }
           continue;
         }
@@ -218,7 +228,6 @@
           this.f[Y][X]=0;
         }
       }
-      this.draw();
     }
   }
 
@@ -226,13 +235,14 @@
     constructor() {
       super();
       this.makeVars();
+      this.container = document.getElementById("game");
+      this.makeUI();
 
-      var game_container = document.getElementById("game");
       this.canvas = this.newCanvas({
         id: "game_canvas",
-        width: game_container.scrollWidth,
-        height: game_container.scrollHeight,
-        parent: game_container,
+        width: this.container.scrollWidth,
+        height: this.container.scrollHeight,
+        parent: this.container,
       });
       this.ctx = this.canvas.ctx;
 
@@ -243,23 +253,36 @@
       this.animation_canvas = this.newCanvas({
         width: this.board.width*this.scale+1,
         height: this.board.height*this.scale+1,
-        parent: game_container,
       });
 
       this.reset();
       this.loadGame(3476);
-      this.makeUI();
       this.board.draw();
+      this.tick = this.tick.bind(this);
+      this.tick();
     }
 
     makeUI() {
+      this.tags = {};
+      var container = this.newElement("div",{className: "ui",parent: this.container });
       riot.mount('level-editor',{game:this});
+      this.newElement(
+        "piece-stack",
+        { parent: container },
+        { name: "next_piece", game: this }
+      );
+      this.newElement(
+        "piece-stack",
+        { parent: container },
+        { name: "piece_stash", game: this }
+      );
     }
 
     animateLines(lines) {
       if (!lines.length) { return; }
       var ctx = this.animation_canvas.ctx;
       ctx.clearRect(0,0,this.animation_canvas.width,this.animation_canvas.height)
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
       uR.forEach(lines,function(line_no) {
         ctx.drawImage(
           this.board.canvas,
@@ -268,15 +291,25 @@
           0,(line_no-this.board.top)*this.scale, // dx, dy,
           this.board.canvas.width,this.scale // dw, dh
         )
+        ctx.fillRect(
+          0,(line_no-this.board.top)*this.scale, // dx, dy,
+          this.board.canvas.width,this.scale // dw, dh
+        )
       }.bind(this));
-      this.animation_opacity = new Ease(1500,1,-1);
+      this.animation_opacity = new Ease(250,1,-1);
+    }
+
+    tick() {
+      cancelAnimationFrame(this.animation_frame);
+      this.draw();
+      this.animation_frame = requestAnimationFrame(this.tick);
     }
 
     draw() {
       this.ctx.save();
       this.ctx.translate(this.x_margin,this.y_margin);
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
-      var top = (this.board.skyline-this.config.visible_height-this.config.b_level)*this.board.scale;
+      var top = (this.board.skyline-this.config.visible_height+this.config.b_level)*this.board.scale;
       top = Math.min((this.board.height-this.config.visible_height)*this.board.scale,top)
       top = Math.max(top,0);
       this.ctx.drawImage(
@@ -288,7 +321,6 @@
       )
       this.ctx.drawImage(this.board.grid,0,0);
       this.board.top = top/this.scale;
-      this.board.deep_line = this.board.top+this.config.visible_height;
       this.drawBox(
         0, this.config.visible_height*this.board.scale,
         this.board.canvas.width,this.canvas.height,
@@ -303,24 +335,24 @@
       )
       var s = 0.75;
       var y_offset = 0;
-      var img = this.board.imgs[this.pieces[this.piece_number]];
-      var x_offset = this.scale;
-      this.ctx.drawImage(
-        img,
-        this.board.canvas.width+x_offset, y_offset,
-        img.width,img.height
-      )
-      y_offset += img.height+this.scale;
-      for (var i=0;i<this.config.n_preview;i++) {
-        img = this.board.imgs[this.pieces[this.piece_number+i+1]];
-        var x_offset = this.scale+img.width*(1-s)/2;
-        this.ctx.drawImage(
-          img,
-          this.board.canvas.width+x_offset, y_offset,
-          img.width*s,img.height*s
-        )
-        y_offset += img.height*s+this.scale;
-      }
+      // var img = this.board.imgs[this.pieces[this.piece_number]];
+      // var x_offset = this.scale;
+      // this.ctx.drawImage(
+      //   img,
+      //   this.board.canvas.width+x_offset, y_offset,
+      //   img.width,img.height
+      // )
+      // y_offset += img.height+this.scale;
+      // for (var i=0;i<this.config.n_preview;i++) {
+      //   img = this.board.imgs[this.pieces[this.piece_number+i+1]];
+      //   var x_offset = this.scale+img.width*(1-s)/2;
+      //   this.ctx.drawImage(
+      //     img,
+      //     this.board.canvas.width+x_offset, y_offset,
+      //     img.width*s,img.height*s
+      //   )
+      //   y_offset += img.height*s+this.scale;
+      // }
       var a_opacity = this.animation_opacity && this.animation_opacity.get();
 
       if (a_opacity) {
@@ -334,7 +366,7 @@
     makeVars() {
       this.scale = 20,
       this.config = {
-        b_level: -8,
+        b_level: 10,
         game_width: 10,
         board_width: 10,
         visible_height: 20,
@@ -344,7 +376,6 @@
       this.y_margin = 20;
       this.pieces = [2,3,2,3,2,3,2,3,7,7,7,7,6,6,6,6];
       this.pieces = [6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];
-      this.nextPiece = 0;
       this.level=1;
       this.speed = this.speed0=700;
       this.speedK=60;
@@ -446,19 +477,26 @@
       }
     }
 
-    getPiece(N) {
-      if (!N) {
-        while (this.pieces.length <= this.piece_number+this.config.n_preview+1) {
-          this.pieces.push(Math.floor(this.n_types*Math.random()+1));
-        }
-        N = this.pieces[this.piece_number];
-        this.piece_number++;
+    updatePieceList() {
+      while (this.pieces.length <= this.piece_number+this.config.n_preview+1) {
+        this.pieces.push(Math.floor(this.n_types*Math.random()+1));
       }
-      //N = ((this.piece||{n: 0}).n)%this.n_types+1; //uncomment this line to test pieces in order
+      this.piece_number++;
+      var visible = this.pieces.slice(this.pieces.length-this.config.n_preview),
+          empty = this.config.n_preview - visible.length;
+      this.tags.next_piece && this.tags.next_piece.setPieces(visible,empty);
+      return this.pieces[this.piece_number];
+    }
+
+    getPiece(N) {
+      N = N || this.updatePieceList();
+
+      var curY = Math.max(this.board.top - this.config.b_level,0);
+      curY = Math.max(curY,this.board.top);
       this.piece = {
         n: N,
         curX: 5,
-        curY: Math.max(this.board.skyline + this.config.b_level,0),
+        curY: curY,
         dx: this.pieces_xyr[N][0].slice(),
         dy: this.pieces_xyr[N][1].slice(),
         dx_: this.pieces_xyr[N][0].slice(),
@@ -466,6 +504,7 @@
         n_rotations: 0,
         allowed_rotations: this.pieces_xyr[N][2],
       };
+
       if (this.pieceFits(this.piece.curX,this.piece.curY)) { this.board.drawPiece(); return true; }
     }
 
@@ -488,6 +527,7 @@
         },
 
         down: function(e) {
+          e && e.preventDefault();
           var p = this.piece;
           for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
           if (this.pieceFits(p.curX,p.curY+1)) {
@@ -540,6 +580,7 @@
           this.getPiece(old_piece);
           this.ctx.clearRect(0,this.y_margin,this.x_margin,this.x_margin);
           this.ctx.drawImage(this.board.imgs[this.swapped_piece],0,this.y_margin);
+          this.board.drawPiece();
         }
       }
       for (var k in this.act) { this.act[k] = this.act[k].bind(this); }

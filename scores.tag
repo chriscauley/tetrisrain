@@ -14,3 +14,20 @@
     this.update()
   }
 </scores>
+
+<piece-stack>
+  <div class="piece p{ n }" each={ n in pieces }></div>
+  <div class="piece empty" each={ empty_pieces }></div>
+
+  this.on("mount",function() {
+    this.opts.game.tags[this.opts.name] = this;
+    this.root.classList.add(this.opts.name);
+  })
+
+  setPieces(pieces,empty) {
+    this.pieces = pieces;
+    console.log(this.pieces);
+    this.empty_pieces = new Array(empty);
+    this.update();
+  }
+</piece-stack>
