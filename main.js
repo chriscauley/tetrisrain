@@ -70,13 +70,33 @@
         "#CC0099", // o
         "#000000", // deep
       ];
+      var pallet = [
+        undefined,
+        "#F8C11A",
+        "#8B9915",
+        "#E56306",
+        "#8B9915",
+        "#E56306",
+        "#741B10",
+        "#571E4A",
+        "#222",
+      ];
+      var pallet2 = [
+        "#ffe576",
+        "#54d8ff",
+        "#fd7d7d",
+        "#54d8ff",
+        "#fd7d7d",
+        "#9a9a9a",
+        "#e2eedd",
+        "#222",
+      ]
       pallet.border = "#cccccc";
       pallet.bg = "white";
       pallet.fg = "#333";
 
       this.pallet = pallet;
       this.makeCanvas();
-      riot.mount("scores",{board: this});
     }
 
     reset() {
@@ -87,16 +107,22 @@
         this.f[i]=new Array();
         for (var j=0;j<20;j++) { this.f[i][j]=0; }
       }
-      this.scores && this.scores.mount();
     }
 
     draw() {
       // ghost stuff may not go here
       this.game.getGhost();
 
-      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
-      var color;
+      this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+      this.gradient.addColorStop(0, 'red');
+      this.gradient.addColorStop(2/this.height, 'red');
+      this.gradient.addColorStop(2/this.height, '#faa');
+      this.gradient.addColorStop(0.5, '#fff');
+      this.gradient.addColorStop(1, '#fff');
+      this.ctx.fillStyle = this.gradient;
+      this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
 
+      var color;
       // draw ghost
       this.ctx.globalAlpha = 0.5;
       var p = this.game.piece;
@@ -122,7 +148,7 @@
         id: "board",
         width: this.width*this.scale + 1,
         height: this.height*this.scale + 1,
-        parent: document.getElementById("debug"),
+        //parent: document.getElementById("debug"),
       }
       this.canvas = this.newCanvas(attrs);
       this.ctx = this.canvas.ctx;
@@ -173,7 +199,7 @@
 
     removeLines() {
       var _lines = [];
-      var deep_line = this.top+this.game.config.visible_height;
+      var deep_line = this.top+this.game.visible_height;
       for (var i=this.top;i<this.height;i++) {
         if (this.f[i][j] == this.DEEP && i>deep_line+_lines.length) { continue }
         var gapFound=0;
@@ -204,8 +230,8 @@
 
     scoreLine(i) {
       // maybe just move this logit to the scores tag?
-      if (this.f[i][0] == this.DEEP) { this.scores.add("deep") }
-      this.scores.add("lines");
+      if (this.f[i][0] == this.DEEP) { this.game.scores.add("deep") }
+      this.game.scores.add("lines");
     }
     drawPiece() {
       var p = this.game.piece;
@@ -234,6 +260,7 @@
   class Game extends CanvasObject {
     constructor() {
       super();
+      this.DEBUG = ~window.location.search.indexOf("debug");
       this.makeVars();
       this.container = document.getElementById("game");
       this.makeUI();
@@ -256,16 +283,21 @@
       });
 
       this.reset();
-      this.loadGame(3476);
       this.board.draw();
       this.tick = this.tick.bind(this);
       this.tick();
+      this.DEBUG && this.loadGame(3476);
     }
 
     makeUI() {
       this.tags = {};
       var container = this.newElement("div",{className: "ui",parent: this.container });
-      riot.mount('level-editor',{game:this});
+      this.newElement("scores",{parent: document.getElementById("settings")},{game: this});
+      this.newElement(
+        'level-editor',
+        {parent: document.getElementById("settings")},
+        {game:this}
+      );
       this.newElement(
         "piece-stack",
         { parent: container },
@@ -306,12 +338,15 @@
     }
 
     draw() {
+      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       this.ctx.save();
       this.ctx.translate(this.x_margin,this.y_margin);
-      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
-      var top = (this.board.skyline-this.config.visible_height+this.config.b_level)*this.board.scale;
-      top = Math.min((this.board.height-this.config.visible_height)*this.board.scale,top)
-      top = Math.max(top,0);
+
+      var top = (this.board.skyline-this.visible_height+this.config.b_level)*this.board.scale;
+      top = Math.min((this.board.height-this.visible_height)*this.board.scale,top)
+      top = Math.max(top,this.scale);
+      this.board.top = top/this.scale;
+
       this.ctx.drawImage(
         this.board.canvas,
         0,top, // sx, sy,
@@ -319,42 +354,34 @@
         0,0, // dx, dy,
         this.canvas.width,this.canvas.height // dWidth, dHeight
       )
-      this.ctx.drawImage(this.board.grid,0,0);
-      this.board.top = top/this.scale;
+
+      // draw grid and floor
+      this.floor = this.board.height-top/this.scale;
+      var grid_rows = this.floor;
+      this.ctx.drawImage(
+        this.board.grid,
+        0,0,
+        this.board.grid.width,grid_rows*this.scale,
+        0,0,
+        this.board.grid.width,grid_rows*this.scale
+      );
       this.drawBox(
-        0, this.config.visible_height*this.board.scale,
+        -0.5, this.floor,
+        this.board.canvas.width/this.scale+1,4/this.scale,
+        "black"
+      );
+
+      // draw water
+      this.drawBox(
+        0, this.visible_height*this.board.scale,
         this.board.canvas.width,this.canvas.height,
-        "rgba(88,0,0,0.25)",
+        "rgba(0,0,255,0.25)",
         1 // scale of 1
       )
-      this.floor = this.board.height-top/this.scale;
-      this.drawBox(
-        0, this.floor,
-        this.board.canvas.width/this.scale,2,
-        "brown"
-      )
-      var s = 0.75;
-      var y_offset = 0;
-      // var img = this.board.imgs[this.pieces[this.piece_number]];
-      // var x_offset = this.scale;
-      // this.ctx.drawImage(
-      //   img,
-      //   this.board.canvas.width+x_offset, y_offset,
-      //   img.width,img.height
-      // )
-      // y_offset += img.height+this.scale;
-      // for (var i=0;i<this.config.n_preview;i++) {
-      //   img = this.board.imgs[this.pieces[this.piece_number+i+1]];
-      //   var x_offset = this.scale+img.width*(1-s)/2;
-      //   this.ctx.drawImage(
-      //     img,
-      //     this.board.canvas.width+x_offset, y_offset,
-      //     img.width*s,img.height*s
-      //   )
-      //   y_offset += img.height*s+this.scale;
-      // }
-      var a_opacity = this.animation_opacity && this.animation_opacity.get();
 
+      // animation
+      var y_offset = 0;
+      var a_opacity = this.animation_opacity && this.animation_opacity.get();
       if (a_opacity) {
         this.ctx.globalAlpha = a_opacity;
         this.ctx.drawImage(this.animation_canvas,0,0);
@@ -369,13 +396,13 @@
         b_level: 10,
         game_width: 10,
         board_width: 10,
-        visible_height: 20,
         n_preview: 5,
       }
+      this.visible_height = 20;
       this.x_margin = 100;
       this.y_margin = 20;
       this.pieces = [2,3,2,3,2,3,2,3,7,7,7,7,6,6,6,6];
-      this.pieces = [6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];
+      this.pieces = [6,6,6,6]; //,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];
       this.level=1;
       this.speed = this.speed0=700;
       this.speedK=60;
@@ -408,6 +435,7 @@
       this.board.reset(id);
       this.getPiece();
       this.timeout=setTimeout(this.nextTurn,this.speed);
+      this.scores && this.scores.mount();
     }
 
     pause() {
@@ -578,8 +606,7 @@
           this.swapped_piece = this.piece.n;
           this.piece = undefined;
           this.getPiece(old_piece);
-          this.ctx.clearRect(0,this.y_margin,this.x_margin,this.x_margin);
-          this.ctx.drawImage(this.board.imgs[this.swapped_piece],0,this.y_margin);
+          this.tags.piece_stash.setPieces([this.swapped_piece],0);
           this.board.drawPiece();
         }
       }
@@ -653,7 +680,7 @@
           }
         }
       }(this),50);
-      this.loadEvents();
+      if (this.game.DEBUG) { this.loadEvents(); }
     }
 
     saveEvents() {
