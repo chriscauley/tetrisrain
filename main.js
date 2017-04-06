@@ -192,7 +192,7 @@
         )
         img.src = this.small_canvas.toDataURL();
         this.imgs[n] = img;
-        style += `piece-stack .p${ n } { background-image: url(${ img.src }); }\n`
+        style += `piece-stack .p${ n }:before { background-image: url(${ img.src }); }\n`
       }.bind(this));
       this.newElement("style",{parent: document.head, innerHTML: style, type: "text/css"});
     }
@@ -231,7 +231,7 @@
     scoreLine(i) {
       // maybe just move this logit to the scores tag?
       if (this.f[i][0] == this.DEEP) { this.game.scores.add("deep") }
-      this.game.scores.add("lines");
+      else { this.game.scores.add("lines"); }
     }
     drawPiece() {
       var p = this.game.piece;
@@ -306,7 +306,7 @@
       this.newElement(
         "piece-stack",
         { parent: container },
-        { name: "piece_stash", game: this }
+        { name: "piece_stash", game: this, after: "STASH" }
       );
     }
 
@@ -436,6 +436,7 @@
       this.getPiece();
       this.timeout=setTimeout(this.nextTurn,this.speed);
       this.scores && this.scores.mount();
+      this.updatePieceList();
     }
 
     pause() {

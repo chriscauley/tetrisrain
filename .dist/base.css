@@ -42,15 +42,12 @@ h3 i {
   width: 100px;
 }
 .ui piece-stack.next_piece {
-  right: 0;
+  left: 302px;
 }
 .ui piece-stack.piece_stash {
   left: 0;
 }
 .ui piece-stack .piece {
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 80% auto;
   border: double gray;
   border-width: 0 8px;
   margin: 0 auto;
@@ -58,6 +55,9 @@ h3 i {
 }
 .ui piece-stack .piece:before {
   /* make square */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 80% auto;
   content: "";
   display: block;
   padding-top: 75%;
@@ -71,4 +71,17 @@ h3 i {
   /* apparently last-child is stronger than first */
   border-width: 8px;
   width: 100%;
+}
+.ui piece-stack .piece.p1:before,
+.ui piece-stack .piece.p2:before,
+.ui piece-stack .piece.p3:before,
+.ui piece-stack .piece.p4:before,
+.ui piece-stack .piece.p5:before {
+  background-position-x: 0;
+}
+.ui piece-stack .piece.p6:before {
+  background-position-y: 75%;
+}
+.ui piece-stack .piece.p7:before {
+  background-position-x: -40%;
 }

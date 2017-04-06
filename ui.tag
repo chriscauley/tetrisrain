@@ -20,11 +20,14 @@
 <piece-stack>
   <div class="piece p{ n }" each={ n in pieces }></div>
   <div class="piece empty" each={ empty_pieces }></div>
+  <center if={ opts.after }>{ opts.after }</center>
 
   this.on("mount",function() {
     this.opts.game.tags[this.opts.name] = this;
     this.root.classList.add(this.opts.name);
-    this.empty_pieces = [undefined];
+    this.pieces = [undefined];
+    this.opts.game.updatePieceList();
+    this.update();
   })
 
   setPieces(pieces,empty) {
