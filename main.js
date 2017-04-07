@@ -82,13 +82,14 @@
         "#222",
       ];
       var pallet2 = [
-        "#ffe576",
-        "#54d8ff",
-        "#fd7d7d",
-        "#54d8ff",
-        "#fd7d7d",
-        "#9a9a9a",
-        "#e2eedd",
+        undefined,
+        "#FF726F",
+        "#8259e8",
+        "#6ffcff",
+        "#8259e8",
+        "#6ffcff",
+        "#92e859",
+        "#ffd36f",
         "#222",
       ]
       pallet.border = "#cccccc";
