@@ -75,20 +75,10 @@
     }
 
     draw() {
+      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       // ghost stuff may not go here
-      this.game.getGhost();
-
-      this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-      this.gradient.addColorStop(0, 'red');
-      this.gradient.addColorStop(2/this.height, 'red');
-      this.gradient.addColorStop(2/this.height, '#faa');
-      this.gradient.addColorStop(0.5, '#fff');
-      this.gradient.addColorStop(1, '#fff');
-      this.ctx.fillStyle = this.gradient;
-      this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
-
       var color;
-      // draw ghost
+      this.game.getGhost();
       this.ctx.globalAlpha = 0.5;
       var p = this.game.piece;
       var color = this.pallet[p.n];
@@ -121,10 +111,16 @@
       attrs.id = "grid-img";
       this.grid = this.newElement("img",attrs);
       document.getElementById("debug").appendChild(this.grid);
-      this.small_canvas = this.newCanvas({
-        width: this.game.n*this.scale+1,
-        height: this.game.n*this.scale+1,
-      });
+
+      // gradient on grid
+      this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+      this.gradient.addColorStop(0, 'red');
+      this.gradient.addColorStop(2/this.height, 'red');
+      this.gradient.addColorStop(2/this.height, '#faa');
+      this.gradient.addColorStop(0.5, '#fff');
+      this.gradient.addColorStop(1, '#fff');
+      this.ctx.fillStyle = this.gradient;
+      this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
 
       // make grid
       for (var i=0;i<=this.width;i++) {
@@ -137,6 +133,10 @@
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
 
       // make pieces
+      this.small_canvas = this.newCanvas({
+        width: this.game.n*this.scale+1,
+        height: this.game.n*this.scale+1,
+      });
       this.imgs = {}
       var style = "";
       uR.forEach(this.game.pieces_xyr,function(p,n) {
@@ -318,14 +318,6 @@
       top = Math.max(top,this.scale);
       this.board.top = top/this.scale;
 
-      this.ctx.drawImage(
-        this.board.canvas,
-        0,top, // sx, sy,
-        this.canvas.width,this.canvas.height, // sWidth, sHeight,
-        0,0, // dx, dy,
-        this.canvas.width,this.canvas.height // dWidth, dHeight
-      )
-
       // draw grid and floor
       this.floor = this.board.height-top/this.scale;
       var grid_rows = this.floor;
@@ -341,6 +333,15 @@
         this.board.canvas.width/this.scale+1,4/this.scale,
         "black"
       );
+
+      // draw board
+      this.ctx.drawImage(
+        this.board.canvas,
+        0,top, // sx, sy,
+        this.canvas.width,this.canvas.height, // sWidth, sHeight,
+        0,0, // dx, dy,
+        this.canvas.width,this.canvas.height // dWidth, dHeight
+      )
 
       // draw water
       this.drawBox(
