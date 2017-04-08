@@ -76,7 +76,7 @@
 
     draw() {
       // ghost stuff may not go here
-      this.game.board && this.game.getGhost(); //board does not exist while drawing images
+      this.game.getGhost();
 
       this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
       this.gradient.addColorStop(0, 'red');
@@ -93,7 +93,7 @@
       var p = this.game.piece;
       var color = this.pallet[p.n];
       uR.forEach(p.dx,function(_,j) {
-        this.drawBox(p.curX+p.dx[j],this.game.ghostY+p.dy[j],1,1,color);
+        this.drawBox(p.x+p.dx[j],this.game.ghostY+p.dy[j],1,1,color);
       }.bind(this));
       this.ctx.globalAlpha = 1;
 
@@ -141,7 +141,6 @@
       var style = "";
       uR.forEach(this.game.pieces_xyr,function(p,n) {
         if (!p) { return }
-        this.game.getPiece(n);
         var w = this.small_canvas.width,
             h = this.small_canvas.height;
         this.imgs[n] = [];
@@ -208,20 +207,20 @@
     drawPiece() {
       var p = this.game.piece;
       for (var k=0;k<this.game.n;k++) {
-        var X=p.curX+p.dx[k];
-        var Y=p.curY+p.dy[k];
+        var X=p.x+p.dx[k];
+        var Y=p.y+p.dy[k];
         if (0<=Y && Y<this.height && 0<=X && X<this.width && this.f[Y][X]!=-p.n) {
           this.f[Y][X]=-p.n;
         }
       }
-      this.game.board && this.draw(); //board does not exist while drawing pieces
+      this.draw();
     }
 
     erasePiece() {
       var p = this.game.piece;
       for (var k=0;k<this.game.n;k++) {
-        var X=p.curX+p.dx[k];
-        var Y=p.curY+p.dy[k];
+        var X=p.x+p.dx[k];
+        var Y=p.y+p.dy[k];
         if (0<=Y && Y<this.height && 0<=X && X<this.width) {
           this.f[Y][X]=0;
         }
@@ -447,8 +446,8 @@
         this.board.removeLines();
         this.turns.push({
           n: this.piece.n,
-          x: this.piece.curX,
-          y: this.piece.curY,
+          x: this.piece.x,
+          y: this.piece.y,
         });
         if (this.board.skyline<=0 || !this.getPiece()) {
           this.gameOver();
@@ -490,8 +489,8 @@
       // this should all be cleaned up a bit.
       var p = this.piece;
       for (var k=0;k<this.n;k++) {
-        var X=p.curX+p.dx[k];
-        var Y=p.curY+p.dy[k];
+        var X=p.x+p.dx[k];
+        var Y=p.y+p.dy[k];
         if (0<=Y && Y<this.board.height && 0<=X && X<this.board.width) {
           this.board.f[Y][X] = p.n;
           if (Y<this.board.skyline) {
@@ -515,22 +514,20 @@
 
     getPiece(N) {
       N = N || this.updatePieceList();
-      var board_top = (this.board && this.board.top) || 0; // board doesn't exist while drawing images
 
-      var curY = Math.max(board_top - this.config.b_level,0);
-      curY = Math.max(curY,board_top);
+      var y = Math.max(this.board.top - this.config.b_level,0);
+      y = Math.max(y,this.board.top);
       var r = 0;
       this.piece = {
         n: N,
-        curX: 5,
-        curY: curY,
+        x: 5,
+        y: y,
         r: r,
         dx: this.pieces_xyr[N][r][0],
         dy: this.pieces_xyr[N][r][1],
       };
 
-      // board doesn't exist while drawing images
-      if (this.board && this.pieceFits(this.piece.curX,this.piece.curY)) { this.board.drawPiece(); return true; }
+      if (this.pieceFits(this.piece.x,this.piece.y)) { this.board.drawPiece(); return true; }
     }
 
     gameOver() {
@@ -541,19 +538,19 @@
       this.act = {
         left: function() {
           var p = this.piece;
-          if (this.pieceFits(p.curX-1,p.curY)) {this.board.erasePiece(); p.curX--; this.board.drawPiece();}
+          if (this.pieceFits(p.x-1,p.y)) {this.board.erasePiece(); p.x--; this.board.drawPiece();}
         },
 
         right: function() {
           var p = this.piece;
-          if (this.pieceFits(p.curX+1,p.curY)) {this.board.erasePiece(); p.curX++; this.board.drawPiece();}
+          if (this.pieceFits(p.x+1,p.y)) {this.board.erasePiece(); p.x++; this.board.drawPiece();}
         },
 
         down: function(e) {
           e && e.preventDefault();
           var p = this.piece;
-          if (this.pieceFits(p.curX,p.curY+1)) {
-            this.board.erasePiece(); p.curY++; this.board.drawPiece(); return 1;
+          if (this.pieceFits(p.x,p.y+1)) {
+            this.board.erasePiece(); p.y++; this.board.drawPiece(); return 1;
           }
           return 0;
         },
@@ -564,7 +561,7 @@
           if (this.pieces_xyr[p.n].length == 1) { return } // o don't rotate!
           var r = (p.r + 1)%this.pieces_xyr[p.n].length;
 
-          if ( this.pieceFits(p.curX,p.curY,r)) {
+          if ( this.pieceFits(p.x,p.y,r)) {
             this.board.erasePiece();
             p.r = r;
             p.dx = this.pieces_xyr[p.n][r][0];
@@ -576,9 +573,9 @@
         drop: function(e) {
           e.preventDefault();
           var p = this.piece;
-          if (!this.pieceFits(p.curX,p.curY+1)) return;
+          if (!this.pieceFits(p.x,p.y+1)) return;
           this.board.erasePiece();
-          p.curY = this.ghostY;
+          p.y = this.ghostY;
           this.board.drawPiece();
           clearTimeout(this.timeout);
           this.timeout=setTimeout(this.nextTurn,this.speed);
@@ -604,8 +601,8 @@
 
     getGhost() {
       if (! this.piece) { return; }
-      this.ghostY = this.piece.curY;
-      while (this.pieceFits(this.piece.curX,this.ghostY+1)) { this.ghostY++; }
+      this.ghostY = this.piece.y;
+      while (this.pieceFits(this.piece.x,this.ghostY+1)) { this.ghostY++; }
     }
 
     pieceFits(X,Y,r) {
@@ -613,12 +610,12 @@
       var dx = this.pieces_xyr[this.piece.n][r][0];
       var dy = this.pieces_xyr[this.piece.n][r][1];
       for (var k=0;k<this.n;k++) {
-        var theX=X+dx[k];
-        var theY=Y+dy[k];
+        var _x = X+dx[k];
+        var _y = Y+dy[k];
         if (
-          theX<0 || theX>=this.board.width || // square is contained in X
-          theY>=this.board.height || // square is above bottom of board
-          (theY>-1 && this.board.f[theY][theX]>0) // square is not occupied, if square is not above board
+          _x<0 || _x>=this.board.width || // square is contained in X
+          _y>=this.board.height || // square is above bottom of board
+          (_y>-1 && this.board.f[_y][_x]>0) // square is not occupied, if square is not above board
         ) return 0;
       }
       return 1;
