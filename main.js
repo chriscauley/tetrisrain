@@ -323,7 +323,7 @@
       var grid_rows = this.floor;
       this.ctx.drawImage(
         this.board.grid,
-        0,0,
+        0,top,
         this.board.grid.width,grid_rows*this.scale,
         0,0,
         this.board.grid.width,grid_rows*this.scale
