@@ -55,6 +55,7 @@
       this.game = game;
       this.scale = this.game.scale;
       this.height = 30;
+      this.reset();
       this.width = game.config.board_width;
       this.skyline = this.height-1;
       this.DEEP = 8;
@@ -75,7 +76,7 @@
 
     draw() {
       // ghost stuff may not go here
-      this.game.getGhost();
+      this.game.board && this.game.getGhost(); //board does not exist while drawing images
 
       this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
       this.gradient.addColorStop(0, 'red');
@@ -112,16 +113,17 @@
         id: "board",
         width: this.width*this.scale + 1,
         height: this.height*this.scale + 1,
-        //parent: document.getElementById("debug"),
+        parent: document.getElementById("debug"),
       }
       this.canvas = this.newCanvas(attrs);
       this.ctx = this.canvas.ctx;
 
       attrs.id = "grid-img";
       this.grid = this.newElement("img",attrs);
+      document.getElementById("debug").appendChild(this.grid);
       this.small_canvas = this.newCanvas({
-        width: 4*this.scale+1,
-        height: 2*this.scale+1,
+        width: this.game.n*this.scale+1,
+        height: this.game.n*this.scale+1,
       });
 
       // make grid
@@ -139,24 +141,30 @@
       var style = "";
       uR.forEach(this.game.pieces_xyr,function(p,n) {
         if (!p) { return }
-        var dx = p[0],
-            dy = p[1],
-            w = this.small_canvas.width,
+        this.game.getPiece(n);
+        var w = this.small_canvas.width,
             h = this.small_canvas.height;
-        this.ctx.clearRect(0,0,w,h)
-        uR.forEach(dx,function(_,i) {
-          this.drawBox(2+dx[i],dy[i],1,1,this.pallet[n])
-        }.bind(this));
-        var img = document.createElement("img");
-        this.small_canvas.ctx.clearRect(0,0,w,h)
-        this.small_canvas.ctx.drawImage(
-          this.canvas,
-          0,0,w,h,
-          0,0,w,h
-        )
-        img.src = this.small_canvas.toDataURL();
-        this.imgs[n] = img;
-        style += `piece-stack .p${ n }:before { background-image: url(${ img.src }); }\n`
+        this.imgs[n] = [];
+
+        for (var r=0;r<p.length;r++) { // cycle through rotations
+          this.small_canvas.ctx.clearRect(0,0,w,h);
+          for (var i=0;i<this.game.n;i++) { // draw 4 boxes
+            this.small_canvas.ctx.fillStyle = this.pallet[n];
+            this.small_canvas.ctx.fillRect(
+              (2+p[r][0][i])*this.scale,(1+p[r][1][i])*this.scale,
+              this.scale,this.scale
+            )
+          }
+
+          var img = document.createElement("img");
+          img.src = this.small_canvas.toDataURL();
+          document.querySelector("#debug").appendChild(img);
+          this.imgs[n].push(img);
+          if (r == 0) { // style tag for showing pieces in html elements (piece-list)
+            style += `piece-stack .p${ n }:before { background-image: url(${ img.src }); }\n`
+          }
+
+        }
       }.bind(this));
       this.newElement("style",{parent: document.head, innerHTML: style, type: "text/css"});
     }
@@ -206,7 +214,7 @@
           this.f[Y][X]=-p.n;
         }
       }
-      this.draw();
+      this.game.board && this.draw(); //board does not exist while drawing pieces
     }
 
     erasePiece() {
@@ -375,13 +383,37 @@
       this.paused=0;
       this.pieces_xyr = [
         undefined, // empty
-        [[0, 1,-1, 0],[0, 0, 0, 1],4], // t
-        [[0, 1,-1,-1],[0, 0, 0, 1],4], // q
-        [[0, 1,-1, 1],[0, 0, 0, 1],4], // p
-        [[0,-1, 1, 0],[0, 0, 1, 1],2], // z
-        [[0, 1,-1, 0],[0, 0, 1, 1],2], // s
-        [[0, 1,-1,-2],[0, 0, 0, 0],2], // l
-        [[0, 1, 1, 0],[0, 0, 1, 1],1], // o
+        [ // t
+          [[0, 1,-1, 0],[0, 0, 0, 1]],
+          [[0, 0, 0, 1],[0,-1, 1, 0]],
+          [[0,-1, 1, 0],[0, 0, 0,-1]],
+          [[0, 0, 0,-1],[0, 1,-1, 0]]
+        ],
+        [ // q
+          [[0, 1,-1,-1],[0, 0, 0, 1]],
+          [[0, 0, 0, 1],[0,-1, 1, 1]],
+          [[0,-1, 1, 1],[0, 0, 0,-1]],
+          [[0, 0, 0,-1],[0, 1,-1,-1]],
+        ],
+        [ // p
+          [[0, 1,-1, 1],[0, 0, 0, 1]],
+          [[0, 0, 0, 1],[0,-1, 1,-1]],
+          [[0,-1, 1,-1],[0, 0, 0,-1]],
+          [[0, 0, 0,-1],[0, 1,-1, 1]],
+        ],
+        [
+          [[0,-1, 1, 0],[0, 0, 1, 1]],
+          [[0, 0, 1, 1],[0, 1,-1, 0]],
+        ], // z
+        [
+          [[0, 1,-1, 0],[0, 0, 1, 1]],
+          [[0, 0, 1, 1],[0,-1, 1, 0]],
+        ], // s
+        [
+          [[0, 1,-1,-2],[0, 0, 0, 0]],
+          [[0, 0, 0, 0],[0,-1, 1, 2]]
+        ], // l
+        [[[0, 1, 1, 0],[0, 0, 1, 1]]], // o
       ];
       this.n_types = this.pieces_xyr.length - 1;
       this.turns = [];
@@ -483,22 +515,22 @@
 
     getPiece(N) {
       N = N || this.updatePieceList();
+      var board_top = (this.board && this.board.top) || 0; // board doesn't exist while drawing images
 
-      var curY = Math.max(this.board.top - this.config.b_level,0);
-      curY = Math.max(curY,this.board.top);
+      var curY = Math.max(board_top - this.config.b_level,0);
+      curY = Math.max(curY,board_top);
+      var r = 0;
       this.piece = {
         n: N,
         curX: 5,
         curY: curY,
-        dx: this.pieces_xyr[N][0].slice(),
-        dy: this.pieces_xyr[N][1].slice(),
-        dx_: this.pieces_xyr[N][0].slice(),
-        dy_: this.pieces_xyr[N][1].slice(),
-        n_rotations: 0,
-        allowed_rotations: this.pieces_xyr[N][2],
+        r: r,
+        dx: this.pieces_xyr[N][r][0],
+        dy: this.pieces_xyr[N][r][1],
       };
 
-      if (this.pieceFits(this.piece.curX,this.piece.curY)) { this.board.drawPiece(); return true; }
+      // board doesn't exist while drawing images
+      if (this.board && this.pieceFits(this.piece.curX,this.piece.curY)) { this.board.drawPiece(); return true; }
     }
 
     gameOver() {
@@ -509,20 +541,17 @@
       this.act = {
         left: function() {
           var p = this.piece;
-          for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
           if (this.pieceFits(p.curX-1,p.curY)) {this.board.erasePiece(); p.curX--; this.board.drawPiece();}
         },
 
         right: function() {
           var p = this.piece;
-          for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
           if (this.pieceFits(p.curX+1,p.curY)) {this.board.erasePiece(); p.curX++; this.board.drawPiece();}
         },
 
         down: function(e) {
           e && e.preventDefault();
           var p = this.piece;
-          for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
           if (this.pieceFits(p.curX,p.curY+1)) {
             this.board.erasePiece(); p.curY++; this.board.drawPiece(); return 1;
           }
@@ -532,18 +561,14 @@
         rotate: function(e) {
           e.preventDefault();
           var p = this.piece;
-          if (!p.allowed_rotations) { return }
-          p.n_rotations++;
-          if (p.n_rotations%p.allowed_rotations == 0) {
-            // t, s, z, and o pieces don't have only 2 rotations allowed. reset to original
-            p.dx_ = this.pieces_xyr[p.n][0].slice();
-            p.dy_ = this.pieces_xyr[p.n][1].slice();
-          } else {
-            for (var k=0;k<this.n;k++) {p.dx_[k]=p.dy[k]; p.dy_[k]=-p.dx[k];}
-          }
-          if (this.pieceFits(p.curX,p.curY)) {
+          if (this.pieces_xyr[p.n].length == 1) { return } // o don't rotate!
+          var r = (p.r + 1)%this.pieces_xyr[p.n].length;
+
+          if ( this.pieceFits(p.curX,p.curY,r)) {
             this.board.erasePiece();
-            for (var k=0;k<this.n;k++) {p.dx[k]=p.dx_[k]; p.dy[k]=p.dy_[k];}
+            p.r = r;
+            p.dx = this.pieces_xyr[p.n][r][0];
+            p.dy = this.pieces_xyr[p.n][r][1];
             this.board.drawPiece();
           }
         },
@@ -551,7 +576,6 @@
         drop: function(e) {
           e.preventDefault();
           var p = this.piece;
-          for (var k=0;k<this.n;k++) {p.dx_[k]=p.dx[k]; p.dy_[k]=p.dy[k];}
           if (!this.pieceFits(p.curX,p.curY+1)) return;
           this.board.erasePiece();
           p.curY = this.ghostY;
@@ -584,10 +608,13 @@
       while (this.pieceFits(this.piece.curX,this.ghostY+1)) { this.ghostY++; }
     }
 
-    pieceFits(X,Y) {
+    pieceFits(X,Y,r) {
+      r = r || this.piece.r;
+      var dx = this.pieces_xyr[this.piece.n][r][0];
+      var dy = this.pieces_xyr[this.piece.n][r][1];
       for (var k=0;k<this.n;k++) {
-        var theX=X+this.piece.dx_[k];
-        var theY=Y+this.piece.dy_[k];
+        var theX=X+dx[k];
+        var theY=Y+dy[k];
         if (
           theX<0 || theX>=this.board.width || // square is contained in X
           theY>=this.board.height || // square is above bottom of board

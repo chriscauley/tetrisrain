@@ -79,8 +79,11 @@ h3 i {
 .ui piece-stack .piece.p5:before {
   background-position-x: 0;
 }
+.ui piece-stack .piece.p6 {
+  /* very odd... */
+}
 .ui piece-stack .piece.p6:before {
-  background-position-y: 75%;
+  background-position-y: -600%;
 }
 .ui piece-stack .piece.p7:before {
   background-position-x: -40%;
