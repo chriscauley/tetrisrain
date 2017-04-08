@@ -58,45 +58,8 @@
       this.width = game.config.board_width;
       this.skyline = this.height-1;
       this.DEEP = 8;
-      // pallet should be a constructor option
-      var pallet = [
-        undefined, // empty
-        "#000099", // t
-        "#0000FF", // q
-        "#006666", // p
-        "#006600", // z
-        "#660066", // s
-        "#990000", // l
-        "#CC0099", // o
-        "#000000", // deep
-      ];
-      var pallet = [
-        undefined,
-        "#F8C11A",
-        "#8B9915",
-        "#E56306",
-        "#8B9915",
-        "#E56306",
-        "#741B10",
-        "#571E4A",
-        "#222",
-      ];
-      var pallet2 = [
-        undefined,
-        "#FF726F",
-        "#8259e8",
-        "#6ffcff",
-        "#8259e8",
-        "#6ffcff",
-        "#92e859",
-        "#ffd36f",
-        "#222",
-      ]
-      pallet.border = "#cccccc";
-      pallet.bg = "white";
-      pallet.fg = "#333";
 
-      this.pallet = pallet;
+      this.pallet = new Pallet({board: this});
       this.makeCanvas();
     }
 
