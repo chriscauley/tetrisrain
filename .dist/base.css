@@ -13,11 +13,9 @@ h3 {
 h3 i {
   color: #C09;
 }
-#settings {
-  width: 200px;
-}
 #debug,
-#game {
+#game,
+#settings {
   flex-grow: 1;
   position: relative;
 }
@@ -83,8 +81,12 @@ h3 i {
   /* very odd... */
 }
 .ui piece-stack .piece.p6:before {
-  background-position-y: -600%;
+  background-position-y: -100%;
 }
 .ui piece-stack .piece.p7:before {
   background-position-x: -40%;
+}
+scores {
+  display: flex;
+  justify-content: space-around;
 }

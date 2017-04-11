@@ -1,29 +1,61 @@
 <scores>
-  <p each={ name in names }>{ name }: <big>{ data[name] }</big></p>
+  <div each={ name in names }>
+    { name }: <big>{ totals[name] }</big>
+    <hr/>
+    <div each={ number in visible[name] }>
+      { number }
+    </div>
+  </div>
 
   this.on("mount",function() {
     this.opts.game.scores = this;
     this.opts.game.tags['scores'] = this;
-    this.data = {
-      lines: 0,
-      deep: 0,
-    };
+    this.data = { };
+    this.totals = { };
     this.names = [];
     this.fname = "score/"+Math.random();
     this.update();
+    this.n_visible = 5
+    this.bounce = uR.debounce(this.update);
+  });
+
+  this.on("update",function() {
+    this.visible = {};
+    this.names && this.names.map(function(name) {
+      var array = this.data[name];
+      var n = Math.min(this.n_visible,array.length);
+      this.visible[name] = array.slice(array.length-n).reverse();
+    }.bind(this));
   });
 
   add(name,value) {
+    var turn = this.opts.game.turn;
     value = (value == undefined)?1:value;
+
+    // first time we've seen this name
     if (!this.data[name]) {
-      this.data[name] = 1;
+      this.data[name] = [];
+      this.totals[name] = 0;
       this.names.push(name);
     }
-    this.data[name] += value;
-    uR.storage.set(this.fname,this.data)
-    console.log(uR.storage.get(this.fname));
-    this.update()
-  }
+
+    // score combo
+    if (!this.data[name][turn]) {
+      while(this.data[name].length <= turn) { this.data[name].push(0); }
+    } else {
+      if (name != "combo") {
+        this.add("combo",value);
+      }
+    }
+
+    if (name != "combo" && this.data.combo && this.data.combo[turn-1]) {
+      this.add("combo",value);
+    }
+    this.totals[name] += value;
+    this.data[name][turn] += value;
+    uR.storage.set(this.fname,{data: this.data,totals: this.totals,names: this.names});
+    this.bounce()
+  };
 </scores>
 
 <piece-stack>
@@ -92,11 +124,11 @@
   });
   this.on("mount", function() {
     this.game = this.opts.game
-    if (!this.game.DEBUG) {
-      this.root.style.display = "none";
-    } else {
+    //if (!this.game.DEBUG) {
+      //this.root.style.display = "none";
+    //} else {
       this.files.length && this.game.loadGame(this.last_game);
-    }
+    //}
   });
   save(e) {
     if (e.item && !_confirm(e)) { return; }

@@ -103,14 +103,14 @@
         id: "board",
         width: this.width*this.scale + 1,
         height: this.height*this.scale + 1,
-        parent: document.getElementById("debug"),
+        parent: this.game.DEBUG && document.getElementById("debug"),
       }
       this.canvas = this.newCanvas(attrs);
       this.ctx = this.canvas.ctx;
 
       attrs.id = "grid-img";
       this.grid = this.newElement("img",attrs);
-      document.getElementById("debug").appendChild(this.grid);
+      this.game.DEBUG && document.getElementById("debug").appendChild(this.grid);
 
       // gradient on grid
       this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
@@ -157,7 +157,7 @@
 
           var img = document.createElement("img");
           img.src = this.small_canvas.toDataURL();
-          document.querySelector("#debug").appendChild(img);
+          this.game.DEBUG && document.querySelector("#debug").appendChild(img);
           this.imgs[n].push(img);
           if (r == 0) { // style tag for showing pieces in html elements (piece-list)
             style += `piece-stack .p${ n }:before { background-image: url(${ img.src }); }\n`
@@ -425,7 +425,7 @@
       this.piece = undefined;
       this.makeVars();
       clearTimeout(this.timeout);
-      this.piece_number = 0;
+      this.turn = 0;
 
       this.controller.reset(id);
       this.board.reset(id);
@@ -503,14 +503,14 @@
     }
 
     updatePieceList() {
-      while (this.pieces.length <= this.piece_number+this.config.n_preview+1) {
+      while (this.pieces.length <= this.turn+this.config.n_preview+1) {
         this.pieces.push(Math.floor(this.n_types*Math.random()+1));
       }
-      this.piece_number++;
+      this.turn++;
       var visible = this.pieces.slice(this.pieces.length-this.config.n_preview),
           empty = this.config.n_preview - visible.length;
       this.tags.next_piece && this.tags.next_piece.setPieces(visible,empty);
-      return this.pieces[this.piece_number];
+      return this.pieces[this.turn];
     }
 
     getPiece(N) {
@@ -586,8 +586,8 @@
         },
         pause: this.pause.bind(this),
         swapPiece: function() {
-          if (this.last_swap == this.piece_number) { return }
-          this.last_swap = this.piece_number;
+          if (this.last_swap == this.turn) { return }
+          this.last_swap = this.turn;
           var old_piece = this.swapped_piece;
           this.board.erasePiece();
           this.swapped_piece = this.piece.n;
