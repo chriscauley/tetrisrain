@@ -54,7 +54,7 @@
       super();
       this.game = game;
       this.scale = this.game.scale;
-      this.height = 30;
+      this.height = 200;
       this.reset();
       this.width = game.config.board_width;
       this.skyline = this.height-1;
@@ -244,7 +244,6 @@
       });
       this.ctx = this.canvas.ctx;
 
-      this.nextTurn = this.nextTurn.bind(this);
       this.makeActions();
       this.controller = new Controller(this);
       this.board = new Board(this);
@@ -373,14 +372,14 @@
       this.visible_height = 20;
       this.x_margin = 100;
       this.y_margin = 20;
-      this.pieces = [2,3,2,3,2,3,2,3,7,7,7,7,6,6,6,6];
-      this.pieces = [6,6,6,6]; //,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];
+      //this.pieces = [2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,7,7,7,7,6,6,6,6];
+      this.pieces = [2,3,7,6,2,3,7,6,6,2,3,7,6,2,3,7,6,6,2,3,7,6,2,3,7,6,6,2,3,7,6,2,3,7,6,6]
+      //this.pieces = [6,6,6,6]; //,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];
       this.level=1;
       this.speed = this.speed0=700;
       this.speedK=60;
 
       this.n = 4; // Number of squares... it's tetris!
-      this.paused=0;
       this.pieces_xyr = [
         undefined, // empty
         [ // t
@@ -421,7 +420,6 @@
 
     reset(id) {
       this.id=id || "autosave";
-      this.paused = 0;
       this.piece = undefined;
       this.makeVars();
       clearTimeout(this.timeout);
@@ -430,19 +428,12 @@
       this.controller.reset(id);
       this.board.reset(id);
       this.getPiece();
-      this.timeout=setTimeout(this.nextTurn,this.speed);
       this.scores && this.scores.mount();
       this.updatePieceList();
     }
 
-    pause() {
-      if (this.paused) { this.nextTurn(); this.paused=0; return;}
-      clearTimeout(this.timeout);
-      this.paused=1;
-    }
-
     nextTurn() {
-      if (!this.act.down()) {
+      if (this.pieceFits()) {
         this.getSkyline();
         this.board.removeLines();
         this.turns.push({
@@ -450,13 +441,10 @@
           x: this.piece.x,
           y: this.piece.y,
         });
-        if (this.board.skyline<=0 || !this.getPiece()) {
-          this.gameOver();
-          return;
-        }
+        this.turn++;
+        if (this.board.skyline<=0) { this.gameOver(); return; }
+        this.getPiece();
       }
-      clearTimeout(this.timeout);
-      this.timeout=setTimeout(this.nextTurn,this.speed);
     }
 
     saveGame(id) {
@@ -483,7 +471,6 @@
         }.bind(this));
       }.bind(this));
       this.board.skyline = new_skyline;
-      this.nextTurn();
     }
 
     getSkyline() {
@@ -506,8 +493,7 @@
       while (this.pieces.length <= this.turn+this.config.n_preview+1) {
         this.pieces.push(Math.floor(this.n_types*Math.random()+1));
       }
-      this.turn++;
-      var visible = this.pieces.slice(this.pieces.length-this.config.n_preview),
+      var visible = this.pieces.slice(this.turn,this.turn+this.config.n_preview),
           empty = this.config.n_preview - visible.length;
       this.tags.next_piece && this.tags.next_piece.setPieces(visible,empty);
       return this.pieces[this.turn];
@@ -528,7 +514,7 @@
         dy: this.pieces_xyr[N][r][1],
       };
 
-      if (this.pieceFits(this.piece.x,this.piece.y)) { this.board.drawPiece(); return true; }
+      if (this.pieceFits(undefined,this.piece.y)) { this.board.drawPiece(); return true; }
     }
 
     gameOver() {
@@ -550,10 +536,8 @@
         down: function(e) {
           e && e.preventDefault();
           var p = this.piece;
-          if (this.pieceFits(p.x,p.y+1)) {
-            this.board.erasePiece(); p.y++; this.board.drawPiece(); return 1;
-          }
-          return 0;
+          if (this.pieceFits()) { this.piece.y++; }
+          else { this.nextTurn(); }
         },
 
         rotate: function(e) {
@@ -578,13 +562,10 @@
           this.board.erasePiece();
           p.y = this.ghostY;
           this.board.drawPiece();
-          clearTimeout(this.timeout);
-          this.timeout=setTimeout(this.nextTurn,this.speed);
         },
         lock: function() {
           this.nextTurn();
         },
-        pause: this.pause.bind(this),
         swapPiece: function() {
           if (this.last_swap == this.turn) { return }
           this.last_swap = this.turn;
@@ -607,6 +588,8 @@
     }
 
     pieceFits(X,Y,r) {
+      X = X || this.piece.x;
+      Y = Y || this.piece.Y-1; // default is "can piece move down?"
       r = r || this.piece.r;
       var dx = this.pieces_xyr[this.piece.n][r][0];
       var dy = this.pieces_xyr[this.piece.n][r][1];
@@ -614,7 +597,7 @@
         var _x = X+dx[k];
         var _y = Y+dy[k];
         if (
-          _x<0 || _x>=this.board.width || // square is contained in X
+          _x<0 || _x>=this.board.width || // square is not in x
           _y>=this.board.height || // square is above bottom of board
           (_y>-1 && this.board.f[_y][_x]>0) // square is not occupied, if square is not above board
         ) return 0;
@@ -638,7 +621,6 @@
       }
       var letters = 'abcdefghijklmnopqrstuvwxyz';
       this._action_map = {
-        'p': 'pause',
         'up': 'rotate',
         'space': 'drop',
         'shift': 'swapPiece'
@@ -699,7 +681,7 @@
 
     onKeyDown(e) {
       var event = this._key_map[e.keyCode];
-      if ((this.game.paused && event != 'p') || !event) { return; }
+      if (!event) { return; }
       this.active[event] = true;
       this.record(e,'keydown');
       this.action_map[event](e);
@@ -708,7 +690,7 @@
 
     onKeyUp(e) {
       var event = this._key_map[e.keyCode];
-      if ((this.game.paused && event != 'p') || !event) { return; }
+      if (!event) { return; }
       this.active[event] = false;
       this.action_up_map[event] && this.action_up_map[event](e);
       this.record(e,'keyup');

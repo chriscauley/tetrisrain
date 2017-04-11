@@ -124,11 +124,6 @@
   });
   this.on("mount", function() {
     this.game = this.opts.game
-    //if (!this.game.DEBUG) {
-      //this.root.style.display = "none";
-    //} else {
-      this.files.length && this.game.loadGame(this.last_game);
-    //}
   });
   save(e) {
     if (e.item && !_confirm(e)) { return; }
