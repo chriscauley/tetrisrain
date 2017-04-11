@@ -16,7 +16,10 @@ class Pallet {
     };
     defaults[this.board.DEEP] = "#222";
     for (var key in defaults) { this[key] = options[key] || defaults[key] }
-    for (var i=0;i<7;i++) { this[i+1] = this.colors[i%this.colors.length][0]; }
+    for (var i=0;i<7;i++) {
+      var shade = Math.floor(i/this.colors.length)*3;
+      this[i+1] = this.colors[i%this.colors.length][shade];
+    }
   }
 }
 
