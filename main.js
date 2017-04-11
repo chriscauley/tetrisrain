@@ -172,14 +172,14 @@
       var _lines = [];
       var deep_line = this.top+this.game.visible_height;
       for (var i=this.top;i<this.height;i++) {
-        if (this.f[i][j] == this.DEEP && i>deep_line+_lines.length) { continue }
+        if (this.f[i][j] == this.DEEP && i>deep_line) { continue }
         var gapFound=0;
         for (var j=0;j<this.width;j++) {
           if (this.f[i][j]==0) { gapFound=1; break; }
         }
         if (gapFound) continue; // gapFound in previous loop
 
-        if (i>=deep_line+_lines.length) { // make row DEEP
+        if (i>=deep_line) { // make row DEEP
           for (var j=0;j<this.width;j++) { this.f[i][j]=this.DEEP; }
           continue;
         }
