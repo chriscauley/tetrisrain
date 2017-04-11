@@ -66,7 +66,7 @@
 
     reset() {
       this.skyline=this.height-1;
-      this.top = 0;
+      this.top = this.height-this.game.visible_height;;
       this.f = new Array();
       for (var i=0;i<this.height;i++) {
         this.f[i]=new Array();
@@ -433,7 +433,7 @@
     }
 
     nextTurn() {
-      if (this.pieceFits()) {
+      if (this.pieceFits(this.x,this.y+1)) {
         this.getSkyline();
         this.board.removeLines();
         this.turns.push({
@@ -483,7 +483,6 @@
           this.board.f[Y][X] = p.n;
           if (Y<this.board.skyline) {
             this.board.skyline=Y;
-            //this.board.floor=this.board.height-Y;
           }
         }
       }
@@ -514,7 +513,7 @@
         dy: this.pieces_xyr[N][r][1],
       };
 
-      if (this.pieceFits(undefined,this.piece.y)) { this.board.drawPiece(); return true; }
+      if (this.pieceFits(this.piece.x,this.piece.y)) { this.board.drawPiece(); return true; }
     }
 
     gameOver() {
@@ -525,7 +524,7 @@
       this.act = {
         left: function() {
           var p = this.piece;
-          if (this.pieceFits(p.x-1,p.y)) {this.board.erasePiece(); p.x--; this.board.drawPiece();}
+          if (this.pieceFits(p.x-1,p.y)) {this.board.erasePiece(); p.x--; this.board.drawPiece(); }
         },
 
         right: function() {
@@ -536,7 +535,7 @@
         down: function(e) {
           e && e.preventDefault();
           var p = this.piece;
-          if (this.pieceFits()) { this.piece.y++; }
+          if (this.pieceFits(this.piece.x,this.piece.y)) { this.piece.y++; }
           else { this.nextTurn(); }
         },
 
@@ -588,8 +587,6 @@
     }
 
     pieceFits(X,Y,r) {
-      X = X || this.piece.x;
-      Y = Y || this.piece.Y-1; // default is "can piece move down?"
       r = r || this.piece.r;
       var dx = this.pieces_xyr[this.piece.n][r][0];
       var dy = this.pieces_xyr[this.piece.n][r][1];
@@ -600,7 +597,6 @@
           _x<0 || _x>=this.board.width || // square is not in x
           _y>=this.board.height || // square is above bottom of board
           (_y>-1 && this.board.f[_y][_x]>0) // square is not occupied, if square is not above board
-        ) return 0;
       }
       return 1;
     }
