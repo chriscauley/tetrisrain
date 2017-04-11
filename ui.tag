@@ -1,18 +1,27 @@
 <scores>
-  <p>Lines: <big>{ lines }</big></p>
-  <p>Deep: <big>{ deep }</big></p>
+  <p each={ name in names }>{ name }: <big>{ data[name] }</big></p>
 
   this.on("mount",function() {
     this.opts.game.scores = this;
     this.opts.game.tags['scores'] = this;
-    this.lines = 0;
-    this.deep = 0;
+    this.data = {
+      lines: 0,
+      deep: 0,
+    };
+    this.names = [];
+    this.fname = "score/"+Math.random();
     this.update();
   });
 
   add(name,value) {
     value = (value == undefined)?1:value;
-    this[name] += value;
+    if (!this.data[name]) {
+      this.data[name] = 1;
+      this.names.push(name);
+    }
+    this.data[name] += value;
+    uR.storage.set(this.fname,this.data)
+    console.log(uR.storage.get(this.fname));
     this.update()
   }
 </scores>
