@@ -597,6 +597,7 @@
           _x<0 || _x>=this.board.width || // square is not in x
           _y>=this.board.height || // square is above bottom of board
           (_y>-1 && this.board.f[_y][_x]>0) // square is not occupied, if square is not above board
+        ) { return 0; }
       }
       return 1;
     }
