@@ -471,6 +471,8 @@
         }.bind(this));
       }.bind(this));
       this.board.skyline = new_skyline;
+      this.board.draw();
+      this.pieceFits();
     }
 
     getSkyline() {
