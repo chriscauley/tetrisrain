@@ -132,7 +132,7 @@
   }
   trash(e) {
     if (!_confirm(e)) { return; }
-    uR.storage.remove(e.item.id);
+    uR.storage.remove("game/"+e.item.id);
   }
   load(e) {
     this.game.loadGame(e.item.id)

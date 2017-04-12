@@ -57,7 +57,6 @@
       this.height = 30;
       this.reset();
       this.width = game.config.board_width;
-      this.skyline = this.height-1;
       this.DEEP = 8;
 
       this.pallet = new Pallet({board: this});
@@ -456,6 +455,9 @@
       if (reset === undefined) { reset = true; }
       reset && this.reset(id);
       var _f = uR.storage.get("game/"+id);
+      if (this.board.height < _f.length) {
+        this.board.height = _f.length+this.visible_height;
+      }
       var new_skyline = this.board.height;
       uR.forEach(_f|| [],function(line,i) {
         var line_no = 1+i+this.board.skyline-_f.length;
