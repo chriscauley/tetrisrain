@@ -192,6 +192,7 @@
         for (var j=0;j<this.width;j++) { this.f[0][j]=0; }// set top to zero
         this.skyline++;
       }.bind(this));
+      this.draw();
     }
 
     scoreLine(i) {
