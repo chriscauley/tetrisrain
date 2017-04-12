@@ -54,7 +54,7 @@
       super();
       this.game = game;
       this.scale = this.game.scale;
-      this.height = 200;
+      this.height = 100;
       this.reset();
       this.width = game.config.board_width;
       this.skyline = this.height-1;
@@ -77,23 +77,17 @@
     draw() {
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       // ghost stuff may not go here
-      var color;
-      this.game.getGhost();
-      this.ctx.globalAlpha = 0.5;
-      var p = this.game.piece;
-      var color = this.pallet[p.n];
-      uR.forEach(p.dx,function(_,j) {
-        this.drawBox(p.x+p.dx[j],this.game.ghostY+p.dy[j],1,1,color);
-      }.bind(this));
-      this.ctx.globalAlpha = 1;
 
       // draw all pieces
       for (var i=0;i<this.f.length;i++) {
         for (var j=0;j<this.f[i].length;j++) {
           var _f = this.f[i][j];
           if (!_f) { continue; }
-          var color = this.pallet[Math.abs(_f)];
-          this.drawBox(j,i,1,1,color);
+          this.drawBox(
+            j,i,
+            1,1,
+            this.pallet[Math.abs(_f)]
+          );
         }
       }
     }
@@ -137,8 +131,9 @@
         width: this.game.n*this.scale+1,
         height: this.game.n*this.scale+1,
       });
-      this.imgs = {}
+      this.imgs = {};
       var style = "";
+      var piece_div = document.createElement("div");
       uR.forEach(this.game.pieces_xyr,function(p,n) {
         if (!p) { return }
         var w = this.small_canvas.width,
@@ -157,14 +152,15 @@
 
           var img = document.createElement("img");
           img.src = this.small_canvas.toDataURL();
-          this.game.DEBUG && document.querySelector("#debug").appendChild(img);
+          piece_div.appendChild(img);
           this.imgs[n].push(img);
           if (r == 0) { // style tag for showing pieces in html elements (piece-list)
-            style += `piece-stack .p${ n }:before { background-image: url(${ img.src }); }\n`
+            style += `piece-stack .p${ n }:before { background-image: url(${ img.src }); }\n`;
           }
 
         }
       }.bind(this));
+      this.game.DEBUG && document.querySelector("#debug").appendChild(piece_div);
       this.newElement("style",{parent: document.head, innerHTML: style, type: "text/css"});
     }
 
@@ -204,7 +200,7 @@
       if (this.f[i][0] == this.DEEP) { this.game.scores.add("deep") }
       else { this.game.scores.add("lines"); }
     }
-    drawPiece() {
+    setPiece() {
       var p = this.game.piece;
       for (var k=0;k<this.game.n;k++) {
         var X=p.x+p.dx[k];
@@ -214,17 +210,7 @@
         }
       }
       this.draw();
-    }
-
-    erasePiece() {
-      var p = this.game.piece;
-      for (var k=0;k<this.game.n;k++) {
-        var X=p.x+p.dx[k];
-        var Y=p.y+p.dy[k];
-        if (0<=Y && Y<this.height && 0<=X && X<this.width) {
-          this.f[Y][X]=0;
-        }
-      }
+      this.game.nextTurn();
     }
   }
 
@@ -256,7 +242,7 @@
       this.board.draw();
       this.tick = this.tick.bind(this);
       this.tick();
-      this.DEBUG && this.loadGame(3476);
+      this.DEBUG && this.loadGame(9955);
     }
 
     makeUI() {
@@ -312,17 +298,12 @@
       this.ctx.save();
       this.ctx.translate(this.x_margin,this.y_margin);
 
-      var top = (this.board.skyline-this.visible_height+this.config.b_level)*this.board.scale;
-      top = Math.min((this.board.height-this.visible_height)*this.board.scale,top)
-      top = Math.max(top,this.scale);
-      this.board.top = top/this.scale;
-
       // draw grid and floor
-      this.floor = this.board.height-top/this.scale;
+      this.floor = this.board.height-this.top/this.scale;
       var grid_rows = this.floor;
       this.ctx.drawImage(
         this.board.grid,
-        0,top,
+        0,this.top,
         this.board.grid.width,grid_rows*this.scale,
         0,0,
         this.board.grid.width,grid_rows*this.scale
@@ -336,7 +317,7 @@
       // draw board
       this.ctx.drawImage(
         this.board.canvas,
-        0,top, // sx, sy,
+        0,this.top, // sx, sy,
         this.canvas.width,this.canvas.height, // sWidth, sHeight,
         0,0, // dx, dy,
         this.canvas.width,this.canvas.height // dWidth, dHeight
@@ -358,7 +339,23 @@
         this.ctx.drawImage(this.animation_canvas,0,0);
         this.ctx.globalAlpha = 1;
       }
-      this.ctx.restore();
+
+      // draw ghost
+      this.ctx.globalAlpha = 0.5;
+      var p = this.piece;
+      var color = this.board.pallet[p.n];
+      uR.forEach(p.dx,function(_,j) {
+        this.drawBox(p.x+p.dx[j],this.ghostY+p.dy[j]-this.board.top,1,1,color);
+      }.bind(this));
+      this.ctx.globalAlpha = 1;
+
+      // draw piece
+      this.ctx.drawImage(
+        this.board.imgs[this.piece.n][this.piece.r],
+        (this.piece.x-2)*this.scale,(this.piece.y-this.board.top-1)*this.scale
+      )
+
+      this.ctx.restore(); // remove translates above
     }
 
     makeVars() {
@@ -422,7 +419,6 @@
       this.id=id || "autosave";
       this.piece = undefined;
       this.makeVars();
-      clearTimeout(this.timeout);
       this.turn = 0;
 
       this.controller.reset(id);
@@ -471,6 +467,7 @@
         }.bind(this));
       }.bind(this));
       this.board.skyline = new_skyline;
+      this.piece.y = this.board.top;
       this.board.draw();
       this.pieceFits();
     }
@@ -488,6 +485,10 @@
           }
         }
       }
+      var top = (this.board.skyline-this.visible_height+this.config.b_level)*this.board.scale;
+      top = Math.min((this.board.height-this.visible_height)*this.board.scale,top)
+      this.top = Math.max(top,this.scale);
+      this.board.top = this.top/this.scale;
     }
 
     updatePieceList() {
@@ -514,8 +515,6 @@
         dx: this.pieces_xyr[N][r][0],
         dy: this.pieces_xyr[N][r][1],
       };
-
-      if (this.pieceFits(this.piece.x,this.piece.y)) { this.board.drawPiece(); return true; }
     }
 
     gameOver() {
@@ -523,22 +522,22 @@
     }
 
     makeActions() {
-      this.act = {
+      this._act = {
         left: function() {
           var p = this.piece;
-          if (this.pieceFits(p.x-1,p.y)) {this.board.erasePiece(); p.x--; this.board.drawPiece(); }
+          if (this.pieceFits(p.x-1,p.y)) { p.x--; }
         },
 
         right: function() {
           var p = this.piece;
-          if (this.pieceFits(p.x+1,p.y)) {this.board.erasePiece(); p.x++; this.board.drawPiece();}
+          if (this.pieceFits(p.x+1,p.y)) { p.x++; }
         },
 
         down: function(e) {
           e && e.preventDefault();
           var p = this.piece;
-          if (this.pieceFits(this.piece.x,this.piece.y)) { this.piece.y++; }
-          else { this.nextTurn(); }
+          if (this.pieceFits(this.piece.x,this.piece.y+1)) { this.piece.y++; }
+          else { this.board.setPiece(); this.nextTurn(); }
         },
 
         rotate: function(e) {
@@ -548,38 +547,43 @@
           var r = (p.r + 1)%this.pieces_xyr[p.n].length;
 
           if ( this.pieceFits(p.x,p.y,r)) {
-            this.board.erasePiece();
             p.r = r;
             p.dx = this.pieces_xyr[p.n][r][0];
             p.dy = this.pieces_xyr[p.n][r][1];
-            this.board.drawPiece();
           }
         },
 
         drop: function(e) {
           e.preventDefault();
           var p = this.piece;
-          if (!this.pieceFits(p.x,p.y+1)) return;
-          this.board.erasePiece();
+          if (!this.pieceFits(p.x,p.y+1)) { this.board.setPiece(); return; }
           p.y = this.ghostY;
-          this.board.drawPiece();
         },
         lock: function() {
-          this.nextTurn();
+          if (this.piece.y == this.ghostY) { this.board.setPiece(); }
         },
         swapPiece: function() {
           if (this.last_swap == this.turn) { return }
           this.last_swap = this.turn;
           var old_piece = this.swapped_piece;
-          this.board.erasePiece();
           this.swapped_piece = this.piece.n;
           this.piece = undefined;
           this.getPiece(old_piece);
+          this.pieces[this.turn] = this.piece.n;
           this.tags.piece_stash.setPieces([this.swapped_piece],0);
-          this.board.drawPiece();
+          this.updatePieceList();
         }
+      };
+
+      this.act = {};
+      for (var k in this._act) {
+        this.act[k] = function(func,that) {
+          return function(e) {
+            func.bind(that)(e);
+            that.getGhost();
+          }
+        }(this._act[k],this)
       }
-      for (var k in this.act) { this.act[k] = this.act[k].bind(this); }
     }
 
     getGhost() {
@@ -672,6 +676,7 @@
       this.active = {};
       this.events = [];
       this.start = new Date().valueOf();
+      clearInterval(this._autoplay);
       // the comment lines on this and onKeyDown and onKeyDown are because it's better to not use the
       // browsers natural key repeat rate. may need to be added back in at some point.
       //for (key in this.timer) { clearTimeout(this.timer[key]) }
