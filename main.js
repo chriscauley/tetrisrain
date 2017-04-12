@@ -54,7 +54,7 @@
       super();
       this.game = game;
       this.scale = this.game.scale;
-      this.height = 100;
+      this.height = 30;
       this.reset();
       this.width = game.config.board_width;
       this.skyline = this.height-1;
@@ -242,7 +242,7 @@
       this.board.draw();
       this.tick = this.tick.bind(this);
       this.tick();
-      this.DEBUG && this.loadGame(9955);
+      //this.DEBUG && this.loadGame(9955);
     }
 
     makeUI() {
@@ -495,7 +495,7 @@
       while (this.pieces.length <= this.turn+this.config.n_preview+1) {
         this.pieces.push(Math.floor(this.n_types*Math.random()+1));
       }
-      var visible = this.pieces.slice(this.turn,this.turn+this.config.n_preview),
+      var visible = this.pieces.slice(this.turn+1,this.turn+1+this.config.n_preview),
           empty = this.config.n_preview - visible.length;
       this.tags.next_piece && this.tags.next_piece.setPieces(visible,empty);
       return this.pieces[this.turn];
@@ -565,13 +565,17 @@
         swapPiece: function() {
           if (this.last_swap == this.turn) { return }
           this.last_swap = this.turn;
-          var old_piece = this.swapped_piece;
-          this.swapped_piece = this.piece.n;
-          this.piece = undefined;
-          this.getPiece(old_piece);
-          this.pieces[this.turn] = this.piece.n;
+          if (!this.swapped_piece) {
+            this.swapped_piece = this.pieces.splice(this.turn,1)[0];
+            this.getPiece();
+          } else {
+            var old_piece = this.swapped_piece;
+            this.swapped_piece = this.piece.n;
+            this.piece = undefined;
+            this.getPiece(old_piece);
+            this.pieces[this.turn] = this.piece.n;
+          }
           this.tags.piece_stash.setPieces([this.swapped_piece],0);
-          this.updatePieceList();
         }
       };
 
