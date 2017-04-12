@@ -9,9 +9,15 @@ h3 {
   font-size: 18px;
   i { color: #C09; }
 }
-#debug,#game,#settings {
-  flex-grow: 1;
+#game {
   position: relative;
+  width: 400px;
+}
+#debug, #game,#settings {
+  position: relative;
+}
+#debug {
+  flex-basis: 300px;
 }
 #controls {
   position: absolute;
@@ -30,7 +36,7 @@ h3 {
     top: 0;
     position: absolute;
     width: 100px;
-    &.next_piece { left: 302px; }
+    &.next_piece { right: 0; }
     &.piece_stash { left: 0; }
     .piece {
       border: double gray;
