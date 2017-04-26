@@ -75,7 +75,6 @@
 
     draw() {
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
-      // ghost stuff may not go here
 
       // draw all pieces
       for (var i=0;i<this.f.length;i++) {
@@ -88,6 +87,7 @@
             this.pallet[Math.abs(_f)]
           );
         }
+        this.ctx.fillStyle = "black"; this.ctx.fillText(i+"",0,i*this.scale+12);
       }
     }
 
@@ -164,17 +164,17 @@
     }
 
     removeLines() {
-      var _lines = [];
-      var deep_line = this.top+this.game.visible_height;
-      for (var i=this.top;i<this.height;i++) {
-        if (this.f[i][j] == this.DEEP && i>deep_line) { continue }
+      var _lines = [],changed;
+      for (var i=this.skyline;i<this.height;i++) {
+        if (this.f[i][0] == this.DEEP && i>this.deep_line) { continue }
         var gapFound=0;
         for (var j=0;j<this.width;j++) {
           if (this.f[i][j]==0) { gapFound=1; break; }
         }
         if (gapFound) continue; // gapFound in previous loop
 
-        if (i>=deep_line) { // make row DEEP
+        changed = true;
+        if (i>=this.deep_line) { // make row DEEP
           for (var j=0;j<this.width;j++) { this.f[i][j]=this.DEEP; }
           continue;
         }
@@ -183,6 +183,7 @@
         _lines.push(i);
       }
 
+      if (!changed) { return; }
       this.game.animateLines(_lines);
       uR.forEach(_lines,function(i) {
         //eliminate line by moving eveything down a line
@@ -193,6 +194,7 @@
         this.skyline++;
       }.bind(this));
       this.draw();
+      this.game.getSkyline();
     }
 
     scoreLine(i) {
@@ -206,7 +208,7 @@
         var X=p.x+p.dx[k];
         var Y=p.y+p.dy[k];
         if (0<=Y && Y<this.height && 0<=X && X<this.width && this.f[Y][X]!=-p.n) {
-          this.f[Y][X]=-p.n;
+          this.f[Y][X]=p.n;
         }
       }
       this.draw();
@@ -297,13 +299,21 @@
       this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
       this.ctx.save();
       this.ctx.translate(this.x_margin,this.y_margin);
-
+      var current_top = this.top;
+      if (this.animations) {
+        var a = this.animations[0];
+        var r = 1-(new Date().valueOf() - a.start)/1000;
+        if (r<0) { this.animations = undefined; }
+        else {
+          current_top = a.to - (a.to-a.from)*r;
+        }
+      }
       // draw grid and floor
-      this.floor = this.board.height-this.top/this.scale;
+      this.floor = this.board.height-current_top/this.scale;
       var grid_rows = this.floor;
       this.ctx.drawImage(
         this.board.grid,
-        0,this.top,
+        0,current_top,
         this.board.grid.width,grid_rows*this.scale,
         0,0,
         this.board.grid.width,grid_rows*this.scale
@@ -313,11 +323,21 @@
         this.board.canvas.width/this.scale+1,4/this.scale,
         "black"
       );
+      this.drawBox(
+        -0.5, this.trigger_line,
+        this.board.canvas.width/this.scale+1,4/this.scale,
+        "red"
+      );
+      this.drawBox(
+        -0.5, this.config.b_level-this.board.top+1,
+        this.board.canvas.width/this.scale+1,4/this.scale,
+        "blue"
+      );
 
       // draw board
       this.ctx.drawImage(
         this.board.canvas,
-        0,this.top, // sx, sy,
+        0,current_top, // sx, sy,
         this.canvas.width,this.canvas.height, // sWidth, sHeight,
         0,0, // dx, dy,
         this.canvas.width,this.canvas.height // dWidth, dHeight
@@ -325,10 +345,9 @@
 
       // draw water
       this.drawBox(
-        0, this.visible_height*this.board.scale,
-        this.board.canvas.width,this.canvas.height,
-        "rgba(0,0,255,0.25)",
-        1 // scale of 1
+        -5, this.board.deep_line-this.board.top,
+        this.board.width+10,this.canvas.height,
+        "rgba(0,0,255,0.25)"
       )
 
       // animation
@@ -344,9 +363,14 @@
       this.ctx.globalAlpha = 0.5;
       var p = this.piece;
       var color = this.board.pallet[p.n];
-      uR.forEach(p.dx,function(_,j) {
-        this.drawBox(p.x+p.dx[j],this.ghostY+p.dy[j]-this.board.top,1,1,color);
-      }.bind(this));
+      this.ctx.drawImage(
+        this.board.imgs[this.piece.n][this.piece.r],
+        (this.piece.x-2)*this.scale,(this.ghostY-1)*this.scale-current_top
+      )
+
+      //uR.forEach(p.dx,function(_,j) {
+      //  this.drawBox(p.x+p.dx[j],this.ghostY+p.dy[j]-this.board.top,1,1,color);
+      //}.bind(this));
       this.ctx.globalAlpha = 1;
 
       // draw piece
@@ -426,6 +450,7 @@
       this.getPiece();
       this.scores && this.scores.mount();
       this.updatePieceList();
+      this.getSkyline();
     }
 
     nextTurn() {
@@ -476,22 +501,29 @@
     }
 
     getSkyline() {
-      // this should all be cleaned up a bit.
-      var p = this.piece;
-      for (var k=0;k<this.n;k++) {
-        var X=p.x+p.dx[k];
-        var Y=p.y+p.dy[k];
-        if (0<=Y && Y<this.board.height && 0<=X && X<this.board.width) {
-          this.board.f[Y][X] = p.n;
-          if (Y<this.board.skyline) {
-            this.board.skyline=Y;
+      var found;
+      for (var i=0,h=this.board.f.length;i<h;i++) {
+        for (var j=0, w=this.board.f[i].length;j<w;j++) {
+          if (this.board.f[i][j]) {
+            this.board.skyline = i;
+            found = true;
+            break;
           }
         }
+        if (found) { break; }
       }
+
+      var old_top = Math.max(this.top,0);;
       var top = (this.board.skyline-this.visible_height+this.config.b_level)*this.board.scale;
-      top = Math.min((this.board.height-this.visible_height)*this.board.scale,top)
+      top = Math.min((this.board.height-this.visible_height)*this.board.scale,top);
+      this.trigger_line = Math.max(top/this.scale,this.config.b_level);
       this.top = Math.max(top,this.scale);
       this.board.top = this.top/this.scale;
+      this.board.deep_line = this.board.top+this.visible_height;
+      if (this.top != old_top) {
+        this.top_from = old_top;
+        this.animations = [{from: old_top, to: this.top, start: new Date().valueOf() }]
+      }
     }
 
     updatePieceList() {
@@ -549,7 +581,7 @@
           if (this.pieces_xyr[p.n].length == 1) { return } // o don't rotate!
           var r = (p.r + 1)%this.pieces_xyr[p.n].length;
 
-          if ( this.pieceFits(p.x,p.y,r)) {
+          if (this.pieceFits(p.x,p.y,r)) {
             p.r = r;
             p.dx = this.pieces_xyr[p.n][r][0];
             p.dy = this.pieces_xyr[p.n][r][1];
@@ -595,12 +627,12 @@
 
     getGhost() {
       if (! this.piece) { return; }
-      this.ghostY = this.piece.y;
+      this.ghostY = this.board.skyline-4;
       while (this.pieceFits(this.piece.x,this.ghostY+1)) { this.ghostY++; }
     }
 
     pieceFits(X,Y,r) {
-      r = r || this.piece.r;
+      if (r == undefined) { r = this.piece.r; }
       var dx = this.pieces_xyr[this.piece.n][r][0];
       var dy = this.pieces_xyr[this.piece.n][r][1];
       for (var k=0;k<this.n;k++) {
