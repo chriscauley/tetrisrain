@@ -71,6 +71,7 @@
         this.f[i]=new Array();
         for (var j=0;j<20;j++) { this.f[i][j]=0; }
       }
+      this.canvas && this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height); //!# TODO this isn't wiping the board...
     }
 
     draw() {
@@ -103,7 +104,7 @@
 
       attrs.id = "grid-img";
       this.grid = this.newElement("img",attrs);
-      this.game.DEBUG && document.getElementById("debug").appendChild(this.grid);
+      // this.game.DEBUG && document.getElementById("debug").appendChild(this.grid);
 
       // gradient on grid
       this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
@@ -455,18 +456,16 @@
     }
 
     nextTurn() {
-      if (this.pieceFits(this.x,this.y+1)) {
-        this.getSkyline();
-        this.board.removeLines();
-        this.turns.push({
-          n: this.piece.n,
-          x: this.piece.x,
-          y: this.piece.y,
-        });
-        this.turn++;
-        if (this.board.skyline<=0) { this.gameOver(); return; }
-        this.getPiece();
-      }
+      this.getSkyline();
+      this.board.removeLines();
+      this.turns.push({
+        n: this.piece.n,
+        x: this.piece.x,
+        y: this.piece.y,
+      });
+      this.turn++;
+      this.getPiece();
+      if (!this.pieceFits(this.piece.x,this.piece.y)) { this.gameOver(); return; }
     }
 
     saveGame(id) {
@@ -482,6 +481,7 @@
       if (reset === undefined) { reset = true; }
       reset && this.reset(id);
       var _f = uR.storage.get("game/"+id);
+      if (!_f) { return }
       if (this.board.height < _f.length) {
         this.board.height = _f.length+this.visible_height;
       }
