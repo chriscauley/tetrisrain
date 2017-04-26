@@ -224,10 +224,11 @@
       this.container = document.getElementById("game");
       this.makeUI();
 
+      this.animation_time = 500;
       this.canvas = this.newCanvas({
         id: "game_canvas",
-        width: this.container.scrollWidth,
-        height: this.container.scrollHeight,
+        width: 400,
+        height: window.innerHeight,
         parent: this.container,
       });
       this.ctx = this.canvas.ctx;
@@ -244,7 +245,7 @@
       this.board.draw();
       this.tick = this.tick.bind(this);
       this.tick();
-      //this.DEBUG && this.loadGame(9955);
+      this.DEBUG && this.loadGame(430);
     }
 
     makeUI() {
@@ -302,7 +303,7 @@
       var current_top = this.top;
       if (this.animations) {
         var a = this.animations[0];
-        var r = 1-(new Date().valueOf() - a.start)/1000;
+        var r = 1-Math.pow((new Date().valueOf() - a.start)/this.animation_time,2);
         if (r<0) { this.animations = undefined; }
         else {
           current_top = a.to - (a.to-a.from)*r;
