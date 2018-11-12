@@ -1,6 +1,6 @@
 // http://paletton.com/#uid=70R1r0kt+lZlOstrKqzzSiaJidt
 
-class Pallet {
+export default class Pallet {
   constructor(options) {
     this.board = options.board;
     var defaults = {

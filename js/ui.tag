@@ -1,3 +1,5 @@
+import { debounce } from 'lodash'
+
 <scores>
   <div each={ name in names }>
     { name }: <big>{ totals[name] }</big>
@@ -16,7 +18,7 @@
     this.fname = "score/"+Math.random();
     this.update();
     this.n_visible = 5
-    this.bounce = uR.debounce(this.update);
+    this.bounce = debounce(this.update);
   });
 
   this.on("update",function() {
@@ -53,7 +55,7 @@
     }
     this.totals[name] += value;
     this.data[name][turn] += value;
-    uR.storage.set(this.fname,{data: this.data,totals: this.totals,names: this.names});
+    //uR.storage.set(this.fname,{data: this.data,totals: this.totals,names: this.names});
     this.bounce()
   };
 </scores>
@@ -110,7 +112,7 @@
   this.on("update",function() {
     this.files = [];
     var latest_time = undefined;
-    for (var path in uR.storage.times) {
+    /* for (var path in uR.storage.times) {
       match = path.match(/^game\/(\d+)/);
       if (match) {
         this.files.push(match[1]);
@@ -120,7 +122,7 @@
         }
       }
     }
-    this.files.sort();
+    this.files.sort(); */
   });
   this.on("mount", function() {
     this.game = this.opts.game
@@ -132,7 +134,7 @@
   }
   trash(e) {
     if (!_confirm(e)) { return; }
-    uR.storage.remove("game/"+e.item.id);
+    // uR.storage.remove("game/"+e.item.id);
   }
   load(e) {
     this.game.loadGame(e.item.id)
