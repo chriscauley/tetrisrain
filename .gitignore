@@ -1,1 +1,6 @@
+yarn.lock
+yarn-error.log
 *~
+.cache/
+dist
+node_modules
