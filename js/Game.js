@@ -1,7 +1,7 @@
 import CanvasObject, { Ease } from './CanvasObject'
 import Controller from './Controller'
 import Board from './Board'
-import { PIECES } from "./var"
+import { PIECES } from "./pieces"
 
 import './ui.tag'
 

@@ -1,3 +1,5 @@
+import { range } from 'lodash'
+
 import Pallet from './Pallet'
 import CanvasObject, { drawLine } from './CanvasObject'
 
@@ -18,32 +20,30 @@ export default class Board extends CanvasObject {
   reset() {
     this.skyline = this.height - 1
     this.top = this.height - this.game.visible_height
-    this.f = new Array()
-    for (let i = 0; i < this.height; i++) {
-      this.f[i] = new Array()
-      for (let j = 0; j < 20; j++) {
-        this.f[i][j] = 0
-      }
-    }
-    this.canvas &&
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) //!# TODO this isn't wiping the board...
+
+    // nested arrays of zeros make up the initial board
+    this.f = range(this.height).map(
+      i => range(20).map(j=>0)
+    )
+
+    //!# TODO this isn't wiping the board...
+    this.canvas && this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     // draw all pieces
-    for (let i = 0; i < this.f.length; i++) {
-      for (let j = 0; j < this.f[i].length; j++) {
-        const _f = this.f[i][j]
-        if (!_f) {
-          continue
+    this.f.forEach( (row,i) => {
+      row.forEach( (cell,j) => {
+        if (!cell) { // cell is zero (empty)
+          return
         }
         this.drawBox(j, i, 1, 1, this.pallet[Math.abs(_f)])
-      }
+      })
       this.ctx.fillStyle = 'black'
-      this.ctx.fillText(i + '', 0, i * this.scale + 12)
-    }
+      this.ctx.fillText(i, 0, i * this.scale + 12) // show row number
+    })
   }
 
   makeCanvas() {
@@ -194,7 +194,7 @@ export default class Board extends CanvasObject {
   }
 
   scoreLine(i) {
-    // maybe just move this logit to the scores tag?
+    // maybe just move this logic to the scores tag?
     if (this.f[i][0] === this.DEEP) {
       this.game.scores.add('deep')
     } else {
