@@ -1,3 +1,5 @@
+import { zip } from 'lodash'
+
 export const PIECES = [
   undefined, // empty
   [
@@ -27,7 +29,16 @@ export const PIECES = [
   [[[0, 1, 1, 0], [0, 0, 1, 1]]], // o
 ]
 
-export const N_TYPES = PIECES.length
+export const _pieces = {}
+const _shapes = ['t', 'q', 'p', 'z', 's', 'l', 'o']
+PIECES.slice(1).forEach((dxdys, i) => {
+  const [dxs, dys] = dxdys[0]
+  _pieces[_shapes[i]] = zip(dxs, dys).map(
+    ([dx, dy]) => ({ dx, dy }), // eg {dx: 1, dy: -1}
+  )
+})
+
+export const N_TYPES = PIECES.length - 1
 
 export const N = 4
 
@@ -35,4 +46,6 @@ export default {
   N,
   PIECES,
   N_TYPES,
+  _pieces,
+  WIDTH: 10,
 }

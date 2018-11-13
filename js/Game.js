@@ -214,25 +214,22 @@ export default class Game extends CanvasObject {
     this.scale = 20
     this.config = {
       b_level: 10,
-      game_width: 10,
-      board_width: 10,
       n_preview: 5,
     }
     this.visible_height = 20
     this.x_margin = 100
     this.y_margin = 20
     this.pieces = []
-    for (let i=0;i<8;i++) {
+    for (let i = 0; i < 8; i++) {
       //this.pieces = this.pieces.concat(2,3,7,6)
       //this.pieces = this.pieces.concat([6,6,6,6])
-      this.pieces = this.pieces.concat(2,3,2,3)
+      //this.pieces = this.pieces.concat(2,3,2,3)
     }
 
     this.level = 1
     this.speed = this.speed0 = 700
     this.speedK = 60
 
-    this.pieces_xyr = config.PIECES
     this.turns = []
   }
 
@@ -343,14 +340,14 @@ export default class Game extends CanvasObject {
   }
 
   updatePieceList() {
-    while (this.pieces.length <= this.turn + this.config.n_preview + 1) {
-      this.pieces.push(Math.floor(config.N_TYPES * Math.random() + 1))
+    while (this.pieces.length <= this.turn + this.config.n_preview + 2) {
+      this.pieces.push(Math.floor(config.N_TYPES * Math.random()) + 1)
     }
     const visible = this.pieces.slice(
-        this.turn + 1,
-        this.turn + 1 + this.config.n_preview,
-      ),
-      empty = this.config.n_preview - visible.length
+      this.turn + 1,
+      this.turn + 1 + this.config.n_preview,
+    )
+    const empty = this.config.n_preview - visible.length
     this.tags.next_piece && this.tags.next_piece.setPieces(visible, empty)
     return this.pieces[this.turn]
   }
@@ -366,8 +363,8 @@ export default class Game extends CanvasObject {
       x: 5,
       y: y,
       r: r,
-      dx: this.pieces_xyr[N][r][0],
-      dy: this.pieces_xyr[N][r][1],
+      dx: config.PIECES[N][r][0],
+      dy: config.PIECES[N][r][1],
     }
   }
 
@@ -404,15 +401,15 @@ export default class Game extends CanvasObject {
       rotate: function(e) {
         e.preventDefault()
         const p = this.piece
-        if (this.pieces_xyr[p.n].length === 1) {
+        if (config.PIECES[p.n].length === 1) {
           return
         } // o don't rotate!
-        const r = (p.r + 1) % this.pieces_xyr[p.n].length
+        const r = (p.r + 1) % config.PIECES[p.n].length
 
         if (this.pieceFits(p.x, p.y, r)) {
           p.r = r
-          p.dx = this.pieces_xyr[p.n][r][0]
-          p.dy = this.pieces_xyr[p.n][r][1]
+          p.dx = config.PIECES[p.n][r][0]
+          p.dy = config.PIECES[p.n][r][1]
         }
       },
 
@@ -474,8 +471,8 @@ export default class Game extends CanvasObject {
     if (r === undefined) {
       r = this.piece.r
     }
-    const dx = this.pieces_xyr[this.piece.n][r][0]
-    const dy = this.pieces_xyr[this.piece.n][r][1]
+    const dx = config.PIECES[this.piece.n][r][0]
+    const dy = config.PIECES[this.piece.n][r][1]
     for (let k = 0; k < config.N; k++) {
       const _x = X + dx[k]
       const _y = Y + dy[k]
