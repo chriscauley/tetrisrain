@@ -2,6 +2,7 @@ import { range } from 'lodash'
 
 import Pallet from './Pallet'
 import CanvasObject, { drawLine } from './CanvasObject'
+import config from './config'
 
 export default class Board extends CanvasObject {
   constructor(game) {
@@ -96,8 +97,8 @@ export default class Board extends CanvasObject {
 
     // make pieces
     this.small_canvas = this.newCanvas({
-      width: this.game.n * this.scale + 1,
-      height: this.game.n * this.scale + 1,
+      width: config.N * this.scale + 1,
+      height: config.N * this.scale + 1,
     })
     this.imgs = {}
     let style = ''
@@ -113,7 +114,7 @@ export default class Board extends CanvasObject {
       for (let r = 0; r < p.length; r++) {
         // cycle through rotations
         this.small_canvas.ctx.clearRect(0, 0, w, h)
-        for (let i = 0; i < this.game.n; i++) {
+        for (let i = 0; i < config.N; i++) {
           // draw 4 boxes
           this.small_canvas.ctx.fillStyle = this.pallet[n]
           this.small_canvas.ctx.fillRect(
@@ -203,7 +204,7 @@ export default class Board extends CanvasObject {
   }
   setPiece() {
     const p = this.game.piece
-    for (let k = 0; k < this.game.n; k++) {
+    for (let k = 0; k < config.N; k++) {
       const X = p.x + p.dx[k]
       const Y = p.y + p.dy[k]
       if (
@@ -217,6 +218,6 @@ export default class Board extends CanvasObject {
       }
     }
     this.draw()
-    this.game.nextTurn()
+    config.NextTurn()
   }
 }

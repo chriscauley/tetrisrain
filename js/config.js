@@ -27,4 +27,12 @@ export const PIECES = [
   [[[0, 1, 1, 0], [0, 0, 1, 1]]], // o
 ]
 
+export const N_TYPES = PIECES.length
+
 export const N = 4
+
+export default {
+  N,
+  PIECES,
+  N_TYPES,
+}

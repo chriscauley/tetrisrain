@@ -1,7 +1,7 @@
 import CanvasObject, { Ease } from './CanvasObject'
 import Controller from './Controller'
 import Board from './Board'
-import { PIECES } from "./pieces"
+import config from './config'
 
 import './ui.tag'
 
@@ -232,9 +232,7 @@ export default class Game extends CanvasObject {
     this.speed = this.speed0 = 700
     this.speedK = 60
 
-    this.n = 4 // Number of squares... it's tetris!
-    this.pieces_xyr = PIECES
-    this.n_types = this.pieces_xyr.length - 1
+    this.pieces_xyr = config.PIECES
     this.turns = []
   }
 
@@ -346,7 +344,7 @@ export default class Game extends CanvasObject {
 
   updatePieceList() {
     while (this.pieces.length <= this.turn + this.config.n_preview + 1) {
-      this.pieces.push(Math.floor(this.n_types * Math.random() + 1))
+      this.pieces.push(Math.floor(config.N_TYPES * Math.random() + 1))
     }
     const visible = this.pieces.slice(
         this.turn + 1,
@@ -478,7 +476,7 @@ export default class Game extends CanvasObject {
     }
     const dx = this.pieces_xyr[this.piece.n][r][0]
     const dy = this.pieces_xyr[this.piece.n][r][1]
-    for (let k = 0; k < this.n; k++) {
+    for (let k = 0; k < config.N; k++) {
       const _x = X + dx[k]
       const _y = Y + dy[k]
       if (
