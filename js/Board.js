@@ -11,7 +11,7 @@ export default class Board extends CanvasObject {
     this.scale = this.game.scale
     this.height = 30
     this.reset()
-    this.width = game.config.board_width
+    this.width = config.WIDTH
     this.DEEP = 8
 
     this.pallet = new Pallet({ board: this })
@@ -23,24 +23,24 @@ export default class Board extends CanvasObject {
     this.top = this.height - this.game.visible_height
 
     // nested arrays of zeros make up the initial board
-    this.f = range(this.height).map(
-      i => range(20).map(j=>0)
-    )
+    this.f = range(this.height).map(() => range(config.WIDTH).map(() => 0))
 
     //!# TODO this isn't wiping the board...
-    this.canvas && this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.canvas &&
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     // draw all pieces
-    this.f.forEach( (row,i) => {
-      row.forEach( (cell,j) => {
-        if (!cell) { // cell is zero (empty)
+    this.f.forEach((row, i) => {
+      row.forEach((cell, j) => {
+        if (!cell) {
+          // cell is zero (empty)
           return
         }
-        this.drawBox(j, i, 1, 1, this.pallet[Math.abs(_f)])
+        this.drawBox(j, i, 1, 1, this.pallet[Math.abs(cell)])
       })
       this.ctx.fillStyle = 'black'
       this.ctx.fillText(i, 0, i * this.scale + 12) // show row number
@@ -103,7 +103,7 @@ export default class Board extends CanvasObject {
     this.imgs = {}
     let style = ''
     const piece_div = document.createElement('div')
-    this.game.pieces_xyr.forEach((p, n) => {
+    config.PIECES.forEach((p, n) => {
       if (!p) {
         return
       }
@@ -218,6 +218,6 @@ export default class Board extends CanvasObject {
       }
     }
     this.draw()
-    config.NextTurn()
+    this.game.nextTurn()
   }
 }
