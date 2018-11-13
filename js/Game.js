@@ -1,6 +1,7 @@
 import CanvasObject, { Ease } from './CanvasObject'
 import Controller from './Controller'
 import Board from './Board'
+import { PIECES } from "./var"
 
 import './ui.tag'
 
@@ -232,34 +233,7 @@ export default class Game extends CanvasObject {
     this.speedK = 60
 
     this.n = 4 // Number of squares... it's tetris!
-    this.pieces_xyr = [
-      undefined, // empty
-      [
-        // t
-        [[0, 1, -1, 0], [0, 0, 0, 1]],
-        [[0, 0, 0, 1], [0, -1, 1, 0]],
-        [[0, -1, 1, 0], [0, 0, 0, -1]],
-        [[0, 0, 0, -1], [0, 1, -1, 0]],
-      ],
-      [
-        // q
-        [[0, 1, -1, -1], [0, 0, 0, 1]],
-        [[0, 0, 0, 1], [0, -1, 1, 1]],
-        [[0, -1, 1, 1], [0, 0, 0, -1]],
-        [[0, 0, 0, -1], [0, 1, -1, -1]],
-      ],
-      [
-        // p
-        [[0, 1, -1, 1], [0, 0, 0, 1]],
-        [[0, 0, 0, 1], [0, -1, 1, -1]],
-        [[0, -1, 1, -1], [0, 0, 0, -1]],
-        [[0, 0, 0, -1], [0, 1, -1, 1]],
-      ],
-      [[[0, -1, 1, 0], [0, 0, 1, 1]], [[0, 0, 1, 1], [0, 1, -1, 0]]], // z
-      [[[0, 1, -1, 0], [0, 0, 1, 1]], [[0, 0, 1, 1], [0, -1, 1, 0]]], // s
-      [[[0, 1, -1, -2], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, -1, 1, 2]]], // l
-      [[[0, 1, 1, 0], [0, 0, 1, 1]]], // o
-    ]
+    this.pieces_xyr = PIECES
     this.n_types = this.pieces_xyr.length - 1
     this.turns = []
   }
