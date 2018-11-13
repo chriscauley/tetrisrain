@@ -220,46 +220,13 @@ export default class Game extends CanvasObject {
     this.visible_height = 20
     this.x_margin = 100
     this.y_margin = 20
-    //this.pieces = [2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,7,7,7,7,6,6,6,6];
-    this.pieces = [
-      2,
-      3,
-      7,
-      6,
-      2,
-      3,
-      7,
-      6,
-      6,
-      2,
-      3,
-      7,
-      6,
-      2,
-      3,
-      7,
-      6,
-      6,
-      2,
-      3,
-      7,
-      6,
-      2,
-      3,
-      7,
-      6,
-      6,
-      2,
-      3,
-      7,
-      6,
-      2,
-      3,
-      7,
-      6,
-      6,
-    ]
-    //this.pieces = [6,6,6,6]; //,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6];
+    this.pieces = []
+    for (let i=0;i<8;i++) {
+      //this.pieces = this.pieces.concat(2,3,7,6)
+      //this.pieces = this.pieces.concat([6,6,6,6])
+      this.pieces = this.pieces.concat(2,3,2,3)
+    }
+
     this.level = 1
     this.speed = this.speed0 = 700
     this.speedK = 60
