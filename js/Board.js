@@ -1,4 +1,4 @@
-import { range } from 'lodash'
+import { range, inRange } from 'lodash'
 
 import Pallet from './Pallet'
 import CanvasObject, { drawLine } from './CanvasObject'
@@ -9,9 +9,7 @@ export default class Board extends CanvasObject {
     super()
     this.game = game
     this.scale = this.game.scale
-    this.height = 30
     this.reset()
-    this.width = config.WIDTH
     this.DEEP = 8
 
     this.pallet = new Pallet({ board: this })
@@ -19,11 +17,13 @@ export default class Board extends CanvasObject {
   }
 
   reset() {
-    this.skyline = this.height - 1
-    this.top = this.height - this.game.visible_height
+    this.pieces = []
+    this.skyline = config.HEIGHT - 1
+    this.top = config.HEIGHT - this.game.visible_height
 
     // nested arrays of zeros make up the initial board
-    this.f = range(this.height).map(() => range(config.WIDTH).map(() => 0))
+    this.f = range(config.HEIGHT).map(() => range(config.WIDTH).map(() => 0))
+    this.squares = range(config.HEIGHT * config.WIDTH).map(() => 0)
 
     //!# TODO this isn't wiping the board...
     this.canvas &&
@@ -50,8 +50,8 @@ export default class Board extends CanvasObject {
   makeCanvas() {
     const attrs = {
       id: 'board',
-      width: this.width * this.scale + 1,
-      height: this.height * this.scale + 1,
+      width: config.WIDTH * this.scale + 1,
+      height: config.HEIGHT * this.scale + 1,
       parent: this.game.DEBUG && document.getElementById('debug'),
     }
     this.canvas = this.newCanvas(attrs)
@@ -64,15 +64,15 @@ export default class Board extends CanvasObject {
     // gradient on grid
     this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height)
     this.gradient.addColorStop(0, 'red')
-    this.gradient.addColorStop(2 / this.height, 'red')
-    this.gradient.addColorStop(2 / this.height, '#faa')
+    this.gradient.addColorStop(2 / config.HEIGHT, 'red')
+    this.gradient.addColorStop(2 / config.HEIGHT, '#faa')
     this.gradient.addColorStop(0.5, '#fff')
     this.gradient.addColorStop(1, '#fff')
     this.ctx.fillStyle = this.gradient
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
     // make grid
-    for (let i = 0; i <= this.width; i++) {
+    for (let i = 0; i <= config.WIDTH; i++) {
       drawLine(
         this.ctx,
         i * this.scale,
@@ -82,7 +82,7 @@ export default class Board extends CanvasObject {
         this.pallet.border,
       )
     }
-    for (let i = 0; i <= this.height; i++) {
+    for (let i = 0; i <= config.HEIGHT; i++) {
       drawLine(
         this.ctx,
         0,
@@ -148,12 +148,12 @@ export default class Board extends CanvasObject {
   removeLines() {
     const _lines = []
     let changed
-    for (let i = this.skyline; i < this.height; i++) {
+    for (let i = this.skyline; i < config.HEIGHT; i++) {
       if (this.f[i][0] === this.DEEP && i > this.deep_line) {
         continue
       }
       let gapFound = 0
-      for (let j = 0; j < this.width; j++) {
+      for (let j = 0; j < config.WIDTH; j++) {
         if (this.f[i][j] === 0) {
           gapFound = 1
           break
@@ -164,7 +164,7 @@ export default class Board extends CanvasObject {
       changed = true
       if (i >= this.deep_line) {
         // make row DEEP
-        for (let j = 0; j < this.width; j++) {
+        for (let j = 0; j < config.WIDTH; j++) {
           this.f[i][j] = this.DEEP
         }
         continue
@@ -181,11 +181,11 @@ export default class Board extends CanvasObject {
     _lines.forEach(i => {
       //eliminate line by moving eveything down a line
       for (let k = i; k >= this.skyline; k--) {
-        for (let j = 0; j < this.width; j++) {
+        for (let j = 0; j < config.WIDTH; j++) {
           this.f[k][j] = this.f[k - 1][j]
         }
       }
-      for (let j = 0; j < this.width; j++) {
+      for (let j = 0; j < config.WIDTH; j++) {
         this.f[0][j] = 0
       } // set top to zero
       this.skyline++
@@ -207,17 +207,28 @@ export default class Board extends CanvasObject {
     for (let k = 0; k < config.N; k++) {
       const X = p.x + p.dx[k]
       const Y = p.y + p.dy[k]
-      if (
-        0 <= Y &&
-        Y < this.height &&
-        0 <= X &&
-        X < this.width &&
-        this.f[Y][X] !== -p.n
-      ) {
+      if (0 <= Y && Y < config.HEIGHT && 0 <= X && X < config.WIDTH) {
         this.f[Y][X] = p.n
       }
     }
     this.draw()
     this.game.nextTurn()
+  }
+  exists(x, y) {
+    return inRange(x, 0, config.WIDTH) && inRange(y, 0, config.HEIGHT)
+  }
+  _xy2i = (x, y) => x + y * config.WIDTH
+  get(x, y) {
+    return this.squares[this._xy2i(x, y)]
+  }
+  set(x, y, value) {
+    const i = this._xy2i(x, y)
+    if (this.squares[i]) {
+      throw 'Cannot place square in unempty square'
+    }
+    this.squares[i] = value
+  }
+  remove(x, y) {
+    this.squares[this._xy2i(x, y)] = undefined
   }
 }

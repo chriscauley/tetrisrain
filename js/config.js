@@ -30,7 +30,17 @@ export const PIECES = [
 ]
 
 export const _pieces = {}
-const _shapes = ['t', 'q', 'p', 'z', 's', 'l', 'o']
+const _shapes = ['t', 'l', 'j', 'z', 's', 'i', 'o']
+
+const ROTATIONS = {
+  t: 4,
+  l: 4,
+  j: 4,
+  z: 2,
+  s: 2,
+  i: 2,
+  o: 0,
+}
 PIECES.slice(1).forEach((dxdys, i) => {
   const [dxs, dys] = dxdys[0]
   _pieces[_shapes[i]] = zip(dxs, dys).map(
@@ -45,7 +55,10 @@ export const N = 4
 export default {
   N,
   PIECES,
+  ROTATIONS,
   N_TYPES,
   _pieces,
+  _shapes,
   WIDTH: 10,
+  HEIGHT: 30,
 }

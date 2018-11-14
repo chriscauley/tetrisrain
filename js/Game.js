@@ -1,7 +1,8 @@
+import Board from './Board'
 import CanvasObject, { Ease } from './CanvasObject'
 import Controller from './Controller'
-import Board from './Board'
 import config from './config'
+import Piece from './Piece'
 
 import './ui.tag'
 
@@ -26,8 +27,8 @@ export default class Game extends CanvasObject {
     this.controller = new Controller(this)
     this.board = new Board(this)
     this.animation_canvas = this.newCanvas({
-      width: this.board.width * this.scale + 1,
-      height: this.board.height * this.scale + 1,
+      width: config.WIDTH * this.scale + 1,
+      height: config.HEIGHT * this.scale + 1,
     })
 
     this.reset()
@@ -121,7 +122,7 @@ export default class Game extends CanvasObject {
       }
     }
     // draw grid and floor
-    this.floor = this.board.height - current_top / this.scale
+    this.floor = config.HEIGHT - current_top / this.scale
     const grid_rows = this.floor
     this.ctx.drawImage(
       this.board.grid,
@@ -173,7 +174,7 @@ export default class Game extends CanvasObject {
     this.drawBox(
       -5,
       this.board.deep_line - this.board.top,
-      this.board.width + 10,
+      config.WIDTH + 10,
       this.canvas.height,
       'rgba(0,0,255,0.25)',
     )
@@ -194,10 +195,6 @@ export default class Game extends CanvasObject {
       (this.ghostY - 1) * this.scale - current_top,
     )
 
-    //const color = this.board.pallet[p.n]
-    //uR.forEach(p.dx,function(_,j) {
-    //  this.drawBox(p.x+p.dx[j],this.ghostY+p.dy[j]-this.board.top,1,1,color);
-    //}.bind(this));
     this.ctx.globalAlpha = 1
 
     // draw piece
@@ -206,6 +203,19 @@ export default class Game extends CanvasObject {
       (this.piece.x - 2) * this.scale,
       (this.piece.y - this.board.top - 1) * this.scale,
     )
+
+    this._piece.squares
+      .concat(this.board.squares)
+      .filter(s => s)
+      .forEach(s =>
+        this.drawBox(
+          s.x + 0.25,
+          s.y + 0.25 - this.board.top,
+          0.5,
+          0.5,
+          'black',
+        ),
+      )
 
     this.ctx.restore() // remove translates above
   }
@@ -236,6 +246,7 @@ export default class Game extends CanvasObject {
   reset(id) {
     this.id = id || 'autosave'
     this.piece = undefined
+    this._piece = undefined
     this.makeVars()
     this.turn = 0
 
@@ -285,10 +296,10 @@ export default class Game extends CanvasObject {
     if (!_f) {
       return
     }
-    if (this.board.height < _f.length) {
-      this.board.height = _f.length + this.visible_height
+    if (config.HEIGHT < _f.length) { // #!
+      config.HEIGHT = _f.length + this.visible_height
     }
-    let new_skyline = this.board.height
+    let new_skyline = config.HEIGHT
     _f.forEach((line, i) => {
       const line_no = 1 + i + this.board.skyline - _f.length
       this.board.f[line_no] = line
@@ -324,7 +335,7 @@ export default class Game extends CanvasObject {
       (this.board.skyline - this.visible_height + this.config.b_level) *
       this.board.scale
     top = Math.min(
-      (this.board.height - this.visible_height) * this.board.scale,
+      (config.HEIGHT - this.visible_height) * this.board.scale,
       top,
     )
     this.trigger_line = Math.max(top / this.scale, this.config.b_level)
@@ -360,12 +371,21 @@ export default class Game extends CanvasObject {
     const r = 0
     this.piece = {
       n: N,
-      x: 5,
+      x: config.WIDTH / 2,
       y: y,
       r: r,
       dx: config.PIECES[N][r][0],
       dy: config.PIECES[N][r][1],
     }
+    this.getGhost()
+    this._piece = new Piece({
+      x: config.WIDTH / 2,
+      y: y,
+      r: 0,
+      shape: config._shapes[N - 1],
+      board: this.board,
+    })
+    this.board.pieces.push(this._piece)
   }
 
   gameOver() {
@@ -376,6 +396,7 @@ export default class Game extends CanvasObject {
     this._act = {
       left: function() {
         const p = this.piece
+        this._piece.moveLeft()
         if (this.pieceFits(p.x - 1, p.y)) {
           p.x--
         }
@@ -384,12 +405,15 @@ export default class Game extends CanvasObject {
       right: function() {
         const p = this.piece
         if (this.pieceFits(p.x + 1, p.y)) {
+          this._piece.moveRight()
           p.x++
         }
       },
 
-      down: function(e) {
-        e && e.preventDefault()
+      down: function() {
+        if (!this._piece.moveDown()) {
+          this._piece.lock()
+        }
         if (this.pieceFits(this.piece.x, this.piece.y + 1)) {
           this.piece.y++
         } else {
@@ -398,9 +422,9 @@ export default class Game extends CanvasObject {
         }
       },
 
-      rotate: function(e) {
-        e.preventDefault()
+      rotate: function() {
         const p = this.piece
+        this._piece.rotateLeft()
         if (config.PIECES[p.n].length === 1) {
           return
         } // o don't rotate!
@@ -413,8 +437,10 @@ export default class Game extends CanvasObject {
         }
       },
 
-      drop: function(e) {
-        e.preventDefault()
+      drop: function() {
+        if (!this._piece.drop()) {
+          this._piece.lock()
+        }
         const p = this.piece
         if (!this.pieceFits(p.x, p.y + 1)) {
           this.board.setPiece()
@@ -424,6 +450,7 @@ export default class Game extends CanvasObject {
       },
       lock: function() {
         if (this.piece.y === this.ghostY) {
+          this._piece.lock()
           this.board.setPiece()
         }
       },
@@ -478,8 +505,8 @@ export default class Game extends CanvasObject {
       const _y = Y + dy[k]
       if (
         _x < 0 ||
-        _x >= this.board.width || // square is not in x
-        _y >= this.board.height || // square is above bottom of board
+        _x >= config.WIDTH || // square is not in x
+        _y >= config.HEIGHT || // square is above bottom of board
         (_y > -1 && this.board.f[_y][_x] > 0) // square is not occupied, if square is not above board
       ) {
         return 0
