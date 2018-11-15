@@ -19,6 +19,7 @@ import Game from './Game'
 this.on('mount',() => {
   // this should be done pre mount, and then during mount need to call
   // this.game.buildCanvas() or something
+  // this will also get rid of some of the setTimeout(f,0) in many other places
   this.game = window.GAME = new Game()
 })
 
