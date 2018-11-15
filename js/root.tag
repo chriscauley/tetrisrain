@@ -1,16 +1,28 @@
+import Game from './Game'
+
 <root>
-  <game />
+  <div id="game">
+    <div class="ui">
+      <piece-stack game={game} name="next_piece" />
+      <piece-stack game={game} name="piece_stash" after="STASH" />
+    </div>
+  </div>
   <div id="settings">
     <h3><b>Project<i> Zoidberg</i></b></h3>
     <hr />
     <controls />
+    <scores game={game} />
+    <level-editor game={game} />
   </div>
   <div id="debug"></div>
-</root>
 
-<game>
-  <div id="game"></div>
-</game>
+this.on('mount',() => {
+  // this should be done pre mount, and then during mount need to call
+  // this.game.buildCanvas() or something
+  this.game = window.GAME = new Game()
+})
+
+</root>
 
 <controls>
   <h2>Controls</h2>

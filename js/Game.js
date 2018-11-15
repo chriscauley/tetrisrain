@@ -12,7 +12,7 @@ export default class Game extends CanvasObject {
     this.DEBUG = ~window.location.search.indexOf('debug')
     this.makeVars()
     this.container = document.getElementById('game')
-    this.makeUI()
+    this.tags = {}
 
     this.animation_time = 500
     this.canvas = this.newCanvas({
@@ -36,34 +36,6 @@ export default class Game extends CanvasObject {
     this.tick = this.tick.bind(this)
     this.tick()
     this.DEBUG && this.loadGame(430)
-  }
-
-  makeUI() {
-    this.tags = {}
-    const container = this.newElement('div', {
-      className: 'ui',
-      parent: this.container,
-    })
-    this.newElement(
-      'scores',
-      { parent: document.getElementById('settings') },
-      { game: this },
-    )
-    this.newElement(
-      'level-editor',
-      { parent: document.getElementById('settings') },
-      { game: this },
-    )
-    this.newElement(
-      'piece-stack',
-      { parent: container },
-      { name: 'next_piece', game: this },
-    )
-    this.newElement(
-      'piece-stack',
-      { parent: container },
-      { name: 'piece_stash', game: this, after: 'STASH' },
-    )
   }
 
   animateLines(lines) {
@@ -240,7 +212,7 @@ export default class Game extends CanvasObject {
     this.controller.reset(id)
     this.board.reset(id)
     this.getPiece()
-    this.scores && this.scores.mount()
+    this.tags.scores && this.tags.scores.reset()
     this.updatePieceList()
     this.getSkyline()
   }

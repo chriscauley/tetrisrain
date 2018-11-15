@@ -9,16 +9,22 @@ import { debounce } from 'lodash'
     </div>
   </div>
 
-  this.on("mount",function() {
-    this.opts.game.scores = this;
-    this.opts.game.tags['scores'] = this;
+  reset() {
     this.data = { };
     this.totals = { };
     this.names = [];
     this.fname = "score/"+Math.random();
     this.update();
     this.n_visible = 5
+  }
+
+  this.on("mount",function() {
+    this.reset()
     this.bounce = debounce(this.update);
+    setTimeout(() => {
+      this.opts.game.scores = this;
+      this.opts.game.tags['scores'] = this;
+    })
   });
 
   this.on("update",function() {
@@ -66,11 +72,13 @@ import { debounce } from 'lodash'
   <center if={ opts.after }>{ opts.after }</center>
 
   this.on("mount",function() {
-    this.opts.game.tags[this.opts.name] = this;
     this.root.classList.add(this.opts.name);
     this.pieces = [undefined];
-    this.opts.game.updatePieceList();
     this.update();
+    setTimeout(() => {
+      this.opts.game.tags[this.opts.name] = this
+      this.opts.game.updatePieceList()
+    })
   })
 
   setPieces(pieces,empty) {
@@ -124,19 +132,16 @@ import { debounce } from 'lodash'
     }
     this.files.sort(); */
   });
-  this.on("mount", function() {
-    this.game = this.opts.game
-  });
   save(e) {
     if (e.item && !_confirm(e)) { return; }
     var number = (e.item && e.item.id) || Math.round(10000*Math.random());
-    this.game.saveGame("game/"+number);
+    this.opts.game.saveGame("game/"+number);
   }
   trash(e) {
     if (!_confirm(e)) { return; }
     // uR.storage.remove("game/"+e.item.id);
   }
   load(e) {
-    this.game.loadGame(e.item.id)
+    this.opts.game.loadGame(e.item.id)
   }
 </level-editor>
