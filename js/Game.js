@@ -195,27 +195,14 @@ export default class Game extends CanvasObject {
       (this.ghostY - 1) * this.scale - current_top,
     )
 
+    this._piece.draw(
+      this,
+      this._piece.y + current_top / this.scale - this.ghostY,
+    )
     this.ctx.globalAlpha = 1
 
     // draw piece
-    this.ctx.drawImage(
-      this.board.imgs[this.piece.n][this.piece.r],
-      (this.piece.x - 2) * this.scale,
-      (this.piece.y - this.board.top - 1) * this.scale,
-    )
-
-    this._piece.squares
-      .concat(this.board.squares)
-      .filter(s => s)
-      .forEach(s =>
-        this.drawBox(
-          s.x + 0.25,
-          s.y + 0.25 - this.board.top,
-          0.5,
-          0.5,
-          'black',
-        ),
-      )
+    this._piece.draw(this, current_top / this.scale)
 
     this.ctx.restore() // remove translates above
   }

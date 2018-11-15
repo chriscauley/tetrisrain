@@ -45,6 +45,7 @@ export default class Board extends CanvasObject {
       this.ctx.fillStyle = 'black'
       this.ctx.fillText(i, 0, i * this.scale + 12) // show row number
     })
+    this.squares.forEach(s => s && s.draw(this))
   }
 
   makeCanvas() {

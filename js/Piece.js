@@ -106,6 +106,15 @@ export class Square extends uR.Object {
     _.remove(this.piece.squares, s => s === this)
     this.piece.board.remove(this.x, this.y)
   }
+  draw(canvas_object, offset_y = 0) {
+    canvas_object.drawBox(
+      this.x + 0.25,
+      this.y + 0.25 - offset_y,
+      0.5,
+      0.5,
+      'black',
+    )
+  }
 }
 
 export default class Piece extends uR.Object {
@@ -197,5 +206,10 @@ export default class Piece extends uR.Object {
     } else {
       this._move([-dx, -dy])
     }
+  }
+
+  draw(canvasObject, offset_y = 0) {
+    // canvasObject is either board or game
+    this.squares.forEach(s => s.draw(canvasObject, offset_y))
   }
 }
