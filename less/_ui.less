@@ -1,0 +1,49 @@
+.ui {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.ui piece-stack {
+  top: 0;
+  position: absolute;
+  width: 100px;
+  &.next_piece { right: 0; }
+  &.piece_stash { left: 0; }
+}
+
+.ui .piece {
+  background: white;
+  border: double gray;
+  border-width: 0 8px;
+  margin: 0 auto;
+  width: 80%;
+  &:before { /* make square */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 80% auto;
+    content: "";
+    display: block;
+    padding-top: 75%;
+  }
+  &:last-child {
+    border-radius: 0 0 10px 10px;
+    border-bottom-width: 8px;
+  }
+  &:first-child {
+    border-radius: 10px !important; /* apparently last-child is stronger than first */
+    border-width: 8px;
+    width: 100%;
+  }
+}
+
+.ui .piece.p {
+  /* individual pieces need a little correction */
+  &1, &2, &3, &4, &5 {
+    &:before { background-position-x: 0; }
+  }
+  &6:before { background-position-y: -100%; } /* very odd... */
+  &7:before { background-position-x: -40%; }
+}
