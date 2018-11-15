@@ -93,13 +93,14 @@ export class Square extends uR.Object {
   get y() {
     return this.dy + this.piece.y
   }
-  check() {
+  check(f = (x, y) => [x, y]) {
+    const [x, y] = f(this.x, this.y)
     // verify that the square is not in an occupied block
-    if (!this.piece.board.exists(this.x, this.y)) {
+    if (!this.piece.board.exists(x, y)) {
       // off board
       return false
     }
-    const square = this.piece.board.get(this.x, this.y)
+    const square = this.piece.board.get(x, y)
     return !square || square.piece === this.piece
   }
   kill() {
@@ -138,6 +139,7 @@ export default class Piece extends uR.Object {
     this.max_r = config.ROTATIONS[opts.shape] // 0,2,4 depending on shape
     this.squares.forEach(s => (s.piece = this)) //#! TODO this should be handled as a FK
     this.rotated = 0 // number of times rotated
+    this.getGhost()
   }
 
   rotate(spin) {
@@ -163,6 +165,7 @@ export default class Piece extends uR.Object {
       }
     })
     if (this.check()) {
+      this.getGhost()
       return true
     } else {
       this.rotate(-spin)
@@ -180,6 +183,14 @@ export default class Piece extends uR.Object {
     // verifies that the piece is placed somewhere that it can be
     // Here is where we check the board to see if a piece is blocking a movement
     return _.every(this.squares, s => s.check())
+  }
+
+  getGhost() {
+    this.ghost_dy = 0
+    const check = s => s.check((x, y) => [x, y + this.ghost_dy + 1])
+    while (_.every(this.squares, check)) {
+      this.ghost_dy++
+    }
   }
 
   drop() {
@@ -202,6 +213,7 @@ export default class Piece extends uR.Object {
     this.x += dx
     this.y += dy
     if (this.check()) {
+      this.getGhost()
       return true
     } else {
       this._move([-dx, -dy])

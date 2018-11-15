@@ -167,10 +167,7 @@ export default class Game extends CanvasObject {
       (this.ghostY - 1) * this.scale - current_top,
     )
 
-    this._piece.draw(
-      this,
-      this._piece.y + current_top / this.scale - this.ghostY,
-    )
+    this._piece.draw(this, current_top / this.scale - this._piece.ghost_dy)
     this.ctx.globalAlpha = 1
 
     // draw piece
