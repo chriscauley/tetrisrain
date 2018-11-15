@@ -83,6 +83,10 @@ export class Square extends uR.Object {
     dy: Int(),
   }
   static opts = {}
+  constructor(opts) {
+    super(opts)
+    this._drop = 0 // counter used for moving it down
+  }
   get x() {
     return this.dx + this.piece.x
   }
@@ -97,6 +101,10 @@ export class Square extends uR.Object {
     }
     const square = this.piece.board.get(this.x, this.y)
     return !square || square.piece === this.piece
+  }
+  kill() {
+    _.remove(this.piece.squares, s => s === this)
+    this.piece.board.remove(this.x, this.y)
   }
 }
 

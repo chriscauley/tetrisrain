@@ -1,4 +1,4 @@
-import { range, inRange } from 'lodash'
+import { range, inRange, every } from 'lodash'
 
 import Pallet from './Pallet'
 import CanvasObject, { drawLine } from './CanvasObject'
@@ -147,51 +147,70 @@ export default class Board extends CanvasObject {
 
   removeLines() {
     const _lines = []
-    let changed
-    for (let i = this.skyline; i < config.HEIGHT; i++) {
-      if (this.f[i][0] === this.DEEP && i > this.deep_line) {
+    for (let y = this.skyline; y < config.HEIGHT; y++) {
+      if (this.f[y][0] === this.DEEP && y > this.deep_line) {
+        // #!
         continue
       }
-      let gapFound = 0
-      for (let j = 0; j < config.WIDTH; j++) {
-        if (this.f[i][j] === 0) {
-          gapFound = 1
-          break
-        }
+      const squares = this.squares.slice(
+        y * config.WIDTH,
+        (y + 1) * config.WIDTH,
+      )
+      if (!every(squares)) {
+        continue
       }
-      if (gapFound) continue // gapFound in previous loop
 
-      changed = true
-      if (i >= this.deep_line) {
+      if (y >= this.deep_line) {
         // make row DEEP
         for (let j = 0; j < config.WIDTH; j++) {
-          this.f[i][j] = this.DEEP
+          this.f[y][j] = this.DEEP
         }
+        squares.forEach(s => (s.is_deep = true))
         continue
       }
 
-      this.scoreLine(i)
-      _lines.push(i)
+      this.scoreLine(y)
+      _lines.push(y)
     }
 
-    if (!changed) {
-      return
-    }
     this.game.animateLines(_lines)
-    _lines.forEach(i => {
+    _lines.forEach(y => {
       //eliminate line by moving eveything down a line
-      for (let k = i; k >= this.skyline; k--) {
-        for (let j = 0; j < config.WIDTH; j++) {
-          this.f[k][j] = this.f[k - 1][j]
+      for (let k = y; k >= this.skyline; k--) {
+        for (let x = 0; x < config.WIDTH; x++) {
+          this.f[k][x] = this.f[k - 1][x]
         }
       }
-      for (let j = 0; j < config.WIDTH; j++) {
-        this.f[0][j] = 0
+      for (let x = 0; x < config.WIDTH; x++) {
+        this.f[0][x] = 0
+        this.get(x, y).kill() // #!!
       } // set top to zero
+      this.squares
+        .slice(0, (y + 1) * config.WIDTH)
+        .filter(s => s)
+        .map(s => s._drop++) // #!!
       this.skyline++
     })
+    this.squares
+      .filter(s => s && s._drop)
+      .reverse()
+      .forEach(s => {
+        this.remove(s.x, s.y)
+        s.dy += s._drop
+        s._drop = 0
+        this.set(s.x, s.y, s)
+      })
     this.draw()
     this.game.getSkyline()
+  }
+  print() {
+    for (let y = this.skyline; y < config.HEIGHT; y++) {
+      const squares = this.squares.slice(
+        y * config.WIDTH,
+        (y + 1) * config.WIDTH,
+      )
+      console.log([y,...squares.map(s=>s?1:' ')].join(' ')) // eslint-disable-line
+    }
   }
 
   scoreLine(i) {

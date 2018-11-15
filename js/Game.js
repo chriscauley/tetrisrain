@@ -296,7 +296,8 @@ export default class Game extends CanvasObject {
     if (!_f) {
       return
     }
-    if (config.HEIGHT < _f.length) { // #!
+    if (config.HEIGHT < _f.length) {
+      // #!
       config.HEIGHT = _f.length + this.visible_height
     }
     let new_skyline = config.HEIGHT
