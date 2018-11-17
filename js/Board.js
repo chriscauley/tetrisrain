@@ -193,7 +193,7 @@ export default class Board extends CanvasObject {
 
   scoreLine(y) {
     // maybe just move this logic to the scores tag?
-    if (this.get(y,0).is_deep) {
+    if (this.get(y, 0).is_deep) {
       this.game.scores.add('deep')
     } else {
       this.game.scores.add('lines')

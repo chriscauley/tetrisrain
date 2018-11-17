@@ -135,7 +135,7 @@ export default class Piece extends uR.Object {
       color: opts.board.pallet[config._shapes.indexOf(opts.shape)],
     })
     if (!opts.squares && config._pieces[opts.shape]) {
-      opts.squares = config._pieces[opts.shape].map( s => ({
+      opts.squares = config._pieces[opts.shape].map(s => ({
         color: opts.color,
         ...s,
       }))
