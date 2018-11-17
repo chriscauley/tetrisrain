@@ -7,6 +7,8 @@ import config from './config'
 export default class Board extends CanvasObject {
   constructor(game) {
     super()
+    this.W = 10
+    this.H = 30
     this.game = game
     this.scale = this.game.scale
     this.reset()
@@ -18,11 +20,11 @@ export default class Board extends CanvasObject {
 
   reset() {
     this.pieces = []
-    this.skyline = config.HEIGHT - 1
-    this.top = config.HEIGHT - this.game.visible_height
+    this.skyline = this.H - 1
+    this.top = this.H - this.game.visible_height
 
     // nested arrays of zeros make up the initial board
-    this.squares = range(config.HEIGHT * config.WIDTH).map(() => 0)
+    this.squares = range(this.H * this.W).map(() => 0)
 
     //!# TODO this isn't wiping the board...
     this.canvas &&
@@ -35,15 +37,15 @@ export default class Board extends CanvasObject {
   }
 
   getSkyline() {
-    const first = find(this.squares) || { y: config.HEIGHT }
+    const first = find(this.squares) || { y: this.H }
     this.skyline = first.y
   }
 
   makeCanvas() {
     const attrs = {
       id: 'board',
-      width: config.WIDTH * this.scale + 1,
-      height: config.HEIGHT * this.scale + 1,
+      width: this.W * this.scale + 1,
+      height: this.H * this.scale + 1,
       parent: this.game.DEBUG && document.getElementById('debug'),
     }
     this.canvas = this.newCanvas(attrs)
@@ -56,15 +58,15 @@ export default class Board extends CanvasObject {
     // gradient on grid
     this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height)
     this.gradient.addColorStop(0, 'red')
-    this.gradient.addColorStop(2 / config.HEIGHT, 'red')
-    this.gradient.addColorStop(2 / config.HEIGHT, '#faa')
+    this.gradient.addColorStop(2 / this.H, 'red')
+    this.gradient.addColorStop(2 / this.H, '#faa')
     this.gradient.addColorStop(0.5, '#fff')
     this.gradient.addColorStop(1, '#fff')
     this.ctx.fillStyle = this.gradient
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
     // make grid
-    for (let i = 0; i <= config.WIDTH; i++) {
+    for (let i = 0; i <= this.W; i++) {
       drawLine(
         this.ctx,
         i * this.scale,
@@ -74,7 +76,7 @@ export default class Board extends CanvasObject {
         this.pallet.border,
       )
     }
-    for (let i = 0; i <= config.HEIGHT; i++) {
+    for (let i = 0; i <= this.H; i++) {
       drawLine(
         this.ctx,
         0,
@@ -139,10 +141,10 @@ export default class Board extends CanvasObject {
 
   removeLines() {
     const _lines = []
-    for (let y = this.skyline; y < config.HEIGHT; y++) {
+    for (let y = this.skyline; y < this.H; y++) {
       const squares = this.squares.slice(
-        y * config.WIDTH,
-        (y + 1) * config.WIDTH,
+        y * this.W,
+        (y + 1) * this.W,
       )
       if (!every(squares)) {
         continue
@@ -160,11 +162,11 @@ export default class Board extends CanvasObject {
 
     this.game.animateLines(_lines)
     _lines.forEach(y => {
-      for (let x = 0; x < config.WIDTH; x++) {
+      for (let x = 0; x < this.W; x++) {
         this.get(x, y).kill()
       } // set top to zero
       this.squares
-        .slice(0, (y + 1) * config.WIDTH)
+        .slice(0, (y + 1) * this.W)
         .filter(s => s)
         .map(s => s._drop++)
       this.skyline++
@@ -182,10 +184,10 @@ export default class Board extends CanvasObject {
     this.game.getSkyline()
   }
   print() {
-    for (let y = this.skyline; y < config.HEIGHT; y++) {
+    for (let y = this.skyline; y < this.H; y++) {
       const squares = this.squares.slice(
-        y * config.WIDTH,
-        (y + 1) * config.WIDTH,
+        y * this.W,
+        (y + 1) * this.W,
       )
       console.log([y,...squares.map(s=>s?1:' ')].join(' ')) // eslint-disable-line
     }
@@ -200,9 +202,9 @@ export default class Board extends CanvasObject {
     }
   }
   exists(x, y) {
-    return inRange(x, 0, config.WIDTH) && inRange(y, 0, config.HEIGHT)
+    return inRange(x, 0, this.W) && inRange(y, 0, this.H)
   }
-  _xy2i = (x, y) => x + y * config.WIDTH
+  _xy2i = (x, y) => x + y * this.W
   get(x, y) {
     return this.squares[this._xy2i(x, y)]
   }

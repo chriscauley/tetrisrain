@@ -121,7 +121,7 @@ export class Square extends uR.Object {
 
 export default class Piece extends uR.Object {
   static fields = {
-    x: Int(config.WIDTH / 2),
+    x: Int(),
     y: Int(0),
     squares: List(Square),
   }
@@ -133,6 +133,7 @@ export default class Piece extends uR.Object {
   constructor(opts) {
     _.defaults(opts, {
       color: opts.board.pallet[config._shapes.indexOf(opts.shape)],
+      x: opts.board.W/2,
     })
     if (!opts.squares && config._pieces[opts.shape]) {
       opts.squares = config._pieces[opts.shape].map(s => ({

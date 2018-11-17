@@ -59,6 +59,4 @@ export default {
   N_TYPES,
   _pieces,
   _shapes,
-  WIDTH: 10,
-  HEIGHT: 30,
 }

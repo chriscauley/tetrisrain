@@ -29,8 +29,8 @@ export default class Game extends CanvasObject {
     this.controller = new Controller(this)
     this.board = new Board(this)
     this.animation_canvas = this.newCanvas({
-      width: config.WIDTH * this.scale + 1,
-      height: config.HEIGHT * this.scale + 1,
+      width: this.board.W * this.scale + 1,
+      height: this.board.H * this.scale + 1,
     })
 
     this.reset()
@@ -96,7 +96,7 @@ export default class Game extends CanvasObject {
       }
     }
     // draw grid and floor
-    this.floor = config.HEIGHT - current_top / this.scale
+    this.floor = this.board.H - current_top / this.scale
     const grid_rows = this.floor
     this.ctx.drawImage(
       this.board.grid,
@@ -148,7 +148,7 @@ export default class Game extends CanvasObject {
     this.drawBox(
       -5,
       this.board.deep_line - this.board.top,
-      config.WIDTH + 10,
+      this.board.W + 10,
       this.canvas.height,
       'rgba(0,0,255,0.25)',
     )
@@ -226,6 +226,10 @@ export default class Game extends CanvasObject {
     }
   }
 
+  serialize() {
+
+  }
+
   saveGame(_id) {
     //uR.storage.set(_id,this.serialize());
   }
@@ -242,7 +246,7 @@ export default class Game extends CanvasObject {
       (this.board.skyline - this.visible_height + this.config.b_level) *
       this.board.scale
     top = Math.min(
-      (config.HEIGHT - this.visible_height) * this.board.scale,
+      (this.board.H - this.visible_height) * this.board.scale,
       top,
     )
     this.trigger_line = Math.max(top / this.scale, this.config.b_level)
@@ -278,14 +282,14 @@ export default class Game extends CanvasObject {
     const r = 0
     this.piece = {
       n: N,
-      x: config.WIDTH / 2,
+      x: this.board.W / 2,
       y: y,
       r: r,
       dx: config.PIECES[N][r][0],
       dy: config.PIECES[N][r][1],
     }
     this._piece = new Piece({
-      x: config.WIDTH / 2,
+      x: this.board.W / 2,
       y: y,
       r: 0,
       shape: config._shapes[N],
