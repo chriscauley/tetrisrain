@@ -226,7 +226,7 @@ export default class Game extends CanvasObject {
     })
     this.turn++
     this.getPiece()
-    if (!this.pieceFits(this.piece.x, this.piece.y)) {
+    if (!this._piece.check()) {
       this.gameOver()
       return
     }
@@ -237,32 +237,7 @@ export default class Game extends CanvasObject {
   }
 
   loadGame(id, reset) {
-    if (reset === undefined) {
-      reset = true
-    }
-    reset && this.reset(id)
-    const _f = undefined //uR.storage.get('game/' + id)
-    if (!_f) {
-      return
-    }
-    if (config.HEIGHT < _f.length) {
-      // #!
-      config.HEIGHT = _f.length + this.visible_height
-    }
-    let new_skyline = config.HEIGHT
-    _f.forEach((line, i) => {
-      const line_no = 1 + i + this.board.skyline - _f.length
-      this.board.f[line_no] = line
-      this.board.f[line_no].forEach(c => {
-        if (c && line_no < new_skyline) {
-          new_skyline = line_no
-        }
-      })
-    })
-    this.board.skyline = new_skyline
-    this.piece.y = this.board.top
-    this.board.draw()
-    this.pieceFits()
+    throw "NotImplemented"
   }
 
   getSkyline() {
@@ -333,64 +308,33 @@ export default class Game extends CanvasObject {
   makeActions() {
     this._act = {
       left: function() {
-        const p = this.piece
         this._piece.moveLeft()
-        if (this.pieceFits(p.x - 1, p.y)) {
-          p.x--
-        }
       },
 
       right: function() {
-        const p = this.piece
-        if (this.pieceFits(p.x + 1, p.y)) {
-          this._piece.moveRight()
-          p.x++
-        }
+        this._piece.moveRight()
       },
 
       down: function() {
         if (!this._piece.moveDown()) {
           this._piece.lock()
-        }
-        if (this.pieceFits(this.piece.x, this.piece.y + 1)) {
-          this.piece.y++
-        } else {
-          this.board.setPiece()
           this.nextTurn()
         }
       },
 
       rotate: function() {
-        const p = this.piece
         this._piece.rotateLeft()
-        if (config.PIECES[p.n].length === 1) {
-          return
-        } // o don't rotate!
-        const r = (p.r + 1) % config.PIECES[p.n].length
-
-        if (this.pieceFits(p.x, p.y, r)) {
-          p.r = r
-          p.dx = config.PIECES[p.n][r][0]
-          p.dy = config.PIECES[p.n][r][1]
-        }
       },
 
       drop: function() {
         if (!this._piece.drop()) {
           this._piece.lock()
+          this.nextTurn()
         }
-        const p = this.piece
-        if (!this.pieceFits(p.x, p.y + 1)) {
-          this.board.setPiece()
-          return
-        }
-        p.y = this.ghostY
       },
       lock: function() {
-        if (this.piece.y === this.ghostY) {
-          this._piece.lock()
-          this.board.setPiece()
-        }
+        this._piece.lock()
+        this.nextTurn()
       },
       swapPiece: function() {
         if (this.last_swap === this.turn) {
