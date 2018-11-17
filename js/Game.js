@@ -284,7 +284,6 @@ export default class Game extends CanvasObject {
       dx: config.PIECES[N][r][0],
       dy: config.PIECES[N][r][1],
     }
-    this.getGhost()
     this._piece = new Piece({
       x: config.WIDTH / 2,
       y: y,
@@ -300,37 +299,32 @@ export default class Game extends CanvasObject {
   }
 
   makeActions() {
-    this._act = {
-      left: function() {
-        this._piece.moveLeft()
-      },
+    this.act = {
+      left: () => this._piece.moveLeft(),
+      right: () => this._piece.moveRight(),
 
-      right: function() {
-        this._piece.moveRight()
-      },
-
-      down: function() {
+      down: () => {
         if (!this._piece.moveDown()) {
           this._piece.lock()
           this.nextTurn()
         }
       },
 
-      rotate: function() {
+      rotate: () => {
         this._piece.rotateLeft()
       },
 
-      drop: function() {
+      drop: () => {
         if (!this._piece.drop()) {
           this._piece.lock()
           this.nextTurn()
         }
       },
-      lock: function() {
+      lock: () => {
         this._piece.lock()
         this.nextTurn()
       },
-      swapPiece: function() {
+      swapPiece: () => {
         if (this.last_swap === this.turn) {
           return
         }
@@ -348,46 +342,5 @@ export default class Game extends CanvasObject {
         this.tags.piece_stash.setPieces([this.swapped_piece], 0)
       },
     }
-
-    this.act = {}
-    for (const k in this._act) {
-      this.act[k] = (function(func, that) {
-        return function(e) {
-          func.bind(that)(e)
-          that.getGhost()
-        }
-      })(this._act[k], this)
-    }
-  }
-
-  getGhost() {
-    if (!this.piece) {
-      return
-    }
-    this.ghostY = this.board.skyline - 4
-    while (this.pieceFits(this.piece.x, this.ghostY + 1)) {
-      this.ghostY++
-    }
-  }
-
-  pieceFits(X, Y, r) {
-    if (r === undefined) {
-      r = this.piece.r
-    }
-    const dx = config.PIECES[this.piece.n][r][0]
-    const dy = config.PIECES[this.piece.n][r][1]
-    for (let k = 0; k < config.N; k++) {
-      const _x = X + dx[k]
-      const _y = Y + dy[k]
-      if (
-        _x < 0 ||
-        _x >= config.WIDTH || // square is not in x
-        _y >= config.HEIGHT || // square is above bottom of board
-        (_y > -1 && this.board.f[_y][_x] > 0) // square is not occupied, if square is not above board
-      ) {
-        return 0
-      }
-    }
-    return 1
   }
 }

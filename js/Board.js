@@ -22,7 +22,6 @@ export default class Board extends CanvasObject {
     this.top = config.HEIGHT - this.game.visible_height
 
     // nested arrays of zeros make up the initial board
-    this.f = range(config.HEIGHT).map(() => range(config.WIDTH).map(() => 0))
     this.squares = range(config.HEIGHT * config.WIDTH).map(() => 0)
 
     //!# TODO this isn't wiping the board...
@@ -32,19 +31,6 @@ export default class Board extends CanvasObject {
 
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-
-    // draw all pieces
-    this.f.forEach((row, i) => {
-      row.forEach((cell, j) => {
-        if (!cell) {
-          // cell is zero (empty)
-          return
-        }
-        this.drawBox(j, i, 1, 1, this.pallet[Math.abs(cell)])
-      })
-      this.ctx.fillStyle = 'black'
-      this.ctx.fillText(i, 0, i * this.scale + 12) // show row number
-    })
     this.squares.forEach(s => s && s.draw(this))
   }
 
@@ -154,10 +140,6 @@ export default class Board extends CanvasObject {
   removeLines() {
     const _lines = []
     for (let y = this.skyline; y < config.HEIGHT; y++) {
-      if (this.f[y][0] === this.DEEP && y > this.deep_line) {
-        // #!
-        continue
-      }
       const squares = this.squares.slice(
         y * config.WIDTH,
         (y + 1) * config.WIDTH,
@@ -168,9 +150,6 @@ export default class Board extends CanvasObject {
 
       if (y >= this.deep_line) {
         // make row DEEP
-        for (let j = 0; j < config.WIDTH; j++) {
-          this.f[y][j] = this.DEEP
-        }
         squares.forEach(s => (s.is_deep = true))
         continue
       }
@@ -181,20 +160,13 @@ export default class Board extends CanvasObject {
 
     this.game.animateLines(_lines)
     _lines.forEach(y => {
-      //eliminate line by moving eveything down a line
-      for (let k = y; k >= this.skyline; k--) {
-        for (let x = 0; x < config.WIDTH; x++) {
-          this.f[k][x] = this.f[k - 1][x]
-        }
-      }
       for (let x = 0; x < config.WIDTH; x++) {
-        this.f[0][x] = 0
-        this.get(x, y).kill() // #!!
+        this.get(x, y).kill()
       } // set top to zero
       this.squares
         .slice(0, (y + 1) * config.WIDTH)
         .filter(s => s)
-        .map(s => s._drop++) // #!!
+        .map(s => s._drop++)
       this.skyline++
     })
     this.squares
@@ -219,25 +191,13 @@ export default class Board extends CanvasObject {
     }
   }
 
-  scoreLine(i) {
+  scoreLine(y) {
     // maybe just move this logic to the scores tag?
-    if (this.f[i][0] === this.DEEP) {
+    if (this.get(y,0).is_deep) {
       this.game.scores.add('deep')
     } else {
       this.game.scores.add('lines')
     }
-  }
-  setPiece() {
-    const p = this.game.piece
-    for (let k = 0; k < config.N; k++) {
-      const X = p.x + p.dx[k]
-      const Y = p.y + p.dy[k]
-      if (0 <= Y && Y < config.HEIGHT && 0 <= X && X < config.WIDTH) {
-        this.f[Y][X] = p.n
-      }
-    }
-    this.draw()
-    this.game.nextTurn()
   }
   exists(x, y) {
     return inRange(x, 0, config.WIDTH) && inRange(y, 0, config.HEIGHT)
