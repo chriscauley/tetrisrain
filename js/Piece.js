@@ -108,13 +108,7 @@ export class Square extends uR.Object {
     this.piece.board.remove(this.x, this.y)
   }
   draw(canvas_object, offset_y = 0) {
-    canvas_object.drawBox(
-      this.x + 0.25,
-      this.y + 0.25 - offset_y,
-      0.5,
-      0.5,
-      'black',
-    )
+    canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.piece.color)
   }
 }
 
@@ -126,11 +120,13 @@ export default class Piece extends uR.Object {
   }
   static opts = {
     board: uR.REQUIRED,
+    color: 'pink',
+    shape: uR.REQUIRED,
   }
   constructor(opts) {
-    if (typeof opts === 'string') {
-      opts = { shape: opts }
-    }
+    _.defaults(opts, {
+      color: opts.board.pallet[config._shapes.indexOf(opts.shape)],
+    })
     if (!opts.squares && config._pieces[opts.shape]) {
       opts.squares = [...config._pieces[opts.shape]]
     }

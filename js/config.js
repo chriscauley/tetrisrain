@@ -30,7 +30,7 @@ export const PIECES = [
 ]
 
 export const _pieces = {}
-const _shapes = ['t', 'l', 'j', 'z', 's', 'i', 'o']
+const _shapes = [undefined, 't', 'l', 'j', 'z', 's', 'i', 'o']
 
 const ROTATIONS = {
   t: 4,
@@ -43,7 +43,7 @@ const ROTATIONS = {
 }
 PIECES.slice(1).forEach((dxdys, i) => {
   const [dxs, dys] = dxdys[0]
-  _pieces[_shapes[i]] = zip(dxs, dys).map(
+  _pieces[_shapes[i + 1]] = zip(dxs, dys).map(
     ([dx, dy]) => ({ dx, dy }), // eg {dx: 1, dy: -1}
   )
 })

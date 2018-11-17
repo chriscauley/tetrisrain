@@ -163,12 +163,6 @@ export default class Game extends CanvasObject {
 
     // draw ghost
     this.ctx.globalAlpha = 0.5
-    this.ctx.drawImage(
-      this.board.imgs[this.piece.n][this.piece.r],
-      (this.piece.x - 2) * this.scale,
-      (this.ghostY - 1) * this.scale - current_top,
-    )
-
     this._piece.draw(this, current_top / this.scale - this._piece.ghost_dy)
     this.ctx.globalAlpha = 1
 
@@ -236,8 +230,8 @@ export default class Game extends CanvasObject {
     //uR.storage.set(_id,this.serialize());
   }
 
-  loadGame(id, reset) {
-    throw "NotImplemented"
+  loadGame(_id, _reset) {
+    throw 'NotImplemented'
   }
 
   getSkyline() {
@@ -295,7 +289,7 @@ export default class Game extends CanvasObject {
       x: config.WIDTH / 2,
       y: y,
       r: 0,
-      shape: config._shapes[N - 1],
+      shape: config._shapes[N],
       board: this.board,
     })
     this.board.pieces.push(this._piece)
