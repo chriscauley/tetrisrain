@@ -1,4 +1,4 @@
-import { range, inRange, every } from 'lodash'
+import { range, inRange, every, find } from 'lodash'
 
 import Pallet from './Pallet'
 import CanvasObject, { drawLine } from './CanvasObject'
@@ -46,6 +46,11 @@ export default class Board extends CanvasObject {
       this.ctx.fillText(i, 0, i * this.scale + 12) // show row number
     })
     this.squares.forEach(s => s && s.draw(this))
+  }
+
+  getSkyline() {
+    const first = find(this.squares) || { y: config.HEIGHT }
+    this.skyline = first.y
   }
 
   makeCanvas() {

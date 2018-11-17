@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 import Board from './Board'
 import CanvasObject, { Ease } from './CanvasObject'
 import Controller from './Controller'
@@ -231,16 +233,7 @@ export default class Game extends CanvasObject {
   }
 
   saveGame(_id) {
-    let j
-    for (let i = 0; i < this.board.f.length; i++) {
-      for (j = 0; j < this.board.f[i].length; j++) {
-        if (this.board.f[i][j] > 0) break
-      }
-      if (this.board.f[i][j]) {
-        break
-      }
-    }
-    //uR.storage.set(_id,this.board.f.slice(i));
+    //uR.storage.set(_id,this.serialize());
   }
 
   loadGame(id, reset) {
@@ -273,19 +266,7 @@ export default class Game extends CanvasObject {
   }
 
   getSkyline() {
-    let found
-    for (let i = 0, h = this.board.f.length; i < h; i++) {
-      for (let j = 0, w = this.board.f[i].length; j < w; j++) {
-        if (this.board.f[i][j]) {
-          this.board.skyline = i
-          found = true
-          break
-        }
-      }
-      if (found) {
-        break
-      }
-    }
+    this.board.getSkyline()
 
     const old_top = Math.max(this.top, 0)
     let top =
