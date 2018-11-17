@@ -14,7 +14,7 @@ export default class Pallet {
       bg: 'white',
       fg: '#333',
     }
-    defaults[this.board.DEEP] = '#222'
+    defaults.DEEP = '#222'
     for (const key in defaults) {
       this[key] = options[key] || defaults[key]
     }

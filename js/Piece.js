@@ -81,8 +81,11 @@ export class Square extends uR.Object {
   static fields = {
     dx: Int(),
     dy: Int(),
+    color: String('pink'),
   }
-  static opts = {}
+  static opts = {
+    piece: uR.REQUIRED,
+  }
   constructor(opts) {
     super(opts)
     this._drop = 0 // counter used for moving it down
@@ -108,7 +111,11 @@ export class Square extends uR.Object {
     this.piece.board.remove(this.x, this.y)
   }
   draw(canvas_object, offset_y = 0) {
-    canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.piece.color)
+    canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.color)
+  }
+  markDeep() {
+    this.is_deep = true
+    this.color = this.piece.board.pallet.DEEP
   }
 }
 
@@ -128,7 +135,10 @@ export default class Piece extends uR.Object {
       color: opts.board.pallet[config._shapes.indexOf(opts.shape)],
     })
     if (!opts.squares && config._pieces[opts.shape]) {
-      opts.squares = [...config._pieces[opts.shape]]
+      opts.squares = config._pieces[opts.shape].map( s => ({
+        color: opts.color,
+        ...s,
+      }))
     }
     super(opts)
     this.r = 0 // current rotation

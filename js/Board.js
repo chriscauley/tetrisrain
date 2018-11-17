@@ -150,7 +150,7 @@ export default class Board extends CanvasObject {
 
       if (y >= this.deep_line) {
         // make row DEEP
-        squares.forEach(s => (s.is_deep = true))
+        !squares[0].is_deep && squares.forEach(s => s.markDeep())
         continue
       }
 
