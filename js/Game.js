@@ -27,7 +27,7 @@ export default class Game {
 
     this.makeActions()
     this.controller = new Controller(this)
-    this.board = new Board(this)
+    this.board = new Board({game: this})
     this.animation_canvas = newCanvas({
       width: this.board.W * this.scale + 1,
       height: this.board.H * this.scale + 1,

@@ -4,16 +4,24 @@ import Pallet from './Pallet'
 import newCanvas, { drawLine } from './newCanvas'
 import newElement from './newElement'
 import config from './config'
+import uR from './Object'
+import Piece from './Piece'
 
-export default class Board {
-  constructor(game) {
-    //super()
-    this.W = 10
-    this.H = 30
-    this.game = game
+export default class Board extends uR.Object{
+  static fields = {
+    W: 10,
+    H: 30,
+    DEEP: 8,
+    pieces: uR.List(Piece),
+  }
+  static opts = {
+    game: uR.REQUIRED,
+    pieces: [],
+  }
+  constructor(opts) {
+    super(opts)
     this.scale = this.game.scale
     this.reset()
-    this.DEEP = 8
 
     this.pallet = new Pallet({ board: this })
     this.makeCanvas()
