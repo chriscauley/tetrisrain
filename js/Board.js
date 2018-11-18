@@ -1,12 +1,13 @@
 import { range, inRange, every, find } from 'lodash'
 
 import Pallet from './Pallet'
-import CanvasObject, { drawLine } from './CanvasObject'
+import newCanvas, { drawLine } from './newCanvas'
+import newElement from './newElement'
 import config from './config'
 
-export default class Board extends CanvasObject {
+export default class Board {
   constructor(game) {
-    super()
+    //super()
     this.W = 10
     this.H = 30
     this.game = game
@@ -28,12 +29,12 @@ export default class Board extends CanvasObject {
 
     //!# TODO this isn't wiping the board...
     this.canvas &&
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
   draw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.squares.forEach(s => s && s.draw(this))
+    this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.squares.forEach(s => s && s.draw(this.canvas))
   }
 
   getSkyline() {
@@ -47,28 +48,33 @@ export default class Board extends CanvasObject {
       width: this.W * this.scale + 1,
       height: this.H * this.scale + 1,
       parent: this.game.DEBUG && document.getElementById('debug'),
+      scale: this.scale,
     }
-    this.canvas = this.newCanvas(attrs)
-    this.ctx = this.canvas.ctx
+    this.canvas = newCanvas(attrs)
 
     attrs.id = 'grid-img'
-    this.grid = this.newElement('img', attrs)
+    this.grid = newElement('img', attrs)
     // this.game.DEBUG && document.getElementById("debug").appendChild(this.grid);
 
     // gradient on grid
-    this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height)
+    this.gradient = this.canvas.ctx.createLinearGradient(
+      0,
+      0,
+      0,
+      this.canvas.height,
+    )
     this.gradient.addColorStop(0, 'red')
     this.gradient.addColorStop(2 / this.H, 'red')
     this.gradient.addColorStop(2 / this.H, '#faa')
     this.gradient.addColorStop(0.5, '#fff')
     this.gradient.addColorStop(1, '#fff')
-    this.ctx.fillStyle = this.gradient
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    this.canvas.ctx.fillStyle = this.gradient
+    this.canvas.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
     // make grid
     for (let i = 0; i <= this.W; i++) {
       drawLine(
-        this.ctx,
+        this.canvas.ctx,
         i * this.scale,
         0,
         i * this.scale,
@@ -78,7 +84,7 @@ export default class Board extends CanvasObject {
     }
     for (let i = 0; i <= this.H; i++) {
       drawLine(
-        this.ctx,
+        this.canvas.ctx,
         0,
         i * this.scale,
         this.canvas.width,
@@ -87,12 +93,13 @@ export default class Board extends CanvasObject {
       )
     }
     this.grid.src = this.canvas.toDataURL()
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     // make pieces
-    this.small_canvas = this.newCanvas({
+    this.small_canvas = newCanvas({
       width: config.N * this.scale + 1,
       height: config.N * this.scale + 1,
+      scale: this.scale,
     })
     this.imgs = {}
     let style = ''
@@ -132,7 +139,7 @@ export default class Board extends CanvasObject {
       }
     })
     this.game.DEBUG && document.querySelector('#debug').appendChild(piece_div)
-    this.newElement('style', {
+    newElement('style', {
       parent: document.head,
       innerHTML: style,
       type: 'text/css',
@@ -142,10 +149,7 @@ export default class Board extends CanvasObject {
   removeLines() {
     const _lines = []
     for (let y = this.skyline; y < this.H; y++) {
-      const squares = this.squares.slice(
-        y * this.W,
-        (y + 1) * this.W,
-      )
+      const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
       if (!every(squares)) {
         continue
       }
@@ -185,17 +189,14 @@ export default class Board extends CanvasObject {
   }
   print() {
     for (let y = this.skyline; y < this.H; y++) {
-      const squares = this.squares.slice(
-        y * this.W,
-        (y + 1) * this.W,
-      )
+      const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
       console.log([y,...squares.map(s=>s?1:' ')].join(' ')) // eslint-disable-line
     }
   }
 
   scoreLine(y) {
     // maybe just move this logic to the scores tag?
-    if (this.get(y, 0).is_deep) {
+    if (this.get(0, y).is_deep) {
       this.game.scores.add('deep')
     } else {
       this.game.scores.add('lines')
@@ -206,6 +207,9 @@ export default class Board extends CanvasObject {
   }
   _xy2i = (x, y) => x + y * this.W
   get(x, y) {
+    if (x > this.W) {
+      return
+    }
     return this.squares[this._xy2i(x, y)]
   }
   set(x, y, value) {

@@ -1,36 +1,37 @@
 import _ from 'lodash'
 
 import Board from './Board'
-import CanvasObject, { Ease } from './CanvasObject'
+import newCanvas, { Ease } from './newCanvas'
 import Controller from './Controller'
 import config from './config'
 import Piece from './Piece'
 
 import './ui.tag'
 
-export default class Game extends CanvasObject {
+export default class Game {
   constructor() {
-    super()
+    //super()
     this.DEBUG = ~window.location.search.indexOf('debug')
     this.makeVars()
     this.container = document.getElementById('game')
     this.tags = {}
 
     this.animation_time = 500
-    this.canvas = this.newCanvas({
+    this.canvas = newCanvas({
       id: 'game_canvas',
       width: 400,
       height: window.innerHeight,
       parent: this.container,
+      scale: this.scale,
     })
-    this.ctx = this.canvas.ctx
 
     this.makeActions()
     this.controller = new Controller(this)
     this.board = new Board(this)
-    this.animation_canvas = this.newCanvas({
+    this.animation_canvas = newCanvas({
       width: this.board.W * this.scale + 1,
       height: this.board.H * this.scale + 1,
+      scale: this.scale,
     })
 
     this.reset()
@@ -81,9 +82,9 @@ export default class Game extends CanvasObject {
   }
 
   draw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.ctx.save()
-    this.ctx.translate(this.x_margin, this.y_margin)
+    this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.canvas.ctx.save()
+    this.canvas.ctx.translate(this.x_margin, this.y_margin)
     let current_top = this.top
     if (this.animations) {
       const a = this.animations[0]
@@ -98,7 +99,7 @@ export default class Game extends CanvasObject {
     // draw grid and floor
     this.floor = this.board.H - current_top / this.scale
     const grid_rows = this.floor
-    this.ctx.drawImage(
+    this.canvas.ctx.drawImage(
       this.board.grid,
       0,
       current_top,
@@ -109,21 +110,21 @@ export default class Game extends CanvasObject {
       this.board.grid.width,
       grid_rows * this.scale,
     )
-    this.drawBox(
+    this.canvas.drawBox(
       -0.5,
       this.floor,
       this.board.canvas.width / this.scale + 1,
       4 / this.scale,
       'black',
     )
-    this.drawBox(
+    this.canvas.drawBox(
       -0.5,
       this.trigger_line,
       this.board.canvas.width / this.scale + 1,
       4 / this.scale,
       'red',
     )
-    this.drawBox(
+    this.canvas.drawBox(
       -0.5,
       this.config.b_level - this.board.top + 1,
       this.board.canvas.width / this.scale + 1,
@@ -132,7 +133,7 @@ export default class Game extends CanvasObject {
     )
 
     // draw board
-    this.ctx.drawImage(
+    this.canvas.ctx.drawImage(
       this.board.canvas,
       0,
       current_top, // sx, sy,
@@ -145,7 +146,7 @@ export default class Game extends CanvasObject {
     )
 
     // draw water
-    this.drawBox(
+    this.canvas.drawBox(
       -5,
       this.board.deep_line - this.board.top,
       this.board.W + 10,
@@ -154,22 +155,25 @@ export default class Game extends CanvasObject {
     )
 
     // animation
-    const a_opacity = this.animation_opacity && this.animation_opacity.get()
+    const a_opacity = this.animation_opacity && this.animation_opacity()
     if (a_opacity) {
-      this.ctx.globalAlpha = a_opacity
-      this.ctx.drawImage(this.animation_canvas, 0, 0)
-      this.ctx.globalAlpha = 1
+      this.canvas.ctx.globalAlpha = a_opacity
+      this.canvas.ctx.drawImage(this.animation_canvas, 0, 0)
+      this.canvas.ctx.globalAlpha = 1
     }
 
     // draw ghost
-    this.ctx.globalAlpha = 0.5
-    this._piece.draw(this, current_top / this.scale - this._piece.ghost_dy)
-    this.ctx.globalAlpha = 1
+    this.canvas.ctx.globalAlpha = 0.5
+    this._piece.draw(
+      this.canvas,
+      current_top / this.scale - this._piece.ghost_dy,
+    )
+    this.canvas.ctx.globalAlpha = 1
 
     // draw piece
-    this._piece.draw(this, current_top / this.scale)
+    this._piece.draw(this.canvas, current_top / this.scale)
 
-    this.ctx.restore() // remove translates above
+    this.canvas.ctx.restore() // remove translates above
   }
 
   makeVars() {
@@ -226,9 +230,7 @@ export default class Game extends CanvasObject {
     }
   }
 
-  serialize() {
-
-  }
+  serialize() {}
 
   saveGame(_id) {
     //uR.storage.set(_id,this.serialize());
@@ -245,10 +247,7 @@ export default class Game extends CanvasObject {
     let top =
       (this.board.skyline - this.visible_height + this.config.b_level) *
       this.board.scale
-    top = Math.min(
-      (this.board.H - this.visible_height) * this.board.scale,
-      top,
-    )
+    top = Math.min((this.board.H - this.visible_height) * this.board.scale, top)
     this.trigger_line = Math.max(top / this.scale, this.config.b_level)
     this.top = Math.max(top, this.scale)
     this.board.top = this.top / this.scale

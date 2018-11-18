@@ -133,7 +133,7 @@ export default class Piece extends uR.Object {
   constructor(opts) {
     _.defaults(opts, {
       color: opts.board.pallet[config._shapes.indexOf(opts.shape)],
-      x: opts.board.W/2,
+      x: opts.board.W / 2,
     })
     if (!opts.squares && config._pieces[opts.shape]) {
       opts.squares = config._pieces[opts.shape].map(s => ({
@@ -228,7 +228,6 @@ export default class Piece extends uR.Object {
   }
 
   draw(canvasObject, offset_y = 0) {
-    // canvasObject is either board or game
     this.squares.forEach(s => s.draw(canvasObject, offset_y))
   }
 }
