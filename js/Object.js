@@ -29,6 +29,7 @@ const uR = {
 }
 
 export default uR
+const notNil = _.negate(_.isNil)
 
 uR.Object = class {
   //fields = {} // defines the data structure to be serialized
@@ -56,7 +57,7 @@ uR.Object = class {
       const field = this.fields[key]
       const value = _.find(
         [json[key], field.initial, this[key], field],
-        _.identity,
+        notNil
       )
       if (field.deserialize) {
         this[key] = field.deserialize(value)
@@ -83,7 +84,7 @@ uR.Object = class {
         json[key] = value.serialize()
       }
     }
-    return _.pickBy(json, _.identity)
+    return _.pickBy(json, notNil)
   }
 }
 
