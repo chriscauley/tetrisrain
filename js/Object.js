@@ -10,9 +10,10 @@ const Field = initial => {
 
 const List = type => {
   return {
-    serialize: list => list.map(
-      item => _.isFunction(item.serialize) ? item.serialize() : item
-    ),
+    serialize: list =>
+      list.map(item =>
+        _.isFunction(item.serialize) ? item.serialize() : item,
+      ),
     deserialize: list => list.map(item => new type(item)),
   }
 }
@@ -25,7 +26,7 @@ const uR = {
   Int,
   Field,
   List,
-  String
+  String,
 }
 
 export default uR
@@ -55,10 +56,7 @@ uR.Object = class {
   deserialize(json) {
     for (const key in this.fields) {
       const field = this.fields[key]
-      const value = _.find(
-        [json[key], field.initial, this[key], field],
-        notNil
-      )
+      const value = _.find([json[key], field.initial, this[key], field], notNil)
       if (field.deserialize) {
         this[key] = field.deserialize(value)
       } else if (typeof field === 'function') {
@@ -87,4 +85,3 @@ uR.Object = class {
     return _.pickBy(json, notNil)
   }
 }
-

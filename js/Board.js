@@ -7,7 +7,7 @@ import config from './config'
 import uR from './Object'
 import Piece from './Piece'
 
-export default class Board extends uR.Object{
+export default class Board extends uR.Object {
   static fields = {
     W: 10,
     H: 30,

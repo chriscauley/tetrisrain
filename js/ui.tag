@@ -1,4 +1,5 @@
 import { debounce } from 'lodash'
+import config from './config'
 
 <scores>
   <div each={ name in names }>
@@ -82,13 +83,14 @@ import { debounce } from 'lodash'
   })
 
   setPieces(pieces,empty) {
-    this.pieces = pieces;
+    this.pieces = pieces.map(p => p.shape?config._shapes.indexOf(p.shape):p)
     this.empty_pieces = new Array(empty);
     this.update();
   }
 </piece-stack>
 
 <level-editor>
+  <input ref="save_name" />
   <button onclick={ save }>Save</button>
   <h3>Load</h3>
   <p each={ id in files }>
@@ -133,9 +135,8 @@ import { debounce } from 'lodash'
     this.files.sort(); */
   });
   save(e) {
-    if (e.item && !_confirm(e)) { return; }
-    var number = (e.item && e.item.id) || Math.round(10000*Math.random());
-    this.opts.game.saveGame("game/"+number);
+    const name = this.refs.save_name.value
+    this.opts.game.save("game/"+name);
   }
   trash(e) {
     if (!_confirm(e)) { return; }

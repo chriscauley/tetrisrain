@@ -17,6 +17,20 @@ export default class Game {
     this.tags = {}
 
     this.animation_time = 500
+
+    this.makeActions()
+    this.controller = new Controller(this)
+    this.board = new Board({ game: this })
+    this.makeCanvases()
+
+    this.reset()
+    this.board.draw()
+    this.tick = this.tick.bind(this)
+    this.tick()
+    this.DEBUG && this.loadGame(430)
+  }
+
+  makeCanvases() {
     this.canvas = newCanvas({
       id: 'game_canvas',
       width: 400,
@@ -24,21 +38,11 @@ export default class Game {
       parent: this.container,
       scale: this.scale,
     })
-
-    this.makeActions()
-    this.controller = new Controller(this)
-    this.board = new Board({game: this})
     this.animation_canvas = newCanvas({
       width: this.board.W * this.scale + 1,
       height: this.board.H * this.scale + 1,
       scale: this.scale,
     })
-
-    this.reset()
-    this.board.draw()
-    this.tick = this.tick.bind(this)
-    this.tick()
-    this.DEBUG && this.loadGame(430)
   }
 
   animateLines(lines) {
@@ -164,14 +168,14 @@ export default class Game {
 
     // draw ghost
     this.canvas.ctx.globalAlpha = 0.5
-    this._piece.draw(
+    this.current_piece.draw(
       this.canvas,
-      current_top / this.scale - this._piece.ghost_dy,
+      current_top / this.scale - this.current_piece.ghost_dy,
     )
     this.canvas.ctx.globalAlpha = 1
 
     // draw piece
-    this._piece.draw(this.canvas, current_top / this.scale)
+    this.current_piece.draw(this.canvas, current_top / this.scale)
 
     this.canvas.ctx.restore() // remove translates above
   }
@@ -186,7 +190,7 @@ export default class Game {
     this.x_margin = 100
     this.y_margin = 20
     this.pieces = []
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 1; i++) {
       //this.pieces = this.pieces.concat(2,3,7,6)
       //this.pieces = this.pieces.concat([6,6,6,6])
       //this.pieces = this.pieces.concat(2,3,2,3)
@@ -201,8 +205,7 @@ export default class Game {
 
   reset(id) {
     this.id = id || 'autosave'
-    this.piece = undefined
-    this._piece = undefined
+    this.current_piece = undefined
     this.makeVars()
     this.turn = 0
 
@@ -217,14 +220,10 @@ export default class Game {
   nextTurn() {
     this.getSkyline()
     this.board.removeLines()
-    this.turns.push({
-      n: this.piece.n,
-      x: this.piece.x,
-      y: this.piece.y,
-    })
+    this.turns.push(_.pick(this.current_piece, ['x', 'y', 'r']))
     this.turn++
     this.getPiece()
-    if (!this._piece.check()) {
+    if (!this.current_piece.check()) {
       this.gameOver()
       return
     }
@@ -232,12 +231,13 @@ export default class Game {
 
   serialize() {}
 
-  saveGame(_id) {
-    //uR.storage.set(_id,this.serialize());
+  saveGame(name) {
+    localStorage.setItem('game/' + name, JSON.stringify(this.serialize()))
   }
 
-  loadGame(_id, _reset) {
-    throw 'NotImplemented'
+  loadGame(name) {
+    const data = JSON.parse(localStorage.getItem('game/' + name))
+    this.deserialize(data)
   }
 
   getSkyline() {
@@ -278,23 +278,14 @@ export default class Game {
 
     let y = Math.max(this.board.top - this.config.b_level, 0)
     y = Math.max(y, this.board.top)
-    const r = 0
-    this.piece = {
-      n: N,
-      x: this.board.W / 2,
-      y: y,
-      r: r,
-      dx: config.PIECES[N][r][0],
-      dy: config.PIECES[N][r][1],
-    }
-    this._piece = new Piece({
+    this.current_piece = new Piece({
       x: this.board.W / 2,
       y: y,
       r: 0,
       shape: config._shapes[N],
       board: this.board,
     })
-    this.board.pieces.push(this._piece)
+    this.board.pieces.push(this.current_piece)
   }
 
   gameOver() {
@@ -303,28 +294,28 @@ export default class Game {
 
   makeActions() {
     this.act = {
-      left: () => this._piece.moveLeft(),
-      right: () => this._piece.moveRight(),
+      left: () => this.current_piece.moveLeft(),
+      right: () => this.current_piece.moveRight(),
 
       down: () => {
-        if (!this._piece.moveDown()) {
-          this._piece.lock()
+        if (!this.current_piece.moveDown()) {
+          this.current_piece.lock()
           this.nextTurn()
         }
       },
 
       rotate: () => {
-        this._piece.rotateLeft()
+        this.current_piece.rotateLeft()
       },
 
       drop: () => {
-        if (!this._piece.drop()) {
-          this._piece.lock()
+        if (!this.current_piece.drop()) {
+          this.current_piece.lock()
           this.nextTurn()
         }
       },
       lock: () => {
-        this._piece.lock()
+        this.current_piece.lock()
         this.nextTurn()
       },
       swapPiece: () => {
@@ -333,14 +324,13 @@ export default class Game {
         }
         this.last_swap = this.turn
         if (!this.swapped_piece) {
-          this.swapped_piece = this.pieces.splice(this.turn, 1)[0]
-          this.getPiece()
+          this.swapped_piece = this.current_piece
+          this.nextTurn()
         } else {
           const old_piece = this.swapped_piece
-          this.swapped_piece = this.piece.n
-          this.piece = undefined
-          this.getPiece(old_piece)
-          this.pieces[this.turn] = this.piece.n
+          this.swapped_piece = this.current_piece
+          this.current_piece = old_piece
+          this.current_piece.reset()
         }
         this.tags.piece_stash.setPieces([this.swapped_piece], 0)
       },

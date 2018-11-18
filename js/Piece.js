@@ -74,7 +74,16 @@ export default class Piece extends uR.Object {
     this.getGhost()
   }
 
-  rotate(spin) {
+  reset() {
+    this.x = this.board.W / 2
+    const y = Math.max(this.board.top - this.board.game.config.b_level, 0)
+    this.y = Math.max(y, this.board.top)
+    while (this.r) {
+      this.rotate(-Math.sign(this.r), true)
+    }
+  }
+
+  rotate(spin, force) {
     if (!this.max_r) {
       return
     } // o piece
@@ -96,7 +105,7 @@ export default class Piece extends uR.Object {
         square.dy = dx
       }
     })
-    if (this.check()) {
+    if (this.check() || force) {
       this.getGhost()
       return true
     } else {
