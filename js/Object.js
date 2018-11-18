@@ -10,10 +10,9 @@ const Field = initial => {
 
 const List = type => {
   return {
-    serialize: list =>
-      list.map(item =>
-        _.isFunction(item.serialize) ? item.serialize() : item,
-      ),
+    serialize: list => list.map(
+      item => _.isFunction(item.serialize) ? item.serialize() : item
+    ),
     deserialize: list => list.map(item => new type(item)),
   }
 }
@@ -55,7 +54,10 @@ uR.Object = class {
   deserialize(json) {
     for (const key in this.fields) {
       const field = this.fields[key]
-      const value = _.defaultTo(json[key], field.initial)
+      const value = _.find(
+        [json[key], field.initial, this[key], field],
+        _.identity,
+      )
       if (field.deserialize) {
         this[key] = field.deserialize(value)
       } else if (typeof field === 'function') {
@@ -71,13 +73,17 @@ uR.Object = class {
     }
   }
 
-  serialize(keys = this.fields) {
+  serialize(keys = Object.keys(this.fields)) {
     const json = _.pick(this, keys)
-    for (const [key, value] in Object.entries(json)) {
-      if (value && value.serialize) {
+    for (const [key, value] of Object.entries(json)) {
+      const field = this.constructor.fields[key]
+      if (field.serialize) {
+        json[key] = field.serialize(json[key])
+      } else if (value && value.serialize) {
         json[key] = value.serialize()
       }
     }
-    return json
+    return _.pickBy(json, _.identity)
   }
 }
+
