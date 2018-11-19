@@ -1,62 +1,59 @@
 import { zip } from 'lodash'
 
-export const PIECES = [
-  undefined, // empty
-  [
-    // t
-    [[0, 1, -1, 0], [0, 0, 0, 1]],
-    [[0, 0, 0, 1], [0, -1, 1, 0]],
-    [[0, -1, 1, 0], [0, 0, 0, -1]],
-    [[0, 0, 0, -1], [0, 1, -1, 0]],
-  ],
-  [
-    // q
-    [[0, 1, -1, -1], [0, 0, 0, 1]],
-    [[0, 0, 0, 1], [0, -1, 1, 1]],
-    [[0, -1, 1, 1], [0, 0, 0, -1]],
-    [[0, 0, 0, -1], [0, 1, -1, -1]],
-  ],
-  [
-    // p
-    [[0, 1, -1, 1], [0, 0, 0, 1]],
-    [[0, 0, 0, 1], [0, -1, 1, -1]],
-    [[0, -1, 1, -1], [0, 0, 0, -1]],
-    [[0, 0, 0, -1], [0, 1, -1, 1]],
-  ],
-  [[[0, -1, 1, 0], [0, 0, 1, 1]], [[0, 0, 1, 1], [0, 1, -1, 0]]], // z
-  [[[0, 1, -1, 0], [0, 0, 1, 1]], [[0, 0, 1, 1], [0, -1, 1, 0]]], // s
-  [[[0, 1, -1, -2], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, -1, 1, 2]]], // l
-  [[[0, 1, 1, 0], [0, 0, 1, 1]]], // o
-]
-
-export const _pieces = {}
-const _shapes = [undefined, 't', 'l', 'j', 'z', 's', 'i', 'o']
-
-const ROTATIONS = {
-  t: 4,
-  l: 4,
-  j: 4,
-  z: 2,
-  s: 2,
-  i: 2,
-  o: 0,
+const PIECES = {
+  t: {
+    dxs: [0, 1, -1, 0],
+    dys: [0, 0, 0, 1],
+    rotations: 4,
+  },
+  l: {
+    dxs: [0, 1, -1, -1],
+    dys: [0, 0, 0, 1],
+    rotations: 4,
+  },
+  j: {
+    dxs: [0, 1, -1, 1],
+    dys: [0, 0, 0, 1],
+    rotations: 4,
+  },
+  z: {
+    dxs: [0, -1, 1, 0],
+    dys: [0, 0, 1, 1],
+    rotations: 2,
+  },
+  s: {
+    dxs: [0, 1, -1, 0],
+    dys: [0, 0, 1, 1],
+    rotations: 2,
+  },
+  i: {
+    dxs: [0, 1, -1, -2],
+    dys: [0, 0, 0, 0],
+    rotations: 2,
+  },
+  o: {
+    dxs: [0, 1, 1, 0],
+    dys: [0, 0, 1, 1],
+    rotations: 0,
+  },
 }
-PIECES.slice(1).forEach((dxdys, i) => {
-  const [dxs, dys] = dxdys[0]
-  _pieces[_shapes[i + 1]] = zip(dxs, dys).map(
+const _shapes = [undefined, 't', 'l', 'j', 'z', 's', 'i', 'o']
+const PIECE_LIST = []
+
+for (const shape in PIECES) {
+  const piece = PIECES[shape]
+  piece.shape = shape
+  PIECE_LIST.push(piece)
+  const { dxs, dys } = piece
+  piece.squares = zip(dxs, dys).map(
     ([dx, dy]) => ({ dx, dy }), // eg {dx: 1, dy: -1}
   )
-})
-
-export const N_TYPES = PIECES.length - 1
-
-export const N = 4
+}
 
 export default {
-  N,
+  N: 4,
+  PIECE_LIST,
+  N_TYPES: PIECE_LIST.length,
   PIECES,
-  ROTATIONS,
-  N_TYPES,
-  _pieces,
   _shapes,
 }

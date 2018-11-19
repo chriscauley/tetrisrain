@@ -60,15 +60,15 @@ export default class Piece extends uR.Object {
       color: opts.board.pallet[config._shapes.indexOf(opts.shape)],
       x: opts.board.W / 2,
     })
-    if (!opts.squares && config._pieces[opts.shape]) {
-      opts.squares = config._pieces[opts.shape].map(s => ({
+    if (!opts.squares && config.PIECES[opts.shape]) {
+      opts.squares = config.PIECES[opts.shape].squares.map(s => ({
         color: opts.color,
         ...s,
       }))
     }
     super(opts)
     this.r = 0 // current rotation
-    this.max_r = config.ROTATIONS[opts.shape] // 0,2,4 depending on shape
+    this.max_r = config.PIECES[opts.shape].rotations // 0,2,4 depending on shape
     this.squares.forEach(s => (s.piece = this)) //#! TODO this should be handled as a FK
     this.rotated = 0 // number of times rotated
     this.getGhost()

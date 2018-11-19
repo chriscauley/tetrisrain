@@ -112,40 +112,29 @@ export default class Board extends uR.Object {
     this.imgs = {}
     let style = ''
     const piece_div = document.createElement('div')
-    config.PIECES.forEach((p, n) => {
-      if (!p) {
-        return
-      }
-      const shape = config._shapes[n]
-      const w = this.small_canvas.width,
-        h = this.small_canvas.height
-      this.imgs[shape] = []
+    config.PIECE_LIST.forEach((piece, n) => {
+      const w = this.small_canvas.width
+      const h = this.small_canvas.height
 
-      for (let r = 0; r < p.length; r++) {
-        // cycle through rotations
-        this.small_canvas.ctx.clearRect(0, 0, w, h)
-        for (let i = 0; i < config.N; i++) {
-          // draw 4 boxes
-          this.small_canvas.ctx.fillStyle = this.pallet[n]
-          this.small_canvas.ctx.fillRect(
-            (2 + p[r][0][i]) * this.scale,
-            (1 + p[r][1][i]) * this.scale,
-            this.scale,
-            this.scale,
-          )
-        }
+      // cycle through rotations
+      this.small_canvas.ctx.clearRect(0, 0, w, h)
+      piece.squares.forEach(square => {
+        // draw 4 boxes
+        this.small_canvas.ctx.fillStyle = this.pallet[n + 1]
+        this.small_canvas.ctx.fillRect(
+          (2 + square.dx) * this.scale,
+          (1 + square.dy) * this.scale,
+          this.scale,
+          this.scale,
+        )
+      })
 
-        const img = document.createElement('img')
-        img.src = this.small_canvas.toDataURL()
-        piece_div.appendChild(img)
-        this.imgs[shape].push(img)
-        if (r === 0) {
-          // style tag for showing pieces in html elements (piece-list)
-          style += `piece-stack .p${shape}:before { background-image: url(${
-            img.src
-          }); }\n`
-        }
-      }
+      const img = document.createElement('img')
+      img.src = this.small_canvas.toDataURL()
+      piece_div.appendChild(img)
+      // style tag for showing pieces in html elements (piece-list)
+      const bg = `background-image: url(${img.src});`
+      style += `piece-stack .p${piece.shape}:before { ${bg} }\n`
     })
     this.game.DEBUG && document.querySelector('#debug').appendChild(piece_div)
     newElement('style', {

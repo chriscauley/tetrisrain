@@ -203,7 +203,7 @@ export default class Game extends uR.Object {
     this.y_margin = 20
     for (let i = 0; i < 5; i++) {
       //this.pieces = this.pieces.concat(['l','j','i','o'])
-      this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
+      //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
       //this.pieces = this.pieces.concat(['l','j','l','j'])
     }
@@ -272,8 +272,7 @@ export default class Game extends uR.Object {
 
   updatePieceList() {
     while (this.pieces.length <= this.turn + this.n_preview + 2) {
-      const i = Math.floor(config.N_TYPES * Math.random()) + 1
-      this.pieces.push(config._shapes[i])
+      this.pieces.push(config.PIECE_LIST[_.random(config.N_TYPES - 1)].shape)
     }
     const visible = this.pieces.slice(
       this.turn + 1,
