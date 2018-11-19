@@ -4,7 +4,7 @@ import Pallet from './Pallet'
 import newCanvas, { drawLine } from './newCanvas'
 import newElement from './newElement'
 import config from './config'
-import uR from './Object'
+import uR from './unrest.js'
 import Piece from './Piece'
 
 export default class Board extends uR.Object {

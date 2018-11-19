@@ -5,9 +5,11 @@ import newCanvas, { Ease } from './newCanvas'
 import Controller from './Controller'
 import config from './config'
 import Piece from './Piece'
-import uR from './Object'
+import uR from './unrest.js'
+import storage from './unrest.js/storage'
 
 import './ui.tag'
+
 
 export default class Game extends uR.Object {
   static fields = {
@@ -19,10 +21,11 @@ export default class Game extends uR.Object {
     x_margin: 100,
     y_margin: 20,
     pieces: [],
-    turns: [],
+    actions: [],
   }
   constructor(opts) {
     super(opts)
+    this.saved_games = new storage.Storage("saved_games")
     this.DEBUG = ~window.location.search.indexOf('debug')
     this.makeVars()
     this.container = document.getElementById('game')
@@ -193,14 +196,6 @@ export default class Game extends uR.Object {
   }
 
   makeVars() {
-    this.scale = 20
-    this.config = {
-      b_level: 10,
-      n_preview: 5,
-    }
-    this.visible_height = 20
-    this.x_margin = 100
-    this.y_margin = 20
     for (let i = 0; i < 5; i++) {
       //this.pieces = this.pieces.concat(['l','j','i','o'])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
@@ -212,7 +207,7 @@ export default class Game extends uR.Object {
     this.speed = this.speed0 = 700
     this.speedK = 60
 
-    this.turns = []
+    this.actions = []
   }
 
   reset(id) {
@@ -229,10 +224,19 @@ export default class Game extends uR.Object {
     this.getSkyline()
   }
 
+  replay() {
+    this.step = 0
+    this.reset()
+  }
+
+  stepReplay() {
+    const action = this.actions[this.step]
+    this.step ++
+  }
+
   nextTurn() {
     this.getSkyline()
     this.board.removeLines()
-    this.turns.push(_.pick(this.current_piece, ['x', 'y', 'r']))
     this.turn++
     this.getPiece()
     if (!this.current_piece.check()) {
@@ -301,7 +305,7 @@ export default class Game extends uR.Object {
   }
 
   makeActions() {
-    this.act = {
+    this._act = {
       left: () => this.current_piece.moveLeft(),
       right: () => this.current_piece.moveRight(),
 
@@ -342,6 +346,13 @@ export default class Game extends uR.Object {
         }
         this.tags.piece_stash.setPieces([this.swapped_piece], 0)
       },
+    }
+    this.act = {}
+    for (let key in this._act) {
+      this.act[key] = () => {
+        this.actions.push(key)
+        this._act[key]()
+      }
     }
   }
 }

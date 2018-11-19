@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import config from './config'
-import uR from './Object'
+import uR from './unrest.js'
+
 
 export class Square extends uR.Object {
   static fields = {
