@@ -53,7 +53,7 @@ uR.Object = class {
     this.fields = { ...this.constructor.fields }
   }
 
-  deserialize(json) {
+  deserialize(json={}) {
     for (const key in this.fields) {
       const field = this.fields[key]
       const value = _.find([json[key], field.initial, this[key], field], notNil)

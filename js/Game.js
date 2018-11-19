@@ -5,12 +5,24 @@ import newCanvas, { Ease } from './newCanvas'
 import Controller from './Controller'
 import config from './config'
 import Piece from './Piece'
+import uR from './Object'
 
 import './ui.tag'
 
-export default class Game {
-  constructor() {
-    //super()
+export default class Game extends uR.Object {
+  static fields = {
+    scale: 20, // px per block
+    a_level: 1, // determines speed of clock
+    b_level: 10, // determines how high up pieces start
+    n_preview: 5, // number of pieces visible in preview
+    visible_height: 20, // number of lines visible
+    x_margin: 100,
+    y_margin: 20,
+    pieces: [],
+    turns: [],
+  }
+  constructor(opts) {
+    super(opts)
     this.DEBUG = ~window.location.search.indexOf('debug')
     this.makeVars()
     this.container = document.getElementById('game')
@@ -130,7 +142,7 @@ export default class Game {
     )
     this.canvas.drawBox(
       -0.5,
-      this.config.b_level - this.board.top + 1,
+      this.b_level - this.board.top + 1,
       this.board.canvas.width / this.scale + 1,
       4 / this.scale,
       'blue',
@@ -229,8 +241,6 @@ export default class Game {
     }
   }
 
-  serialize() {}
-
   saveGame(name) {
     localStorage.setItem('game/' + name, JSON.stringify(this.serialize()))
   }
@@ -245,10 +255,10 @@ export default class Game {
 
     const old_top = Math.max(this.top, 0)
     let top =
-      (this.board.skyline - this.visible_height + this.config.b_level) *
+      (this.board.skyline - this.visible_height + this.b_level) *
       this.board.scale
     top = Math.min((this.board.H - this.visible_height) * this.board.scale, top)
-    this.trigger_line = Math.max(top / this.scale, this.config.b_level)
+    this.trigger_line = Math.max(top / this.scale, this.b_level)
     this.top = Math.max(top, this.scale)
     this.board.top = this.top / this.scale
     this.board.deep_line = this.board.top + this.visible_height
@@ -261,14 +271,15 @@ export default class Game {
   }
 
   updatePieceList() {
-    while (this.pieces.length <= this.turn + this.config.n_preview + 2) {
-      this.pieces.push(Math.floor(config.N_TYPES * Math.random()) + 1)
+    while (this.pieces.length <= this.turn + this.n_preview + 2) {
+      const i = Math.floor(config.N_TYPES * Math.random()) + 1
+      this.pieces.push(i)
     }
     const visible = this.pieces.slice(
       this.turn + 1,
-      this.turn + 1 + this.config.n_preview,
+      this.turn + 1 + this.n_preview,
     )
-    const empty = this.config.n_preview - visible.length
+    const empty = this.n_preview - visible.length
     this.tags.next_piece && this.tags.next_piece.setPieces(visible, empty)
     return this.pieces[this.turn]
   }
@@ -276,7 +287,7 @@ export default class Game {
   getPiece(N) {
     N = N || this.updatePieceList()
 
-    let y = Math.max(this.board.top - this.config.b_level, 0)
+    let y = Math.max(this.board.top - this.b_level, 0)
     y = Math.max(y, this.board.top)
     this.current_piece = new Piece({
       x: this.board.W / 2,
