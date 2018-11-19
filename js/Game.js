@@ -201,11 +201,11 @@ export default class Game extends uR.Object {
     this.visible_height = 20
     this.x_margin = 100
     this.y_margin = 20
-    this.pieces = []
-    for (let i = 0; i < 1; i++) {
-      //this.pieces = this.pieces.concat(2,3,7,6)
-      //this.pieces = this.pieces.concat([6,6,6,6])
-      //this.pieces = this.pieces.concat(2,3,2,3)
+    for (let i = 0; i < 5; i++) {
+      //this.pieces = this.pieces.concat(['l','j','i','o'])
+      this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
+      //this.pieces = this.pieces.concat(['i','i','i','i'])
+      //this.pieces = this.pieces.concat(['l','j','l','j'])
     }
 
     this.level = 1
@@ -273,7 +273,7 @@ export default class Game extends uR.Object {
   updatePieceList() {
     while (this.pieces.length <= this.turn + this.n_preview + 2) {
       const i = Math.floor(config.N_TYPES * Math.random()) + 1
-      this.pieces.push(i)
+      this.pieces.push(config._shapes[i])
     }
     const visible = this.pieces.slice(
       this.turn + 1,
@@ -284,17 +284,15 @@ export default class Game extends uR.Object {
     return this.pieces[this.turn]
   }
 
-  getPiece(N) {
-    N = N || this.updatePieceList()
-
+  getPiece(shape = this.updatePieceList()) {
     let y = Math.max(this.board.top - this.b_level, 0)
     y = Math.max(y, this.board.top)
     this.current_piece = new Piece({
       x: this.board.W / 2,
       y: y,
       r: 0,
-      shape: config._shapes[N],
       board: this.board,
+      shape,
     })
     this.board.pieces.push(this.current_piece)
   }

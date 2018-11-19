@@ -83,7 +83,7 @@ import config from './config'
   })
 
   setPieces(pieces,empty) {
-    this.pieces = pieces.map(p => p.shape?config._shapes.indexOf(p.shape):p)
+    this.pieces = pieces.map(p => p.shape || p)
     this.empty_pieces = new Array(empty);
     this.update();
   }

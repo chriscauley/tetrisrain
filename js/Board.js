@@ -116,9 +116,10 @@ export default class Board extends uR.Object {
       if (!p) {
         return
       }
+      const shape = config._shapes[n]
       const w = this.small_canvas.width,
         h = this.small_canvas.height
-      this.imgs[n] = []
+      this.imgs[shape] = []
 
       for (let r = 0; r < p.length; r++) {
         // cycle through rotations
@@ -137,10 +138,10 @@ export default class Board extends uR.Object {
         const img = document.createElement('img')
         img.src = this.small_canvas.toDataURL()
         piece_div.appendChild(img)
-        this.imgs[n].push(img)
+        this.imgs[shape].push(img)
         if (r === 0) {
           // style tag for showing pieces in html elements (piece-list)
-          style += `piece-stack .p${n}:before { background-image: url(${
+          style += `piece-stack .p${shape}:before { background-image: url(${
             img.src
           }); }\n`
         }
