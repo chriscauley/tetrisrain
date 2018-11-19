@@ -10,7 +10,6 @@ import storage from './unrest.js/storage'
 
 import './ui.tag'
 
-
 export default class Game extends uR.Object {
   static fields = {
     scale: 20, // px per block
@@ -25,7 +24,7 @@ export default class Game extends uR.Object {
   }
   constructor(opts) {
     super(opts)
-    this.saved_games = new storage.Storage("saved_games")
+    this.saved_games = new storage.Storage('saved_games')
     this.DEBUG = ~window.location.search.indexOf('debug')
     this.makeVars()
     this.container = document.getElementById('game')
@@ -231,7 +230,7 @@ export default class Game extends uR.Object {
 
   stepReplay() {
     const action = this.actions[this.step]
-    this.step ++
+    this.step++
   }
 
   nextTurn() {
@@ -348,7 +347,7 @@ export default class Game extends uR.Object {
       },
     }
     this.act = {}
-    for (let key in this._act) {
+    for (const key in this._act) {
       this.act[key] = () => {
         this.actions.push(key)
         this._act[key]()
