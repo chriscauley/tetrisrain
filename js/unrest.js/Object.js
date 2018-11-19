@@ -21,18 +21,9 @@ const List = type => {
 const Int = Field
 const String = Field
 
-const uR = {
-  REQUIRED: {},
-  Int,
-  Field,
-  List,
-  String,
-}
-
-export default uR
 const notNil = _.negate(_.isNil)
 
-uR.Object = class {
+const _Object = class {
   //fields = {} // defines the data structure to be serialized
   //opts = {} // non-data initialization options
 
@@ -85,3 +76,14 @@ uR.Object = class {
     return _.pickBy(json, notNil)
   }
 }
+
+const uR = {
+  REQUIRED: {},
+  Int,
+  Field,
+  List,
+  String,
+  Object: _Object
+}
+
+export default uR
