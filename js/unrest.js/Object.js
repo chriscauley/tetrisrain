@@ -83,7 +83,7 @@ const uR = {
   Field,
   List,
   String,
-  Object: _Object
+  Object: _Object,
 }
 
 export default uR
