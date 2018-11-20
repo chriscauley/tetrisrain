@@ -90,59 +90,65 @@ import config from './config'
 </piece-stack>
 
 <level-editor>
-  <input ref="save_name" />
+  <input ref="save_name" riot-value={value}
+         onkeydown={noop} onkeyup={noop}/>
   <button onclick={ save }>Save</button>
   <h3>Load</h3>
-  <p each={ id in files }>
+  <p each={ name,i in files } key={name}>
     <a onclick={ trash } class="fa fa-trash"></a>
     <a onclick={ save } class="fa fa-save"></a>
     <a onclick={ load } class="fa fa-folder-open-o"></a>
-    { id }
+    { name }
   </p>
 
-  var _confirm = (function() {
-    var c = {};
+  this.files = []
+  this.value = `save_${Math.floor(Math.random()*10000)}`
+  this.on('mount',() => this.update())
+  noop(e) {
+    this.value = e.target.value
+    e.stopPropagation()
+  }
+  const _confirm = (function() {
+    const c = {};
     return function _confirm(e) {
-      clearTimeout(c[e.item.id]);
-      if (c[e.item.id]) {
+      clearTimeout(c[e.item.name]);
+      if (c[e.item.name]) {
         e.target.innerHTML = "";
-        c[e.item.id] = undefined;
+        c[e.item.name] = undefined;
         e.target.className = "fa fa-check";
         setTimeout(function() {e.target.className = "fa fa-check";},5000)
         return true;
       }
       e.item._done = true;
       e.target.innerHTML = "?";
-      c[e.item.id] = setTimeout(function() {
+      c[e.item.name] = setTimeout(function() {
         e.target.innerHTML = "";
-        c[e.item.id] = undefined;
+        c[e.item.name] = undefined;
       },3000);
     }
   })();
   this.on("update",function() {
+    this.storage = this.parent.game.saved_games
     this.files = [];
-    var latest_time = undefined;
-    /* for (var path in uR.storage.times) {
-      match = path.match(/^game\/(\d+)/);
-      if (match) {
-        this.files.push(match[1]);
-        if (uR.storage.times[path] > latest_time) {
-          this.last_game = path;
-          latest_time = uR.storage.times[path];
-        }
+    let latest_time = undefined;
+    for (let name of this.storage.keys) {
+      this.files.push(name);
+      if (this.storage.times[name] > latest_time) {
+        this.last_game = name;
+        latest_time = this.storage.times[name];
       }
     }
-    this.files.sort(); */
+    this.files.sort();
   });
   save(e) {
     const name = this.refs.save_name.value
-    this.opts.game.save("game/"+name);
+    this.parent.game.save(name)
   }
   trash(e) {
     if (!_confirm(e)) { return; }
-    // uR.storage.remove("game/"+e.item.id);
+    this.storage.remove(e.item.name);
   }
   load(e) {
-    this.opts.game.loadGame(e.item.id)
+    this.parent.game.load(e.item.name)
   }
 </level-editor>
