@@ -34,49 +34,6 @@ export default class Controller {
       }
     }
     this.reset()
-    this._autoplay = setInterval(
-      (function(that) {
-        let i = 0
-        return function() {
-          if (
-            that._events &&
-            that._events[i].time < new Date().valueOf() - that.start
-          ) {
-            const event = new Event(that._events[i].type)
-            event.keyCode = that._events[i].keyCode
-            document.dispatchEvent(event)
-            i++
-            if (!that._events[i]) {
-              clearInterval(that._autoplay)
-            }
-          }
-        }
-      })(this),
-      50,
-    )
-    if (this.game.DEBUG) {
-      this.loadEvents()
-    }
-  }
-
-  saveEvents() {
-    //uR.storage.set("events/"+this.game.id,this.events);
-  }
-
-  loadEvents() {
-    //this._events = uR.storage.get("events/"+this.game.id);
-  }
-
-  record(e, type) {
-    if (e.isTrusted && this._autoplay) {
-      this._autoplay = clearTimeout(this._autoplay)
-    }
-    this.events.push({
-      keyCode: e.keyCode,
-      time: new Date().valueOf() - this.start,
-      type: type,
-    })
-    this.saveEvents()
   }
 
   reset() {
@@ -84,31 +41,23 @@ export default class Controller {
     this.events = []
     this.start = new Date().valueOf()
     clearInterval(this._autoplay)
-    // the comment lines on this and onKeyDown and onKeyDown are because it's better to not use the
-    // browsers natural key repeat rate. may need to be added back in at some point.
-    //for (key in this.timer) { clearTimeout(this.timer[key]) }
-    //this.timer = {};
   }
 
-  onKeyDown(e) {
+  onKeyDown = e => {
     const event = this._key_map[e.keyCode]
-    if (!event) {
+    if (!event || this.active[event]) {
       return
     }
     this.active[event] = true
-    this.record(e, 'keydown')
     this.action_map[event](e)
-    //setTimeOut(function() { this.onKeyDown(e) },initialDelay);
   }
 
-  onKeyUp(e) {
+  onKeyUp = e => {
     const event = this._key_map[e.keyCode]
     if (!event) {
       return
     }
     this.active[event] = false
     this.action_up_map[event] && this.action_up_map[event](e)
-    this.record(e, 'keyup')
-    //clearTimeout(this.timer[e.keyCode]);
   }
 }
