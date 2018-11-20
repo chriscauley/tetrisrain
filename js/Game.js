@@ -41,7 +41,6 @@ export default class Game extends uR.Object {
     this.board.draw()
     this.tick = this.tick.bind(this)
     this.tick()
-    this.DEBUG && this.loadGame(430)
   }
 
   makeCanvases() {
@@ -196,7 +195,7 @@ export default class Game extends uR.Object {
 
   makeVars() {
     for (let i = 0; i < 5; i++) {
-      //this.pieces = this.pieces.concat(['l','j','i','o'])
+      //this.pieces = this.pieces.concat(['l', 'j', 'i', 'o'])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
       //this.pieces = this.pieces.concat(['l','j','l','j'])
@@ -205,13 +204,13 @@ export default class Game extends uR.Object {
     this.level = 1
     this.speed = this.speed0 = 700
     this.speedK = 60
-
-    this.actions = []
   }
 
   reset(id) {
     this.id = id || 'autosave'
     this.current_piece = undefined
+    this.swapped_piece = undefined
+    this.tags.piece_stash && this.tags.piece_stash.setPieces([], 0)
     this.makeVars()
     this.turn = 0
 
@@ -226,11 +225,17 @@ export default class Game extends uR.Object {
   replay() {
     this.step = 0
     this.reset()
+    this.stepReplay()
   }
 
-  stepReplay() {
+  stepReplay = () => {
+    if (this.step === this.actions.length) {
+      return
+    }
     const action = this.actions[this.step]
+    this._act[action]()
     this.step++
+    setTimeout(this.stepReplay, 100)
   }
 
   nextTurn() {
@@ -244,13 +249,15 @@ export default class Game extends uR.Object {
     }
   }
 
-  saveGame(name) {
-    localStorage.setItem('game/' + name, JSON.stringify(this.serialize()))
+  save(name) {
+    this.saved_games.set(name, this.serialize())
   }
 
-  loadGame(name) {
-    const data = JSON.parse(localStorage.getItem('game/' + name))
+  load(name) {
+    const data = this.saved_games.get(name)
     this.deserialize(data)
+    this.reset()
+    this.replay()
   }
 
   getSkyline() {

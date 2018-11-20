@@ -76,7 +76,7 @@ export default class Piece extends uR.Object {
 
   reset() {
     this.x = this.board.W / 2
-    const y = Math.max(this.board.top - this.board.game.config.b_level, 0)
+    const y = Math.max(this.board.top - this.board.game.b_level, 0)
     this.y = Math.max(y, this.board.top)
     while (this.r) {
       this.rotate(-Math.sign(this.r), true)
@@ -165,3 +165,6 @@ export default class Piece extends uR.Object {
     this.squares.forEach(s => s.draw(canvasObject, offset_y))
   }
 }
+
+
+window.Piece = Piece
