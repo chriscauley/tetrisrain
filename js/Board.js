@@ -147,8 +147,8 @@ export default class Board extends uR.Object {
   removeLines() {
     const _lines = []
     for (let y = this.skyline; y < this.H; y++) {
-      const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
-      if (!every(squares)) {
+      const squares = this.getLine(y)
+      if (squares.length !== this.W ) {
         continue
       }
 
@@ -158,20 +158,22 @@ export default class Board extends uR.Object {
         continue
       }
 
+      squares.forEach(s => s.piece.dirty = true)
+
       this.scoreLine(y)
       _lines.push(y)
     }
 
     this.game.animateLines(_lines)
     _lines.forEach(y => {
-      for (let x = 0; x < this.W; x++) {
-        this.get(x, y).kill()
-      } // set top to zero
-      this.squares
-        .slice(0, (y + 1) * this.W)
-        .filter(s => s)
-        .map(s => s._drop++)
-      this.skyline++
+      this.getLine(y).map(s=>s.kill())
+      if (!this.getLine(y).length) {
+        // line has been eliminated, drop everything down
+        this.squares
+          .slice(0, (y + 1) * this.W)
+          .filter(s => s)
+          .map(s => s._drop++)
+      }
     })
     this.squares
       .filter(s => s && s._drop)
@@ -210,6 +212,9 @@ export default class Board extends uR.Object {
       return
     }
     return this.squares[this._xy2i(x, y)]
+  }
+  getLine(y) {
+    return this.squares.slice(y*this.W,(y+1)*this.W).filter(s => s)
   }
   set(x, y, value) {
     const i = this._xy2i(x, y)
