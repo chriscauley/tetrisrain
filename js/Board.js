@@ -182,6 +182,7 @@ export default class Board extends uR.Object {
         s._drop = 0
         this.set(s.x, s.y, s)
       })
+    this.pieces = this.pieces.filter(p => p.squares.length)
     this.draw()
     this.game.getSkyline()
   }
