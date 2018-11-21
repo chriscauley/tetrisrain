@@ -194,7 +194,7 @@ export default class Game extends uR.Object {
   }
 
   makeVars() {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 2; i++) {
       //this.pieces = this.pieces.concat(['l', 'j', 'i', 'o'])
       this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
@@ -241,6 +241,7 @@ export default class Game extends uR.Object {
   nextTurn() {
     this.getSkyline()
     this.board.removeLines()
+    this.board.tickPieces()
     this.turn++
     this.getPiece()
     if (!this.current_piece.check()) {
@@ -303,7 +304,6 @@ export default class Game extends uR.Object {
       board: this.board,
       shape,
     })
-    this.board.pieces.push(this.current_piece)
   }
 
   gameOver() {

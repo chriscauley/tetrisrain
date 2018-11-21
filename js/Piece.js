@@ -30,12 +30,21 @@ export class Square extends uR.Object {
     const square = this.piece.board.get(x, y)
     return !square || square.piece === this.piece
   }
-  kill() {
+  kill(force) {
+    // gold pieces don't get eliminated in the normal manner
+    if (this.piece.is_gold && !force) {
+      this.color = 'grey'
+      this.piece.break_on = this.piece.board.game.turn + 1
+      return
+    }
     _.remove(this.piece.squares, this)
     this.piece.board.remove(this.x, this.y)
   }
+  getColor() {
+    return this.color || this.piece.color
+  }
   draw(canvas_object, offset_y = 0) {
-    canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.piece.color)
+    canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.getColor())
   }
 }
 
@@ -66,6 +75,7 @@ export default class Piece extends uR.Object {
     this._opts = opts
     this.max_r = template ? template.rotations : 0 // 0,2,4 depending on shape
     this.squares.forEach(s => (s.piece = this)) //#! TODO this should be handled as a FK
+    this.board.pieces.push(this)
     this.getGhost()
   }
 
@@ -119,6 +129,14 @@ export default class Piece extends uR.Object {
     // verifies that the piece is placed somewhere that it can be
     // Here is where we check the board to see if a piece is blocking a movement
     return _.every(this.squares, s => s.check())
+  }
+
+  tick() {
+    // currently only used to make gold blocks break after 1 turn of not being used
+    if (this.is_gold && this.break_on === this.board.game.turn) {
+      const ys = _.range(4).map(dy => this.y + dy)
+      this.board.removeLines(ys, true) // forcefully remove these lines
+    }
   }
 
   getGhost() {

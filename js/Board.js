@@ -33,7 +33,7 @@ export default class Board extends uR.Object {
     this.top = this.H - this.game.visible_height
 
     // nested arrays of zeros make up the initial board
-    this.squares = range(this.H * this.W).map(() => 0)
+    this.squares = range(this.H * this.W).map(() => undefined)
 
     //!# TODO this isn't wiping the board...
     this.canvas &&
@@ -144,42 +144,48 @@ export default class Board extends uR.Object {
     })
   }
 
-  removeLines() {
-    const _lines = []
+  tickPieces() {
+    this.pieces.forEach(p => p.tick())
+  }
+
+  removeLines(removed_ys, force) {
+    if (!removed_ys) {
+      removed_ys = this._getFullYs()
+    }
+
+    this.game.animateLines(removed_ys)
+    this._removeLines(removed_ys, force)
+    this._dropLines()
+    this.pieces = this.pieces.filter(p => p.squares.length)
+    this.game.getSkyline()
+    this.findGoldBars()
+    this.draw()
+  }
+
+  _getFullYs() {
+    const full_ys = []
     for (let y = this.skyline; y < this.H; y++) {
       const squares = this.getLine(y)
       if (squares.length !== this.W) {
         continue
       }
 
-      if (y >= this.deep_line) {
-        if (!squares[0].piece.is_deep) {
-          // make row DEEP
-          const piece = new Piece({
-            board: this,
-            color: this.pallet.DEEP,
-            x: 0,
-            y,
-            squares: squares.map(s => {
-              s.kill()
-              return { dx: s.x, dy: 0 }
-            }),
-          })
-          piece.is_deep = true
-          piece.set()
-        }
+      if (y >= this.deep_line && !squares.find(s => s.piece.is_gold)) {
+        this.makeDeep(squares)
         continue
       }
 
       squares.forEach(s => (s.piece.dirty = true))
 
       this.scoreLine(y)
-      _lines.push(y)
+      full_ys.push(y)
     }
+    return full_ys
+  }
 
-    this.game.animateLines(_lines)
-    _lines.forEach(y => {
-      this.getLine(y).map(s => s.kill())
+  _removeLines(ys, force) {
+    ys.forEach(y => {
+      this.getLine(y).map(s => s.kill(force))
       if (!this.getLine(y).length) {
         // line has been eliminated, drop everything down
         this.squares
@@ -188,6 +194,10 @@ export default class Board extends uR.Object {
           .map(s => s._drop++)
       }
     })
+  }
+
+  _dropLines() {
+    // after removing lines, lower squaress according to their _drop
     this.squares
       .filter(s => s && s._drop)
       .reverse()
@@ -197,10 +207,24 @@ export default class Board extends uR.Object {
         s._drop = 0
         this.set(s.x, s.y, s)
       })
-    this.pieces = this.pieces.filter(p => p.squares.length)
-    this.game.getSkyline()
-    this.findGoldBars()
-    this.draw()
+  }
+
+  makeDeep(squares) {
+    if (squares.find(s => s.is_deep)) {
+      return
+    }
+    const piece = new Piece({
+      board: this,
+      color: this.pallet.DEEP,
+      x: 0,
+      y: squares[0].y,
+      squares: squares.map(s => {
+        s.kill()
+        return { dx: s.x, dy: 0 }
+      }),
+    })
+    piece.is_deep = true
+    piece.set()
   }
 
   findGoldBars() {
@@ -250,6 +274,7 @@ export default class Board extends uR.Object {
             board: this,
             squares,
           })
+          window.P = piece
           piece.is_gold = true
           piece.set()
           reset()
