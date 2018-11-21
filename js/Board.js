@@ -1,4 +1,4 @@
-import { range, inRange, every, find, sum } from 'lodash'
+import { range, inRange, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
 import newCanvas, { drawLine } from './newCanvas'
@@ -153,8 +153,21 @@ export default class Board extends uR.Object {
       }
 
       if (y >= this.deep_line) {
-        // make row DEEP
-        !squares[0].is_deep && squares.forEach(s => s.markDeep())
+        if (!squares[0].piece.is_deep) {
+          // make row DEEP
+          const piece = new Piece({
+            board: this,
+            color: this.pallet.DEEP,
+            x: 0,
+            y,
+            squares: squares.map(s => {
+              s.kill()
+              return { dx: s.x, dy: 0 }
+            }),
+          })
+          piece.is_deep = true
+          piece.set()
+        }
         continue
       }
 
@@ -252,7 +265,7 @@ export default class Board extends uR.Object {
 
   scoreLine(y) {
     // maybe just move this logic to the scores tag?
-    if (this.get(0, y).is_deep) {
+    if (this.get(0, y).piece.is_deep) {
       this.game.scores.add('deep')
     } else {
       this.game.scores.add('lines')

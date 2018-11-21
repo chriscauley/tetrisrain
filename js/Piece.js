@@ -31,15 +31,11 @@ export class Square extends uR.Object {
     return !square || square.piece === this.piece
   }
   kill() {
-    _.remove(this.piece.squares, s => s === this)
+    _.remove(this.piece.squares, this)
     this.piece.board.remove(this.x, this.y)
   }
   draw(canvas_object, offset_y = 0) {
     canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.piece.color)
-  }
-  markDeep() {
-    this.is_deep = true
-    this.piece.color = this.piece.board.pallet.DEEP
   }
 }
 
@@ -165,6 +161,7 @@ export default class Piece extends uR.Object {
   }
 
   draw(canvasObject, offset_y = 0) {
+    // offset_y currently used to make ghost
     this.squares.forEach(s => s.draw(canvasObject, offset_y))
   }
 }
