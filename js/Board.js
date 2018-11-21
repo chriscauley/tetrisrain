@@ -1,4 +1,4 @@
-import { range, inRange, every, find } from 'lodash'
+import { range, inRange, every, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
 import newCanvas, { drawLine } from './newCanvas'
@@ -148,7 +148,7 @@ export default class Board extends uR.Object {
     const _lines = []
     for (let y = this.skyline; y < this.H; y++) {
       const squares = this.getLine(y)
-      if (squares.length !== this.W ) {
+      if (squares.length !== this.W) {
         continue
       }
 
@@ -158,7 +158,7 @@ export default class Board extends uR.Object {
         continue
       }
 
-      squares.forEach(s => s.piece.dirty = true)
+      squares.forEach(s => (s.piece.dirty = true))
 
       this.scoreLine(y)
       _lines.push(y)
@@ -166,7 +166,7 @@ export default class Board extends uR.Object {
 
     this.game.animateLines(_lines)
     _lines.forEach(y => {
-      this.getLine(y).map(s=>s.kill())
+      this.getLine(y).map(s => s.kill())
       if (!this.getLine(y).length) {
         // line has been eliminated, drop everything down
         this.squares
@@ -185,8 +185,63 @@ export default class Board extends uR.Object {
         this.set(s.x, s.y, s)
       })
     this.pieces = this.pieces.filter(p => p.squares.length)
-    this.draw()
     this.game.getSkyline()
+    this.findGoldBars()
+    this.draw()
+  }
+
+  findGoldBars() {
+    // post move operations
+    let target_y, target_row
+    const reset = () => {
+      target_y = undefined
+      target_row = undefined
+    }
+    range(this.skyline, this.H)
+      .reverse()
+      .forEach(y => {
+        if (this.getLine(y)[0].piece.is_gold) {
+          return
+        }
+        const row = this.getLine(y, _s => true).map(s => (s ? 1 : 0))
+        if (sum(row) !== this.W - 2) {
+          return reset() // no missing exactly 2 pieces
+        }
+        const row_str = row.join('')
+        if (row_str.indexOf('00') === -1) {
+          return reset() // missing pieces aren't next to each other
+        }
+        if (!target_row || target_row !== row_str) {
+          // first occurrence
+          target_row = row_str
+          target_y = y
+          return
+        }
+        if (target_y - y === 3) {
+          const root_square = this.getLine(y)[0]
+          const piece_x = root_square.x
+          const piece_y = root_square.y
+          const squares = []
+          range(y, target_y + 1)
+            .map(_y => this.getLine(_y))
+            .forEach(line => {
+              line.forEach(s => {
+                squares.push({ dx: s.x - piece_x, dy: s.y - piece_y })
+                s.kill()
+              })
+            })
+          const piece = new Piece({
+            x: piece_x,
+            y: piece_y,
+            color: 'gold',
+            board: this,
+            squares,
+          })
+          piece.is_gold = true
+          piece.set()
+          reset()
+        }
+      })
   }
   print() {
     for (let y = this.skyline; y < this.H; y++) {
@@ -213,8 +268,8 @@ export default class Board extends uR.Object {
     }
     return this.squares[this._xy2i(x, y)]
   }
-  getLine(y) {
-    return this.squares.slice(y*this.W,(y+1)*this.W).filter(s => s)
+  getLine(y, filter = s => s) {
+    return this.squares.slice(y * this.W, (y + 1) * this.W).filter(filter)
   }
   set(x, y, value) {
     const i = this._xy2i(x, y)

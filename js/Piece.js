@@ -6,7 +6,6 @@ export class Square extends uR.Object {
   static fields = {
     dx: uR.Int(),
     dy: uR.Int(),
-    color: uR.String('pink'),
   }
   static opts = {
     piece: uR.REQUIRED,
@@ -36,11 +35,11 @@ export class Square extends uR.Object {
     this.piece.board.remove(this.x, this.y)
   }
   draw(canvas_object, offset_y = 0) {
-    canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.color)
+    canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.piece.color)
   }
   markDeep() {
     this.is_deep = true
-    this.color = this.piece.board.pallet.DEEP
+    this.piece.color = this.piece.board.pallet.DEEP
   }
 }
 
@@ -60,17 +59,17 @@ export default class Piece extends uR.Object {
       color: opts.board.pallet[config._shapes.indexOf(opts.shape)],
       x: opts.board.W / 2,
     })
-    if (!opts.squares && config.PIECES[opts.shape]) {
-      opts.squares = config.PIECES[opts.shape].squares.map(s => ({
-        color: opts.color,
+    const template = config.PIECES[opts.shape]
+    if (!opts.squares && template) {
+      opts.squares = template.squares.map(s => ({
         ...s,
       }))
     }
     super(opts)
     this.r = 0 // current rotation
-    this.max_r = config.PIECES[opts.shape].rotations // 0,2,4 depending on shape
+    this._opts = opts
+    this.max_r = template ? template.rotations : 0 // 0,2,4 depending on shape
     this.squares.forEach(s => (s.piece = this)) //#! TODO this should be handled as a FK
-    this.rotated = 0 // number of times rotated
     this.getGhost()
   }
 
@@ -145,6 +144,10 @@ export default class Piece extends uR.Object {
   lock() {
     // lock the piece into place on the board
     this.drop()
+    this.set()
+  }
+
+  set() {
     this.squares.map(s => {
       this.board.set(s.x, s.y, s)
     })
@@ -165,6 +168,3 @@ export default class Piece extends uR.Object {
     this.squares.forEach(s => s.draw(canvasObject, offset_y))
   }
 }
-
-
-window.Piece = Piece

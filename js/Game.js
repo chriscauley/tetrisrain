@@ -196,7 +196,7 @@ export default class Game extends uR.Object {
   makeVars() {
     for (let i = 0; i < 5; i++) {
       //this.pieces = this.pieces.concat(['l', 'j', 'i', 'o'])
-      //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
+      this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
       //this.pieces = this.pieces.concat(['l','j','l','j'])
     }
