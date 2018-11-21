@@ -235,7 +235,7 @@ export default class Game extends uR.Object {
     const action = this.actions[this.step]
     this._act[action]()
     this.step++
-    setTimeout(this.stepReplay, 100)
+    setTimeout(this.stepReplay, 75)
   }
 
   nextTurn() {

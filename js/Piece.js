@@ -136,6 +136,11 @@ export default class Piece extends uR.Object {
     if (this.is_gold && this.break_on === this.board.game.turn) {
       const ys = _.range(4).map(dy => this.y + dy)
       this.board.removeLines(ys, true) // forcefully remove these lines
+
+      // #! TODO: gold bars need their y and s.dy adjusted
+      // this should be handled by remove lines
+      this.y -= 4
+      this.squares.forEach(s => (s.dy -= 4))
     }
   }
 
