@@ -14,7 +14,10 @@ const List = type => {
       list.map(item =>
         _.isFunction(item.serialize) ? item.serialize() : item,
       ),
-    deserialize: list => list.map(item => new type(item)),
+    deserialize: list =>
+      list.map(item => {
+        return item instanceof type ? item : new type(item)
+      }),
   }
 }
 
@@ -24,6 +27,7 @@ const String = Field
 const notNil = _.negate(_.isNil)
 
 const _Object = class {
+  static id = 0
   //fields = {} // defines the data structure to be serialized
   //opts = {} // non-data initialization options
 
@@ -31,6 +35,7 @@ const _Object = class {
     this.makeOpts(opts)
     this.makeFields()
     this.deserialize(opts)
+    this.id = this.constructor.id++
   }
 
   makeOpts(opts) {

@@ -194,9 +194,9 @@ export default class Game extends uR.Object {
   }
 
   makeVars() {
-    for (let i = 0; i < 2; i++) {
-      //this.pieces = this.pieces.concat(['l', 'j', 'i', 'o'])
-      this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
+    for (let i = 0; i < 1; i++) {
+      this.pieces = this.pieces.concat(['i', 'l', 'j', 'o'])
+      //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
       //this.pieces = this.pieces.concat(['l','j','l','j'])
     }
@@ -244,6 +244,7 @@ export default class Game extends uR.Object {
     this.board.tickPieces()
     this.turn++
     this.getPiece()
+    this.board.draw()
     if (!this.current_piece.check()) {
       this.gameOver()
       return

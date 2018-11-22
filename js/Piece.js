@@ -37,6 +37,7 @@ export class Square extends uR.Object {
       this.piece.break_on = this.piece.board.game.turn + 1
       return
     }
+    this.piece.dirty = true
     _.remove(this.piece.squares, this)
     this.piece.board.remove(this.x, this.y)
   }
@@ -45,6 +46,27 @@ export class Square extends uR.Object {
   }
   draw(canvas_object, offset_y = 0) {
     canvas_object.drawBox(this.x, this.y - offset_y, 1, 1, this.getColor())
+  }
+  isNextTo(square) {
+    const distance = _.sum(
+      [square.dx - this.dx, square.dy - this.dy].map(Math.abs),
+    )
+    return distance === 1
+  }
+  getNeighborsAndOrphans(squares) {
+    const neighbors = [this]
+    _.pull(squares, this)
+    for (let i = 0; i < neighbors.length; i++) {
+      // match all squares immediately next to neighbors[i] and add them to neighbors
+      squares.forEach(test_square => {
+        if (test_square.isNextTo(neighbors[i])) {
+          neighbors.push(test_square)
+        }
+      })
+      // remove neighbors from squares, turning it into orphans
+      _.pullAll(squares, neighbors)
+    }
+    return [neighbors, squares]
   }
 }
 
@@ -58,6 +80,7 @@ export default class Piece extends uR.Object {
     board: uR.REQUIRED,
     color: 'pink',
     shape: uR.REQUIRED,
+    dirty: false,
   }
   constructor(opts) {
     _.defaults(opts, {
@@ -75,8 +98,9 @@ export default class Piece extends uR.Object {
     this._opts = opts
     this.max_r = template ? template.rotations : 0 // 0,2,4 depending on shape
     this.squares.forEach(s => (s.piece = this)) //#! TODO this should be handled as a FK
-    this.board.pieces.push(this)
-    this.getGhost()
+    //this.board.pieces.push(this)
+    this.tick()
+    this.getGhost() // #! TODO should be part of tick
   }
 
   reset() {
@@ -142,6 +166,58 @@ export default class Piece extends uR.Object {
       this.y -= 4
       this.squares.forEach(s => (s.dy -= 4))
     }
+    if (this.dirty) {
+      this.checkSplit()
+      this.dirty = false
+    }
+  }
+
+  recenter(dx, dy) {
+    if (!dx && !dy) {
+      return
+    }
+    this.x += dx
+    this.y += dy
+    this.squares.forEach(s => {
+      s.dx -= dx
+      s.dy -= dy
+    })
+  }
+
+  checkSplit() {
+    // see if all pieces are still connected, if not regroup them as new pieces
+
+    // get first chunk using square@0,0 or first square
+    let home_square = this.squares.find(s => !s.dy && !s.dx) || this.squares[0]
+
+    // separate out orphans
+    const [squares, orphans] = home_square.getNeighborsAndOrphans(this.squares)
+    this.squares = squares
+
+    // reset to home_square (if moved)
+    this.recenter(home_square.dx, home_square.dy)
+    let count = 0
+
+    while (orphans.length) {
+      if (count >= 3) {
+        console.warn('breaking orphans!', orphans)
+        break
+      }
+      count++
+      // repeat for orphans until they are gone
+      home_square = orphans[0][
+        (squares, orphans)
+      ] = home_square.getNeighborsAndOrphans(orphans)
+      const piece = new Piece({
+        x: this.x,
+        y: this.y,
+        squares: squares,
+        board: this.board,
+        color: this.color,
+      })
+      piece.recenter(home_square.dx, home_square.dy)
+      piece.set()
+    }
   }
 
   getGhost() {
@@ -170,21 +246,29 @@ export default class Piece extends uR.Object {
     this.squares.map(s => {
       this.board.set(s.x, s.y, s)
     })
+    this.board.pieces.push(this)
   }
 
-  _move([dx, dy]) {
+  _move([dx, dy], force) {
     this.x += dx
     this.y += dy
-    if (this.check()) {
+    if (this.check() || force) {
       this.getGhost()
       return true
     } else {
-      this._move([-dx, -dy])
+      this._move([-dx, -dy], true)
     }
   }
 
-  draw(canvasObject, offset_y = 0) {
+  draw(canvas_object, offset_y = 0) {
     // offset_y currently used to make ghost
-    this.squares.forEach(s => s.draw(canvasObject, offset_y))
+    this.squares.forEach(s => s.draw(canvas_object, offset_y))
+    canvas_object.drawBox(
+      this.x + 0.2,
+      this.y + 0.2 - offset_y,
+      0.6,
+      0.6,
+      'lightgrey',
+    )
   }
 }

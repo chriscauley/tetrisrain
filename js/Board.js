@@ -42,7 +42,7 @@ export default class Board extends uR.Object {
 
   draw() {
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.squares.forEach(s => s && s.draw(this.canvas))
+    this.pieces.forEach(p => p.draw(this.canvas))
   }
 
   getSkyline() {
@@ -175,8 +175,6 @@ export default class Board extends uR.Object {
         continue
       }
 
-      squares.forEach(s => (s.piece.dirty = true))
-
       this.scoreLine(y)
       full_ys.push(y)
     }
@@ -282,9 +280,16 @@ export default class Board extends uR.Object {
       })
   }
   print() {
+    //const c = '0123456789abcdefghijklmnopqrstuvwxyz'
     for (let y = this.skyline; y < this.H; y++) {
       const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
-      console.log([y,...squares.map(s=>s?1:' ')].join(' ')) // eslint-disable-line
+      const ids = [y, ...squares.map(s => (s ? s.id : ' '))]
+      console.log(ids.join(' ')) // eslint-disable-line
+    }
+    for (let y = this.skyline; y < this.H; y++) {
+      const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
+      const ids = [y, ...squares.map(s => (s ? s.piece.id : ' '))]
+      console.log(ids.join(' ')) // eslint-disable-line
     }
   }
 
@@ -312,7 +317,7 @@ export default class Board extends uR.Object {
   set(x, y, value) {
     const i = this._xy2i(x, y)
     if (this.squares[i]) {
-      throw 'Cannot place square in unempty square'
+      throw `Cannot place square in unempty square ${x},${y}`
     }
     this.squares[i] = value
   }
