@@ -200,8 +200,8 @@ export default class Board extends uR.Object {
     this.pieces.forEach(p => p.checkSplit())
 
     this.pieces
-      .filter(p => p.y < this.deep_line) // skip pieces below deep_line
-      .forEach(p => {
+      .filter(p => p.y < this.deep_line)
+      .filter(p => {
         // how far does this piece need to drop?
         const drop = drop_ys.filter(y => y > p.y).length
         if (!drop) {
@@ -209,8 +209,8 @@ export default class Board extends uR.Object {
         }
         p.remove()
         p.y += drop
-        p.set()
-      })
+        return true
+      }).forEach(p => p.set())
   }
 
   makeDeep(squares) {
