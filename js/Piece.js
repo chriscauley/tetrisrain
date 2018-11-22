@@ -37,7 +37,7 @@ export class Square extends uR.Object {
       this.piece.break_on = this.piece.board.game.turn + 1
       return
     }
-    this.piece.dirty = true
+    this.piece._needs_split = true
     _.remove(this.piece.squares, this)
     this.piece.board.remove(this.x, this.y)
   }
@@ -80,7 +80,7 @@ export default class Piece extends uR.Object {
     board: uR.REQUIRED,
     color: 'pink',
     shape: uR.REQUIRED,
-    dirty: false,
+    _needs_split: false,
   }
   constructor(opts) {
     _.defaults(opts, {
@@ -166,10 +166,6 @@ export default class Piece extends uR.Object {
       this.y -= 4
       this.squares.forEach(s => (s.dy -= 4))
     }
-    if (this.dirty) {
-      this.checkSplit()
-      this.dirty = false
-    }
   }
 
   recenter(dx, dy) {
@@ -186,38 +182,41 @@ export default class Piece extends uR.Object {
 
   checkSplit() {
     // see if all pieces are still connected, if not regroup them as new pieces
+    if (!this._needs_split) { return }
+    this.needs_split = false
 
     // get first chunk using square@0,0 or first square
-    let home_square = this.squares.find(s => !s.dy && !s.dx) || this.squares[0]
+    const home_square =
+      this.squares.find(s => !s.dy && !s.dx) || this.squares[0]
 
     // separate out orphans
     const [squares, orphans] = home_square.getNeighborsAndOrphans(this.squares)
     this.squares = squares
 
-    // reset to home_square (if moved)
-    this.recenter(home_square.dx, home_square.dy)
-    let count = 0
+    if (orphans.length) {
+      // stick all the orphans on the same piece, we'll retry split after
+      const first_orphan = orphans[0]
 
-    while (orphans.length) {
-      if (count >= 3) {
-        console.warn('breaking orphans!', orphans)
-        break
-      }
-      count++
-      // repeat for orphans until they are gone
-      home_square = orphans[0][
-        (squares, orphans)
-      ] = home_square.getNeighborsAndOrphans(orphans)
+      const { x, y } = first_orphan
+      orphans.forEach(s => {
+        s.dx -= first_orphan.dx
+        s.dy -= first_orphan.dy
+      })
       const piece = new Piece({
-        x: this.x,
-        y: this.y,
-        squares: squares,
+        x,
+        y,
+        squares: orphans,
         board: this.board,
         color: this.color,
       })
-      piece.recenter(home_square.dx, home_square.dy)
-      piece.set()
+      this.board.pieces.push(piece)
+
+      if (orphans.length > 1) {
+        piece.checkSplit()
+      }
     }
+    // reset to home_square (if moved)
+    this.recenter(home_square.dx, home_square.dy)
   }
 
   getGhost() {
@@ -246,7 +245,14 @@ export default class Piece extends uR.Object {
     this.squares.map(s => {
       this.board.set(s.x, s.y, s)
     })
-    this.board.pieces.push(this)
+    if (this.board.pieces.indexOf(this) === -1) {
+      // this is lazy, board.pieces should be a set or should be more carefully maintined
+      this.board.pieces.push(this)
+    }
+  }
+
+  remove() {
+    this.squares.map(s => this.board.remove(s.x, s.y))
   }
 
   _move([dx, dy], force) {

@@ -25,6 +25,8 @@ export default class Board extends uR.Object {
 
     this.pallet = new Pallet({ board: this })
     this.makeCanvas()
+    window.B = this
+    window.BP = this.pieces
   }
 
   reset() {
@@ -155,7 +157,6 @@ export default class Board extends uR.Object {
 
     this.game.animateLines(removed_ys)
     this._removeLines(removed_ys, force)
-    this._dropLines()
     this.pieces = this.pieces.filter(p => p.squares.length)
     this.game.getSkyline()
     this.findGoldBars()
@@ -181,29 +182,34 @@ export default class Board extends uR.Object {
     return full_ys
   }
 
-  _removeLines(ys, force) {
-    ys.forEach(y => {
+  _removeLines(remove_ys, force) {
+    const drop_ys = remove_ys.filter(y => {
+      // try to remove squares on line
+      // certain pieces (gold, deep) may not be removable
       this.getLine(y).map(s => s.kill(force))
-      if (!this.getLine(y).length) {
-        // line has been eliminated, drop everything down
-        this.squares
-          .slice(0, (y + 1) * this.W)
-          .filter(s => s)
-          .map(s => s._drop++)
-      }
-    })
-  }
 
-  _dropLines() {
-    // after removing lines, lower squaress according to their _drop
-    this.squares
-      .filter(s => s && s._drop)
-      .reverse()
-      .forEach(s => {
-        this.remove(s.x, s.y)
-        s.dy += s._drop
-        s._drop = 0
-        this.set(s.x, s.y, s)
+      // A line gets dropped if the entire row was successfully removed
+      return !this.getLine(y).length
+    })
+    if (!drop_ys.length) { return }
+
+    // remove empty pieces from board
+    this.pieces = this.pieces.filter(p => p.squares.length)
+
+    // split pieces
+    this.pieces.forEach(p => p.checkSplit())
+
+    this.pieces
+      .filter(p => p.y < this.deep_line) // skip pieces below deep_line
+      .forEach(p => {
+        // how far does this piece need to drop?
+        const drop = drop_ys.filter(y => y > p.y).length
+        if (!drop) {
+          return
+        }
+        p.remove()
+        p.y += drop
+        p.set()
       })
   }
 
@@ -235,7 +241,8 @@ export default class Board extends uR.Object {
     range(this.skyline, this.H)
       .reverse()
       .forEach(y => {
-        if (this.getLine(y)[0].piece.is_gold) {
+        const squares = this.getLine(y)
+        if (!squares.length || squares[0].piece.is_gold) {
           return
         }
         const row = this.getLine(y, _s => true).map(s => (s ? 1 : 0))
@@ -280,17 +287,21 @@ export default class Board extends uR.Object {
       })
   }
   print() {
+    /*eslint-disable */
     //const c = '0123456789abcdefghijklmnopqrstuvwxyz'
-    for (let y = this.skyline; y < this.H; y++) {
+    /*for (let y = this.skyline; y < this.H; y++) {
       const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
       const ids = [y, ...squares.map(s => (s ? s.id : ' '))]
-      console.log(ids.join(' ')) // eslint-disable-line
+      console.log(ids.join(' '))
     }
+    console.log('\n')*/
     for (let y = this.skyline; y < this.H; y++) {
       const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
       const ids = [y, ...squares.map(s => (s ? s.piece.id : ' '))]
-      console.log(ids.join(' ')) // eslint-disable-line
+      console.log(ids.join(' '))
     }
+    console.log('\n\n')
+    /*eslint-enable */
   }
 
   scoreLine(y) {
