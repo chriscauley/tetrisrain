@@ -182,7 +182,7 @@ export default class Piece extends uR.Object {
 
   checkSplit() {
     // see if all pieces are still connected, if not regroup them as new pieces
-    if (this._needs_split) {
+    if (!this._needs_split) {
       return
     }
     this._needs_split = false

@@ -150,11 +150,7 @@ export default class Board extends uR.Object {
     this.pieces.forEach(p => p.tick())
   }
 
-  removeLines(removed_ys, force) {
-    if (!removed_ys) {
-      removed_ys = this._getFullYs()
-    }
-
+  removeLines(removed_ys=this._getFullYs(), force) {
     this.game.animateLines(removed_ys)
     this._removeLines(removed_ys, force)
     this.pieces = this.pieces.filter(p => p.squares.length)
