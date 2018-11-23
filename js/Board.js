@@ -49,7 +49,16 @@ export default class Board extends uR.Object {
 
   getSkyline() {
     const first = find(this.squares) || { y: this.H }
+    const game = this.game
     this.skyline = first.y
+    this.top = Math.min(
+      this.H - game.visible_height,
+      this.skyline - game.visible_height + game.b_level,
+    )
+    game.trigger_line = Math.max(this.top, game.b_level)
+    this.top = Math.max(this.top, 1)
+    game.top = this.top * this.scale
+    this.deep_line = this.top + game.visible_height
   }
 
   makeCanvas() {
@@ -150,7 +159,7 @@ export default class Board extends uR.Object {
     this.pieces.forEach(p => p.tick())
   }
 
-  removeLines(removed_ys=this._getFullYs(), force) {
+  removeLines(removed_ys = this._getFullYs(), force) {
     this.game.animateLines(removed_ys)
     this._removeLines(removed_ys, force)
     this.pieces = this.pieces.filter(p => p.squares.length)

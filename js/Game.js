@@ -265,17 +265,8 @@ export default class Game extends uR.Object {
   }
 
   getSkyline() {
-    this.board.getSkyline()
-
     const old_top = Math.max(this.top, 0)
-    let top =
-      (this.board.skyline - this.visible_height + this.b_level) *
-      this.board.scale
-    top = Math.min((this.board.H - this.visible_height) * this.board.scale, top)
-    this.trigger_line = Math.max(top / this.scale, this.b_level)
-    this.top = Math.max(top, this.scale)
-    this.board.top = this.top / this.scale
-    this.board.deep_line = this.board.top + this.visible_height
+    this.board.getSkyline()
     if (this.top !== old_top) {
       this.top_from = old_top
       this.animations = [
