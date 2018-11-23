@@ -10,19 +10,21 @@
    ready(f); // no logs (until next start)
 */
 
-const Ready = (isReady=()=>false,_ready=[]) => {
+const Ready = (isReady = () => false, _ready = []) => {
   const ready = (...args) => {
-    _ready = _ready.concat(args);
-    while (isReady() && _ready.length) { _ready.shift()(); }
-  };
+    _ready = _ready.concat(args)
+    while (isReady() && _ready.length) {
+      _ready.shift()()
+    }
+  }
   ready.start = function() {
-    isReady = () => true;
-    ready();
-  };
+    isReady = () => true
+    ready()
+  }
   ready.stop = function() {
-    isReady = () => false;
-  };
-  return ready;
-};
+    isReady = () => false
+  }
+  return ready
+}
 
-export default Ready;
+export default Ready
