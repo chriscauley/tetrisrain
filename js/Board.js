@@ -191,7 +191,9 @@ export default class Board extends uR.Object {
       // A line gets dropped if the entire row was successfully removed
       return !this.getLine(y).length
     })
-    if (!drop_ys.length) { return }
+    if (!drop_ys.length) {
+      return
+    }
 
     // remove empty pieces from board
     this.pieces = this.pieces.filter(p => p.squares.length)
@@ -210,7 +212,8 @@ export default class Board extends uR.Object {
         p.remove()
         p.y += drop
         return true
-      }).forEach(p => p.set())
+      })
+      .forEach(p => p.set())
   }
 
   makeDeep(squares) {
@@ -297,7 +300,7 @@ export default class Board extends uR.Object {
     console.log('\n')*/
     for (let y = this.skyline; y < this.H; y++) {
       const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
-      const ids = [y, ...squares.map(s => (s ? s.piece.id : ' '))]
+      const ids = [y, ...squares.map(s => (s ? s.piece.id.toString().padStart(2,' ') : '  '))]
       console.log(ids.join(' '))
     }
     console.log('\n\n')

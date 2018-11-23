@@ -182,8 +182,10 @@ export default class Piece extends uR.Object {
 
   checkSplit() {
     // see if all pieces are still connected, if not regroup them as new pieces
-    if (!this._needs_split) { return }
-    this.needs_split = false
+    if (this._needs_split) {
+      return
+    }
+    this._needs_split = false
 
     // get first chunk using square@0,0 or first square
     const home_square =
@@ -195,16 +197,15 @@ export default class Piece extends uR.Object {
 
     if (orphans.length) {
       // stick all the orphans on the same piece, we'll retry split after
-      const first_orphan = orphans[0]
+      const shift = _.pick(orphans[0], ['dx', 'dy', 'x', 'y'])
 
-      const { x, y } = first_orphan
       orphans.forEach(s => {
-        s.dx -= first_orphan.dx
-        s.dy -= first_orphan.dy
+        s.dx -= shift.dx
+        s.dy -= shift.dy
       })
       const piece = new Piece({
-        x,
-        y,
+        x: shift.x,
+        y: shift.y,
         squares: orphans,
         board: this.board,
         color: this.color,
@@ -212,6 +213,7 @@ export default class Piece extends uR.Object {
       this.board.pieces.push(piece)
 
       if (orphans.length > 1) {
+        piece._needs_split = true
         piece.checkSplit()
       }
     }
