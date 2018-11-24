@@ -1,5 +1,7 @@
 import _ from 'lodash'
+
 import config from './config'
+import uP from './pixi'
 import uR from './unrest.js'
 
 export class Square extends uR.Object {
@@ -13,6 +15,11 @@ export class Square extends uR.Object {
   constructor(opts) {
     super(opts)
     this._drop = 0 // counter used for moving it down
+  }
+  makePixi() {
+    this.sprite = uP.sprites.getColor(this.piece.color)
+    this.sprite.width = 20
+    this.sprite.height = 20
   }
   get x() {
     return this.dx + this.piece.x
@@ -101,6 +108,16 @@ export default class Piece extends uR.Object {
     //this.board.pieces.push(this)
     this.tick()
     this.getGhost() // #! TODO should be part of tick
+    this.pixi = new uP.PIXI.Container()
+    this.squares.forEach(s => {
+      s.makePixi()
+      this.pixi.addChild(s.sprite)
+      s.sprite.x = s.dx * 20
+      s.sprite.y = s.dy * 20
+    })
+    this.pixi.x = this.x * 20
+    this.pixi.y = this.y * 20
+    this.board.pixi.board.addChild(this.pixi)
   }
 
   reset() {

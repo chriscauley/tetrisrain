@@ -5,6 +5,7 @@ import newCanvas, { drawLine } from './newCanvas'
 import newElement from './newElement'
 import config from './config'
 import uR from './unrest.js'
+import uP from './pixi'
 import Piece from './Piece'
 
 export default class Board extends uR.Object {
@@ -25,6 +26,7 @@ export default class Board extends uR.Object {
 
     this.pallet = new Pallet({ board: this })
     this.makeCanvas()
+    this.makePixi()
     window.B = this
     window.BP = this.pieces
   }
@@ -40,6 +42,10 @@ export default class Board extends uR.Object {
     //!# TODO this isn't wiping the board...
     this.canvas &&
       this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+
+  redraw() {
+    this.pixi.board.y = -this.scale * this.top
   }
 
   draw() {
@@ -59,8 +65,21 @@ export default class Board extends uR.Object {
     this.top = Math.max(this.top, 1)
     game.top = this.top * this.scale
     this.deep_line = this.top + game.visible_height
+    this.redraw()
   }
 
+  makePixi = () => {
+    this.pixi = new uP.Pixi({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      container: '#game',
+    })
+    this.pixi.board = new uP.PIXI.Container()
+    const bg = uP.sprites.makeGrid(this)
+    this.pixi.board.addChild(bg)
+    this.pixi.board.x = this.game.x_margin
+    this.pixi.app.stage.addChild(this.pixi.board)
+  }
   makeCanvas() {
     const attrs = {
       id: 'board',
