@@ -2,6 +2,7 @@ import uR from './Object'
 
 import Ready from './ready'
 
+uR.Ready = Ready
 uR.ready = Ready()
 window.onload = uR.ready.start
 window.uR = uR
