@@ -5,9 +5,11 @@ import config from './config'
   <div each={ name in names }>
     { name }: <big>{ totals[name] }</big>
     <hr/>
-    <div each={ number in visible[name] }>
-      { number }
-    </div>
+    <!--
+        <div each={ number in visible[name] }>
+          { number }
+        </div>
+        -->
   </div>
 
   reset() {

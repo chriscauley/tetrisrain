@@ -18,8 +18,8 @@ export class Square extends uR.Object {
   }
   makePixi() {
     this.sprite = uP.sprites.getColor(this.piece.color)
-    this.sprite.width = 20
-    this.sprite.height = 20
+    this.sprite.width = this.piece.board.scale
+    this.sprite.height = this.piece.board.scale
   }
   get x() {
     return this.dx + this.piece.x
@@ -46,6 +46,7 @@ export class Square extends uR.Object {
     }
     this.piece._needs_split = true
     _.remove(this.piece.squares, this)
+    this.piece.pixi.removeChild(this.sprite)
     this.piece.board.remove(this.x, this.y)
   }
   getColor() {
@@ -105,22 +106,31 @@ export default class Piece extends uR.Object {
     this._opts = opts
     this.max_r = template ? template.rotations : 0 // 0,2,4 depending on shape
     this.squares.forEach(s => (s.piece = this)) //#! TODO this should be handled as a FK
-    //this.board.pieces.push(this)
-    this.tick()
-    this.getGhost() // #! TODO should be part of tick
     this.pixi = new uP.PIXI.Container()
     this.squares.forEach(s => {
       s.makePixi()
       this.pixi.addChild(s.sprite)
-      s.sprite.x = s.dx * 20
-      s.sprite.y = s.dy * 20
     })
+    this.addPixi()
+    this.tick()
+    this.getGhost() // #! TODO should be part of tick
+    this.redraw(true)
+  }
+
+  redraw(dirty) {
     this.pixi.x = this.x * 20
     this.pixi.y = this.y * 20
-    this.board.pixi.board.addChild(this.pixi)
+    if (dirty) {
+      // rotated or modified, need to reposition squares
+      this.squares.forEach(s => {
+        s.sprite.x = s.dx * 20
+        s.sprite.y = s.dy * 20
+      })
+    }
   }
 
   reset() {
+    // #! TODO is this still used?
     this.x = this.board.W / 2
     const y = Math.max(this.board.top - this.board.game.b_level, 0)
     this.y = Math.max(y, this.board.top)
@@ -153,9 +163,11 @@ export default class Piece extends uR.Object {
     })
     if (this.check() || force) {
       this.getGhost()
+      this.redraw(true)
       return true
     } else {
       this.rotate(-spin)
+      this.redraw(true)
     }
   }
   moveLeft = () => this._move([-1, 0])
@@ -173,16 +185,12 @@ export default class Piece extends uR.Object {
   }
 
   tick() {
-    // currently only used to make gold blocks break after 1 turn of not being used
     if (this.is_gold && this.break_on === this.board.game.turn) {
       const ys = _.range(4).map(dy => this.y + dy)
       this.board.removeLines(ys, true) // forcefully remove these lines
-
-      // #! TODO: gold bars need their y and s.dy adjusted
-      // this should be handled by remove lines
-      this.y -= 4
-      this.squares.forEach(s => (s.dy -= 4))
+      return
     }
+    this.redraw()
   }
 
   recenter(dx, dy) {
@@ -217,6 +225,7 @@ export default class Piece extends uR.Object {
       const shift = _.pick(orphans[0], ['dx', 'dy', 'x', 'y'])
 
       orphans.forEach(s => {
+        this.pixi.removeChild(s.sprite)
         s.dx -= shift.dx
         s.dy -= shift.dy
       })
@@ -236,6 +245,7 @@ export default class Piece extends uR.Object {
     }
     // reset to home_square (if moved)
     this.recenter(home_square.dx, home_square.dy)
+    this.redraw(true)
   }
 
   getGhost() {
@@ -279,9 +289,11 @@ export default class Piece extends uR.Object {
     this.y += dy
     if (this.check() || force) {
       this.getGhost()
+      this.redraw()
       return true
     } else {
       this._move([-dx, -dy], true)
+      this.redraw()
     }
   }
 
@@ -295,5 +307,13 @@ export default class Piece extends uR.Object {
       0.6,
       'lightgrey',
     )
+  }
+
+  removePixi() {
+    this.board.pixi.board.removeChild(this.pixi)
+  }
+
+  addPixi() {
+    this.board.pixi.board.addChild(this.pixi)
   }
 }

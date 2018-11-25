@@ -197,10 +197,10 @@ export default class Game extends uR.Object {
     for (let i = 0; i < 1; i++) {
       //this.pieces = this.pieces.concat(['z', 'z', 'z', 'z', 'z', 'i'])
       //this.pieces = this.pieces.concat(['i', 'l', 'j', 'o'])
-      //this.pieces = this.pieces.concat(['t','t','t','t','t','i'])
+      this.pieces = this.pieces.concat(['t','t','t','t','t','i'])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
-      this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
+      //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
     }
 
     this.level = 1
@@ -210,6 +210,7 @@ export default class Game extends uR.Object {
 
   reset(id) {
     this.id = id || 'autosave'
+    this.current_piece && this.current_piece.removePixi()
     this.current_piece = undefined
     this.swapped_piece = undefined
     this.tags.piece_stash && this.tags.piece_stash.setPieces([], 0)
@@ -217,7 +218,7 @@ export default class Game extends uR.Object {
     this.turn = 0
 
     this.controller.reset(id)
-    this.board.reset(id)
+    this.board.reset()
     this.getPiece()
     this.tags.scores && this.tags.scores.reset()
     this.updatePieceList()
@@ -335,6 +336,7 @@ export default class Game extends uR.Object {
           return
         }
         this.last_swap = this.turn
+        this.current_piece.removePixi()
         if (!this.swapped_piece) {
           this.swapped_piece = this.current_piece
           this.nextTurn()
@@ -344,6 +346,7 @@ export default class Game extends uR.Object {
           this.current_piece = old_piece
           this.current_piece.reset()
         }
+        this.current_piece.addPixi()
         this.tags.piece_stash.setPieces([this.swapped_piece], 0)
       },
     }

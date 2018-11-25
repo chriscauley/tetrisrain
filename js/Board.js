@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { range, inRange, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
@@ -32,6 +33,7 @@ export default class Board extends uR.Object {
   }
 
   reset() {
+    this.pieces && this.pieces.forEach(p => p.removePixi())
     this.pieces = []
     this.skyline = this.H - 1
     this.top = this.H - this.game.visible_height
@@ -181,7 +183,7 @@ export default class Board extends uR.Object {
   removeLines(removed_ys = this._getFullYs(), force) {
     this.game.animateLines(removed_ys)
     this._removeLines(removed_ys, force)
-    this.pieces = this.pieces.filter(p => p.squares.length)
+    _.remove(this.pieces,p => !p.squares.length)
     this.game.getSkyline()
     this.findGoldBars()
     this.draw()
