@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { range, inRange, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
-import newCanvas, { drawLine } from './newCanvas'
+import newCanvas from './newCanvas'
 import newElement from './newElement'
 import config from './config'
 import uR from './unrest.js'
@@ -47,7 +47,7 @@ export default class Board extends uR.Object {
   }
 
   redraw() {
-    this.pixi.board.y = -this.scale * this.top
+    this.pixi.app.stage.children.forEach(c => c.move())
   }
 
   draw() {
@@ -63,7 +63,6 @@ export default class Board extends uR.Object {
       this.H - game.visible_height,
       this.skyline - game.visible_height + game.b_level,
     )
-    game.trigger_line = Math.max(this.top, game.b_level)
     this.top = Math.max(this.top, 1)
     game.top = this.top * this.scale
     this.deep_line = this.top + game.visible_height
@@ -76,11 +75,47 @@ export default class Board extends uR.Object {
       height: window.innerHeight,
       container: '#game',
     })
+
     this.pixi.board = new uP.PIXI.Container()
-    const bg = uP.sprites.makeGrid(this)
-    this.pixi.board.addChild(bg)
+    // All of the following are because the container doesn't come from uP.getColo
     this.pixi.board.x = this.game.x_margin
+    this.pixi.board.y = this.scale * -this.top
+    this.pixi.board.move = () => {
+      uP.sprites.easeXY(
+        this.pixi.board,
+        // TODO move game_margin to board and measure it in units, not px
+        this.game.x_margin / this.scale,
+        -this.top,
+        this.scale,
+      )
+    }
     this.pixi.app.stage.addChild(this.pixi.board)
+
+    uP.sprites.makeGrid(this, {
+      width: this.W * this.scale + 1,
+      height: this.H * this.scale,
+      parent: this.pixi.board,
+    })
+
+    const line_x = this.game.x_margin / this.scale - 1
+    this.pixi.trigger_line = uP.sprites.makeLine(this, '#FF0000', {
+      move: () => [line_x, Math.max(this.top, this.game.b_level)],
+    })
+
+    this.pixi.b_level = uP.sprites.makeLine(this, '#0000FF', {
+      move: () => [line_x, this.game.b_level - this.top + 1],
+    })
+
+    this.pixi.floor = uP.sprites.makeLine(this, '#333333', {
+      move: () => [line_x, this.H - this.top],
+    })
+    this.pixi.water = uP.sprites.makeLine(this, '#0000FF', {
+      move: () => [0, this.deep_line - this.top],
+      x: 0,
+      width: this.W * this.scale + this.game.x_margin * 2,
+      height: 200,
+      alpha: 0.25,
+    })
   }
   makeCanvas() {
     const attrs = {
@@ -111,27 +146,6 @@ export default class Board extends uR.Object {
     this.canvas.ctx.fillStyle = this.gradient
     this.canvas.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
-    // make grid
-    for (let i = 0; i <= this.W; i++) {
-      drawLine(
-        this.canvas.ctx,
-        i * this.scale,
-        0,
-        i * this.scale,
-        this.canvas.height,
-        this.pallet.border,
-      )
-    }
-    for (let i = 0; i <= this.H; i++) {
-      drawLine(
-        this.canvas.ctx,
-        0,
-        i * this.scale,
-        this.canvas.width,
-        i * this.scale,
-        this.pallet.border,
-      )
-    }
     this.grid.src = this.canvas.toDataURL()
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -183,7 +197,7 @@ export default class Board extends uR.Object {
   removeLines(removed_ys = this._getFullYs(), force) {
     this.game.animateLines(removed_ys)
     this._removeLines(removed_ys, force)
-    _.remove(this.pieces,p => !p.squares.length)
+    _.remove(this.pieces, p => !p.squares.length)
     this.game.getSkyline()
     this.findGoldBars()
     this.draw()
@@ -304,7 +318,7 @@ export default class Board extends uR.Object {
           const piece = new Piece({
             x: piece_x,
             y: piece_y,
-            color: 'gold',
+            color: 'FFD700',
             board: this,
             squares,
           })

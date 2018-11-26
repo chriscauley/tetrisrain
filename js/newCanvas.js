@@ -1,13 +1,5 @@
 import newElement from './newElement'
 
-export function drawLine(context, x1, y1, x2, y2, color) {
-  context.strokeStyle = color
-  context.beginPath()
-  context.moveTo(x1 + 0.5, y1 + 0.5)
-  context.lineTo(x2 + 0.5, y2 + 0.5)
-  context.stroke()
-}
-
 export const Ease = (dt, x0, dx) => {
   const t0 = new Date().valueOf()
   return () => {

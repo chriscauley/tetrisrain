@@ -127,27 +127,6 @@ export default class Game extends uR.Object {
       this.board.grid.width,
       grid_rows * this.scale,
     )
-    this.canvas.drawBox(
-      -0.5,
-      this.floor,
-      this.board.canvas.width / this.scale + 1,
-      4 / this.scale,
-      'black',
-    )
-    this.canvas.drawBox(
-      -0.5,
-      this.trigger_line,
-      this.board.canvas.width / this.scale + 1,
-      4 / this.scale,
-      'red',
-    )
-    this.canvas.drawBox(
-      -0.5,
-      this.b_level - this.board.top + 1,
-      this.board.canvas.width / this.scale + 1,
-      4 / this.scale,
-      'blue',
-    )
 
     // draw board
     this.canvas.ctx.drawImage(
@@ -160,15 +139,6 @@ export default class Game extends uR.Object {
       0, // dx, dy,
       this.canvas.width,
       this.canvas.height, // dWidth, dHeight
-    )
-
-    // draw water
-    this.canvas.drawBox(
-      -5,
-      this.board.deep_line - this.board.top,
-      this.board.W + 10,
-      this.canvas.height,
-      'rgba(0,0,255,0.25)',
     )
 
     // animation
@@ -197,7 +167,7 @@ export default class Game extends uR.Object {
     for (let i = 0; i < 1; i++) {
       //this.pieces = this.pieces.concat(['z', 'z', 'z', 'z', 'z', 'i'])
       //this.pieces = this.pieces.concat(['i', 'l', 'j', 'o'])
-      this.pieces = this.pieces.concat(['t','t','t','t','t','i'])
+      this.pieces = this.pieces.concat(['t', 't', 't', 't', 't', 'i'])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
