@@ -17,9 +17,11 @@ export class Square extends uR.Object {
     this._drop = 0 // counter used for moving it down
   }
   makePixi() {
-    this.sprite = uP.sprites.getColor(this.piece.color)
-    this.sprite.width = this.piece.board.scale
-    this.sprite.height = this.piece.board.scale
+    this.sprite = uP.sprites.getColor(this.piece.color, {
+      width: this.piece.board.scale,
+      height: this.piece.board.scale,
+      parent: this.piece.pixi,
+    })
   }
   makeGem() {
     // first sprite gets a special inner square
@@ -52,13 +54,14 @@ export class Square extends uR.Object {
   kill(force) {
     // gold pieces don't get eliminated in the normal manner
     if (this.piece.is_gold && !force) {
-      this.color = 'grey'
+      this.color = '#555555'
+      uP.sprites.recolor(this.sprite, this.color)
       this.piece.break_on = this.piece.board.game.turn + 1
       return
     }
     this.piece._needs_split = true
-    _.remove(this.piece.squares, this)
     this.piece.pixi.removeChild(this.sprite)
+    _.remove(this.piece.squares, this)
     this.piece.board.remove(this.x, this.y)
   }
   getColor() {
@@ -121,7 +124,6 @@ export default class Piece extends uR.Object {
     this.pixi = new uP.PIXI.Container()
     this.squares.forEach(s => {
       s.makePixi()
-      this.pixi.addChild(s.sprite)
     })
     this.squares[0].makeGem()
     this.addPixi()

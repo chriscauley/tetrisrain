@@ -47,7 +47,7 @@ const _Sprite = opts => {
   return sprite
 }
 
-const getColor = (color, opts = {}) => {
+const _getColor = color => {
   if (!color_cache[color]) {
     // cache+clone seems to save 50% time vs new Graphics, 90us to 60us
     let number = color
@@ -61,10 +61,20 @@ const getColor = (color, opts = {}) => {
     graphics.endFill()
     color_cache[color] = graphics
   }
+  return color_cache[color]
+}
 
+const getColor = (color, opts = {}) => {
   const sprite = new _Sprite(opts)
-  sprite.addChild(color_cache[color].clone())
+  sprite._color = _getColor(color).clone()
+  sprite.addChild(sprite._color)
   return sprite
+}
+
+const recolor = (sprite, color) => {
+  sprite.removeChild(sprite._color)
+  sprite._color = _getColor(color).clone()
+  sprite.addChild(sprite._color)
 }
 
 const makeLine = (board, color, opts = {}) => {
@@ -105,6 +115,7 @@ const makeGrid = (board, opts) => {
 
 export default {
   getColor,
+  recolor,
   makeGrid,
   makeLine,
   easeXY,
