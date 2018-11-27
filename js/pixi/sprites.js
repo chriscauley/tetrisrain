@@ -20,17 +20,8 @@ const easeXY = (obj, x, y, scale, time = 250) => {
 }
 
 const _Sprite = opts => {
-  const sprite = new PIXI.Sprite()
-  _.assign(
-    sprite,
-    _.pick(opts, [
-      'x',
-      'y', // PIXI.js
-      'width',
-      'height', // PIXI.js
-      'alpha', // PIXI.js
-    ]),
-  )
+  const sprite = new PIXI.Sprite(opts.texture)
+  _.assign(sprite, _.pick(opts, ['x', 'y', 'width', 'height', 'alpha']))
   opts.parent && opts.parent.addChild(sprite)
   if (opts.move) {
     const _move = () => {
@@ -113,10 +104,26 @@ const makeGrid = (board, opts) => {
   return bg
 }
 
+const gradient = opts => {
+  const { width, height } = opts
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, height)
+  opts.stops.forEach(s => gradient.addColorStop(...s))
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, width, height)
+  opts.texture = PIXI.Texture.fromCanvas(canvas)
+  return new _Sprite(opts)
+}
+
 export default {
   getColor,
   recolor,
   makeGrid,
   makeLine,
   easeXY,
+  gradient,
 }

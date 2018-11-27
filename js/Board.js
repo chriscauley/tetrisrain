@@ -97,6 +97,18 @@ export default class Board extends uR.Object {
       parent: this.pixi.board,
     })
 
+    this.pixi.danger_zone = uP.sprites.gradient({
+      stops: [
+        [0, 'red'],
+        [0.2, 'red'],
+        [0.2, 'rgba(255,0,0,0.5)'],
+        [1, 'rgba(255,0,0,0)'],
+      ],
+      width: 200,
+      height: 200,
+      parent: this.pixi.board,
+    })
+
     const line_x = this.game.x_margin / this.scale - 1
     this.pixi.trigger_line = uP.sprites.makeLine(this, '#FF0000', {
       move: () => [line_x, Math.max(this.top, this.game.b_level)],
@@ -109,6 +121,7 @@ export default class Board extends uR.Object {
     this.pixi.floor = uP.sprites.makeLine(this, '#333333', {
       move: () => [line_x, this.H - this.top],
     })
+
     this.pixi.water = uP.sprites.makeLine(this, '#0000FF', {
       move: () => [0, this.deep_line - this.top],
       x: 0,
@@ -143,28 +156,6 @@ export default class Board extends uR.Object {
       scale: this.scale,
     }
     this.canvas = newCanvas(attrs)
-
-    attrs.id = 'grid-img'
-    this.grid = newElement('img', attrs)
-    // this.game.DEBUG && document.getElementById("debug").appendChild(this.grid);
-
-    // gradient on grid
-    this.gradient = this.canvas.ctx.createLinearGradient(
-      0,
-      0,
-      0,
-      this.canvas.height,
-    )
-    this.gradient.addColorStop(0, 'red')
-    this.gradient.addColorStop(2 / this.H, 'red')
-    this.gradient.addColorStop(2 / this.H, '#faa')
-    this.gradient.addColorStop(0.5, '#fff')
-    this.gradient.addColorStop(1, '#fff')
-    this.canvas.ctx.fillStyle = this.gradient
-    this.canvas.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-
-    this.grid.src = this.canvas.toDataURL()
-    this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
   tickPieces() {

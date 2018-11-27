@@ -113,20 +113,8 @@ export default class Game extends uR.Object {
         current_top = a.to - (a.to - a.from) * r
       }
     }
-    // draw grid and floor
+    // draw floor
     this.floor = this.board.H - current_top / this.scale
-    const grid_rows = this.floor
-    this.canvas.ctx.drawImage(
-      this.board.grid,
-      0,
-      current_top,
-      this.board.grid.width,
-      grid_rows * this.scale,
-      0,
-      0,
-      this.board.grid.width,
-      grid_rows * this.scale,
-    )
 
     // draw board
     this.canvas.ctx.drawImage(
