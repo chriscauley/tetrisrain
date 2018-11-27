@@ -10,6 +10,7 @@ const uP = (window.uP = {
   LAYERS: [],
   PIXI: PIXI,
   sprites,
+  cache: {},
 })
 
 export default uP

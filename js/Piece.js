@@ -1,5 +1,6 @@
 import _ from 'lodash'
 
+import newElement from './newElement'
 import config from './config'
 import uP from './pixi'
 import uR from './unrest.js'
@@ -102,7 +103,7 @@ export default class Piece extends uR.Object {
   static opts = {
     board: uR.REQUIRED,
     color: 'pink',
-    shape: uR.REQUIRED,
+    shape: undefined,
     _needs_split: false,
   }
   constructor(opts) {
@@ -128,8 +129,8 @@ export default class Piece extends uR.Object {
     this.squares[0].makeGem()
     this.addPixi()
     this.tick()
-    this.getGhost() // #! TODO should be part of tick
     this.redraw(true)
+    this.getGhost(true) // #! TODO should be part of tick
   }
 
   redraw(dirty) {
@@ -177,12 +178,13 @@ export default class Piece extends uR.Object {
       }
     })
     if (this.check() || force) {
-      this.getGhost()
       this.redraw(true)
+      this.getGhost(true)
       return true
     } else {
       this.rotate(-spin)
       this.redraw(true)
+      this.getGhost(true)
     }
   }
   moveLeft = () => this._move([-1, 0])
@@ -263,12 +265,47 @@ export default class Piece extends uR.Object {
     this.redraw(true)
   }
 
-  getGhost() {
+  toTexture() {
+    const slug = `${this.shape}r${this.r}.piece`
+    if (!uP.cache[slug]) {
+      const canvas = this.board.pixi.app.renderer.extract.canvas(this.pixi)
+      uP.cache[slug] = uP.PIXI.Texture.fromCanvas(canvas)
+      if (!this.r) {
+        const bg = `background-image: url(${canvas.toDataURL()})`
+        const style = `piece-stack .p${this.shape}:before { ${bg} }\n`
+        newElement('style', {
+          parent: document.head,
+          innerHTML: style,
+          type: 'text/css',
+        })
+      }
+    }
+    return uP.cache[slug]
+  }
+
+  getGhost(redraw) {
+    // when cloning pieces, it generates unecessary ghosts
+    // #! TODO: this stops that, but the problem needs to be fixed upstream
+    if (!this.shape) {
+      return
+    }
     this.ghost_dy = 0
     const check = s => s.check((x, y) => [x, y + this.ghost_dy + 1])
     while (_.every(this.squares, check)) {
       this.ghost_dy++
     }
+    if (redraw) {
+      this.pixi.removeChild(this.ghost)
+      this.ghost = uP.sprites.Sprite({
+        texture: this.toTexture(),
+        parent: this.pixi,
+        alpha: 0.5,
+      })
+      this.off_x = Math.min(...this.squares.map(s => s.dx))
+      this.off_y = Math.min(...this.squares.map(s => s.dy))
+    }
+    this.ghost.y = (this.off_y + this.ghost_dy) * 20
+    this.ghost.x = this.off_x * 20
   }
 
   drop() {
@@ -293,6 +330,7 @@ export default class Piece extends uR.Object {
       // this is lazy, board.pieces should be a set or should be more carefully maintined
       this.board.pieces.push(this)
     }
+    this.pixi.removeChild(this.ghost)
   }
 
   remove() {

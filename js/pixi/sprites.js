@@ -19,7 +19,7 @@ const easeXY = (obj, x, y, scale, time = 250) => {
   )
 }
 
-const _Sprite = opts => {
+const Sprite = opts => {
   const sprite = new PIXI.Sprite(opts.texture)
   _.assign(sprite, _.pick(opts, ['x', 'y', 'width', 'height', 'alpha']))
   opts.parent && opts.parent.addChild(sprite)
@@ -56,7 +56,7 @@ const _getColor = color => {
 }
 
 const getColor = (color, opts = {}) => {
-  const sprite = new _Sprite(opts)
+  const sprite = new Sprite(opts)
   sprite._color = _getColor(color).clone()
   sprite.addChild(sprite._color)
   return sprite
@@ -116,7 +116,7 @@ const gradient = opts => {
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
   opts.texture = PIXI.Texture.fromCanvas(canvas)
-  return new _Sprite(opts)
+  return new Sprite(opts)
 }
 
 export default {
@@ -126,4 +126,5 @@ export default {
   makeLine,
   easeXY,
   gradient,
+  Sprite,
 }

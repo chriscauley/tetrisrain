@@ -3,7 +3,6 @@ import { range, inRange, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
 import newCanvas from './newCanvas'
-import newElement from './newElement'
 import config from './config'
 import uR from './unrest.js'
 import uP from './pixi'
@@ -130,21 +129,13 @@ export default class Board extends uR.Object {
       alpha: 0.25,
     })
 
-    let style = ''
     config.PIECE_LIST.forEach(piece => {
+      // this creates style tags for each piece for the preview menu
       const _piece = new Piece({
         board: this,
         shape: piece.shape,
       })
-      const url = this.pixi.app.renderer.extract.canvas(_piece.pixi).toDataURL()
-      const bg = `background-image: url(${url})`
-      style += `piece-stack .p${piece.shape}:before { ${bg} }\n`
       _piece.removePixi()
-    })
-    newElement('style', {
-      parent: document.head,
-      innerHTML: style,
-      type: 'text/css',
     })
   }
   makeCanvas() {
@@ -290,7 +281,6 @@ export default class Board extends uR.Object {
             board: this,
             squares,
           })
-          window.P = piece
           piece.is_gold = true
           piece.set()
           reset()
