@@ -116,6 +116,23 @@ export default class Board extends uR.Object {
       height: 200,
       alpha: 0.25,
     })
+
+    let style = ''
+    config.PIECE_LIST.forEach(piece => {
+      const _piece = new Piece({
+        board: this,
+        shape: piece.shape,
+      })
+      const url = this.pixi.app.renderer.extract.canvas(_piece.pixi).toDataURL()
+      const bg = `background-image: url(${url})`
+      style += `piece-stack .p${piece.shape}:before { ${bg} }\n`
+      _piece.removePixi()
+    })
+    newElement('style', {
+      parent: document.head,
+      innerHTML: style,
+      type: 'text/css',
+    })
   }
   makeCanvas() {
     const attrs = {
@@ -148,46 +165,6 @@ export default class Board extends uR.Object {
 
     this.grid.src = this.canvas.toDataURL()
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-
-    // make pieces
-    this.small_canvas = newCanvas({
-      width: config.N * this.scale + 1,
-      height: config.N * this.scale + 1,
-      scale: this.scale,
-    })
-    this.imgs = {}
-    let style = ''
-    const piece_div = document.createElement('div')
-    config.PIECE_LIST.forEach((piece, n) => {
-      const w = this.small_canvas.width
-      const h = this.small_canvas.height
-
-      // cycle through rotations
-      this.small_canvas.ctx.clearRect(0, 0, w, h)
-      piece.squares.forEach(square => {
-        // draw 4 boxes
-        this.small_canvas.ctx.fillStyle = this.pallet[n + 1]
-        this.small_canvas.ctx.fillRect(
-          (2 + square.dx) * this.scale,
-          (1 + square.dy) * this.scale,
-          this.scale,
-          this.scale,
-        )
-      })
-
-      const img = document.createElement('img')
-      img.src = this.small_canvas.toDataURL()
-      piece_div.appendChild(img)
-      // style tag for showing pieces in html elements (piece-list)
-      const bg = `background-image: url(${img.src});`
-      style += `piece-stack .p${piece.shape}:before { ${bg} }\n`
-    })
-    this.game.DEBUG && document.querySelector('#debug').appendChild(piece_div)
-    newElement('style', {
-      parent: document.head,
-      innerHTML: style,
-      type: 'text/css',
-    })
   }
 
   tickPieces() {

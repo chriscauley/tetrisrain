@@ -23,9 +23,11 @@
   &:before { /* make square */
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 80% auto;
+    background-size: 100% auto;
     content: "";
     display: block;
+    width: 75%;
+    margin: 0 auto;
     padding-top: 75%;
   }
   &:last-child {
@@ -39,11 +41,5 @@
   }
 }
 
-.ui .piece.p {
-  /* individual pieces need a little correction */
-  &t, &l, &j, &z, &s {
-    &:before { background-position-x: 0; }
-  }
-  &i:before { background-position-y: 5px; } /* very odd... */
-  &o:before { background-position-x: -40%; }
-}
+.ui .piece.pi:before { width: 100% }
+.ui .piece.po:before { width: 50% }

@@ -23,13 +23,15 @@ export class Square extends uR.Object {
   }
   makeGem() {
     // first sprite gets a special inner square
-    this.gem = this.gem || uP.sprites.getColor('#cccccc',{
-      parent:this.sprite,
-      width: 0.7,
-      height: 0.7,
-      x: this.dx+0.15,
-      y: this.dy+0.15,
-    })
+    this.gem =
+      this.gem ||
+      uP.sprites.getColor('#cccccc', {
+        parent: this.sprite,
+        width: 0.7,
+        height: 0.7,
+        x: this.dx + 0.15,
+        y: this.dy + 0.15,
+      })
   }
   get x() {
     return this.dx + this.piece.x
@@ -311,13 +313,6 @@ export default class Piece extends uR.Object {
   draw(canvas_object, offset_y = 0) {
     // offset_y currently used to make ghost
     this.squares.forEach(s => s.draw(canvas_object, offset_y))
-    canvas_object.drawBox(
-      this.x + 0.2,
-      this.y + 0.2 - offset_y,
-      0.6,
-      0.6,
-      'lightgrey',
-    )
   }
 
   removePixi() {
