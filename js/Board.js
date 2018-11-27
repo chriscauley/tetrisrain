@@ -71,8 +71,8 @@ export default class Board extends uR.Object {
 
   makePixi = () => {
     this.pixi = new uP.Pixi({
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: 400,
+      height: 600,
       container: '#game',
     })
 

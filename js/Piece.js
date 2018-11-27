@@ -21,6 +21,16 @@ export class Square extends uR.Object {
     this.sprite.width = this.piece.board.scale
     this.sprite.height = this.piece.board.scale
   }
+  makeGem() {
+    // first sprite gets a special inner square
+    this.gem = this.gem || uP.sprites.getColor('#cccccc',{
+      parent:this.sprite,
+      width: 0.7,
+      height: 0.7,
+      x: this.dx+0.15,
+      y: this.dy+0.15,
+    })
+  }
   get x() {
     return this.dx + this.piece.x
   }
@@ -111,6 +121,7 @@ export default class Piece extends uR.Object {
       s.makePixi()
       this.pixi.addChild(s.sprite)
     })
+    this.squares[0].makeGem()
     this.addPixi()
     this.tick()
     this.getGhost() // #! TODO should be part of tick
