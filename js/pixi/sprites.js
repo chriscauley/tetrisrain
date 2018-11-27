@@ -6,16 +6,18 @@ const color_cache = {}
 
 const ease_list = new Ease.list()
 
+const ease = (obj, props, time) => {
+  ease_list.add(new Ease.to(obj, props, time))
+}
+
 const easeXY = (obj, x, y, scale, time = 250) => {
-  ease_list.add(
-    new Ease.to(
-      obj,
-      {
-        x: scale * x,
-        y: scale * y,
-      },
-      time,
-    ),
+  ease(
+    obj,
+    {
+      x: scale * x,
+      y: scale * y,
+    },
+    time,
   )
 }
 
@@ -125,6 +127,7 @@ export default {
   makeGrid,
   makeLine,
   easeXY,
+  ease,
   gradient,
   Sprite,
 }

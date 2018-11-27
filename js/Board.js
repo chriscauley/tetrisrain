@@ -154,12 +154,26 @@ export default class Board extends uR.Object {
   }
 
   removeLines(removed_ys = this._getFullYs(), force) {
-    this.game.animateLines(removed_ys)
+    this.wipeLines(removed_ys)
     this._removeLines(removed_ys, force)
     _.remove(this.pieces, p => !p.squares.length)
     this.game.getSkyline()
     this.findGoldBars()
     this.draw()
+  }
+
+  wipeLines(ys) {
+    // note, this intentionally triggers for lines that don't actually get removed
+    // ie gold lines, deep lines, etc
+    ys.forEach(y => {
+      const sprite = uP.sprites.getColor('#888888', {
+        parent: this.pixi.board,
+        y: y * this.scale,
+        width: this.scale * this.W,
+        height: this.scale,
+      })
+      uP.sprites.ease(sprite, { alpha: 0 }, 300)
+    })
   }
 
   _getFullYs() {
