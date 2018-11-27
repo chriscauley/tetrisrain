@@ -2,7 +2,6 @@ import _ from 'lodash'
 import { range, inRange, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
-import newCanvas from './newCanvas'
 import config from './config'
 import uR from './unrest.js'
 import uP from './pixi'
@@ -25,7 +24,6 @@ export default class Board extends uR.Object {
     this.reset()
 
     this.pallet = new Pallet({ board: this })
-    this.makeCanvas()
     this.makePixi()
     window.B = this
     window.BP = this.pieces
@@ -39,19 +37,10 @@ export default class Board extends uR.Object {
 
     // nested arrays of zeros make up the initial board
     this.squares = range(this.H * this.W).map(() => undefined)
-
-    //!# TODO this isn't wiping the board...
-    this.canvas &&
-      this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
   redraw() {
     this.pixi.app.stage.children.forEach(c => c.move())
-  }
-
-  draw() {
-    this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.pieces.forEach(p => p.draw(this.canvas))
   }
 
   getSkyline() {
@@ -138,16 +127,6 @@ export default class Board extends uR.Object {
       _piece.removePixi()
     })
   }
-  makeCanvas() {
-    const attrs = {
-      id: 'board',
-      width: this.W * this.scale + 1,
-      height: this.H * this.scale + 1,
-      parent: this.game.DEBUG && document.getElementById('debug'),
-      scale: this.scale,
-    }
-    this.canvas = newCanvas(attrs)
-  }
 
   tickPieces() {
     this.pieces.forEach(p => p.tick())
@@ -159,7 +138,6 @@ export default class Board extends uR.Object {
     _.remove(this.pieces, p => !p.squares.length)
     this.game.getSkyline()
     this.findGoldBars()
-    this.draw()
   }
 
   wipeLines(ys) {
