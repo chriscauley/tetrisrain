@@ -143,7 +143,7 @@ import config from './config'
     this.files.sort();
   });
   save(e) {
-    const name = this.refs.save_name.value
+    const name = e.item?e.item.name:this.refs.save_name.value
     this.parent.game.save(name)
   }
   trash(e) {
