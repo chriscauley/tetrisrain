@@ -16,15 +16,17 @@ export default class Board extends uR.Object {
   }
   static opts = {
     game: uR.REQUIRED,
+    scale: 20, // px per block
     pieces: [],
   }
   constructor(opts) {
     super(opts)
-    this.scale = this.game.scale
-    this.reset()
 
+    // nested arrays of zeros make up the initial board
+    this.squares = range(this.H * this.W).map(() => undefined)
     this.pallet = new Pallet({ board: this })
     this.makePixi()
+    this.reset()
     window.B = this
     window.BP = this.pieces
   }
@@ -35,8 +37,12 @@ export default class Board extends uR.Object {
     this.skyline = this.H - 1
     this.top = this.H - this.game.visible_height
 
-    // nested arrays of zeros make up the initial board
-    this.squares = range(this.H * this.W).map(() => undefined)
+    this.squares = this.squares.map(() => undefined)
+    _.range(this.game.d_level).forEach(i => {
+      const p = Piece.Line({ board: this, y: this.H - i - 1, x: 0 })
+      this.pieces.push(p)
+      p.set()
+    })
   }
 
   redraw() {

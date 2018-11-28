@@ -11,9 +11,9 @@ import './ui.tag'
 
 export default class Game extends uR.Object {
   static fields = {
-    scale: 20, // px per block
     a_level: 1, // determines speed of clock
     b_level: 10, // determines how high up pieces start
+    d_level: 10,
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
     x_margin: 100,
@@ -40,7 +40,8 @@ export default class Game extends uR.Object {
     for (let i = 0; i < 1; i++) {
       //this.pieces = this.pieces.concat(['z', 'z', 'z', 'z', 'z', 'i'])
       //this.pieces = this.pieces.concat(['i', 'l', 'j', 'o'])
-      this.pieces = this.pieces.concat(['t', 't', 't', 't', 't', 'i'])
+      //this.pieces = this.pieces.concat(['t', 't', 't', 't', 't', 'i'])
+      //this.pieces = this.pieces.concat(['i','i','i','i','i','i','i','i',])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
