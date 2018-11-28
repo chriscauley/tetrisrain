@@ -98,7 +98,6 @@ import config from './config'
   <h3>Load</h3>
   <p each={ name,i in files } key={name}>
     <a onclick={ trash } class="fa fa-trash"></a>
-    <a onclick={ save } class="fa fa-save"></a>
     <a onclick={ load } class="fa fa-folder-open-o"></a>
     { name }
   </p>
@@ -143,14 +142,13 @@ import config from './config'
     this.files.sort();
   });
   save(e) {
-    const name = e.item?e.item.name:this.refs.save_name.value
-    this.parent.game.save(name)
+    this.parent.game.save(this.value)
   }
   trash(e) {
     if (!_confirm(e)) { return; }
     this.storage.remove(e.item.name);
   }
   load(e) {
-    this.parent.game.load(e.item.name)
+    this.parent.game.load(this.value = e.item.name)
   }
 </level-editor>
