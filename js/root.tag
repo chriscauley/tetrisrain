@@ -26,7 +26,6 @@ this.on('mount',() => {
 </root>
 
 <controls>
-  <h2>Controls</h2>
   <table border=0 cellpadding=1 cellspacing=1>
     <tr>
       <td>&uarr;</td>
