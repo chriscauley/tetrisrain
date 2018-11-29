@@ -23,7 +23,15 @@ export class Square extends uR.Object {
       height: this.piece.board.scale,
       parent: this.piece.pixi,
     })
+    this.shakeSprite = uP.sprites.getColor('#FF0000', {
+      width: 1,
+      height: 1 / 4,
+      y: 0.75,
+      parent: this.sprite,
+    })
+    this.shakeSprite.visible = false
   }
+
   makeGem() {
     // first sprite gets a special inner square
     this.gem =
@@ -361,5 +369,9 @@ export default class Piece extends uR.Object {
 
   addPixi() {
     this.board.pixi.board.addChild(this.pixi)
+  }
+  markShake(state) {
+    this.canShake = state
+    this.squares.forEach(s => (s.shakeSprite.visible = state))
   }
 }

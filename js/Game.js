@@ -192,6 +192,9 @@ export default class Game extends uR.Object {
         this.current_piece.addPixi()
         this.tags.piece_stash.setPieces([this.swapped_piece], 0)
       },
+      shake: () => {
+        this.board.shake()
+      },
     }
     this.act = {}
     for (const key in this._act) {

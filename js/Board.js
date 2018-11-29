@@ -10,7 +10,7 @@ import Piece from './Piece'
 export default class Board extends uR.Object {
   static fields = {
     W: 10,
-    H: 30,
+    H: 40,
     DEEP: 8,
     pieces: uR.List(Piece),
   }
@@ -333,5 +333,18 @@ export default class Board extends uR.Object {
   }
   remove(x, y) {
     this.squares[this._xy2i(x, y)] = undefined
+  }
+
+  detectShake() {
+    this.pieces.forEach(p => {
+      const blocked = p.squares.find(s => {
+        const target = this.get(s.x, s.y + 1)
+        return target && target.piece !== p
+      })
+      p.markShake(!blocked)
+    })
+  }
+  shake() {
+    this.detectShake()
   }
 }

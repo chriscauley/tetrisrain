@@ -10,12 +10,14 @@ export default class Controller {
       39: 'right',
       32: 'space',
       16: 'shift',
+      90: 'z',
     }
     const letters = 'abcdefghijklmnopqrstuvwxyz'
     this._action_map = {
       up: 'rotate',
       space: 'drop',
       shift: 'swapPiece',
+      z: 'shake',
     }
     for (let i = 0; i < letters.length; i++) {
       if (this._action_map[letters[i]]) {
