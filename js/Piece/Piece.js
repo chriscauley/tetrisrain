@@ -371,7 +371,7 @@ export default class Piece extends uR.Object {
     this.board.pixi.board.addChild(this.pixi)
   }
   markShake(state) {
-    this.canShake = state
+    this.can_shake = state
     this.squares.forEach(s => (s.shakeSprite.visible = state))
   }
 }
