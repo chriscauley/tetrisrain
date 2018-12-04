@@ -150,6 +150,22 @@ export default class Piece extends uR.Object {
         s.sprite.x = s.dx * 20
         s.sprite.y = s.dy * 20
       })
+
+      // from here down is calculating skirt
+      // this doesn't have anythign to do with drawing
+      const dxs = this.squares.map(s=> s.dx)
+      const dys = this.squares.map(s=> s.dy)
+      const dx0 = _.min(dxs)
+      const dymax = _.max(dys)
+      const width = _.max(dxs)-dx0+1
+      this.skirt = _.range(width).map(
+        i => _.max(
+          this.squares
+            .filter(s => s.dx === dx0+i)
+            .map(s=>s.dy)
+        )
+      )
+      this.skirt.x = this.x+dx0
     }
   }
 
@@ -291,16 +307,29 @@ export default class Piece extends uR.Object {
     return uP.cache[slug]
   }
 
+  checkSkirt = y => {
+    // check whether the skirt can fit at given y
+    // only useful in determining if a piece can move down
+    let blocked = undefined
+    this.skirt.forEach(
+      (dy,dx) => {
+        if (y + dy >= this.board.H) { blocked = true }
+        blocked = blocked || this.board.get(this.skirt.x + dx, y + dy)
+      }
+    )
+    return !blocked
+  }
+
   getGhost(redraw) {
     // when cloning pieces, it generates unecessary ghosts
     // #! TODO: this stops that, but the problem needs to be fixed upstream
     if (!this.shape) {
       return
     }
-    this.ghost_dy = 0
-    const check = s => s.check((x, y) => [x, y + this.ghost_dy + 1])
-    while (_.every(this.squares, check)) {
-      this.ghost_dy++
+    let ghost_dy = 0
+    while (this.checkSkirt(this.y+ghost_dy+1)) {
+      if (ghost_dy > 25) { break }
+      ghost_dy++
     }
     if (redraw) {
       this.pixi.removeChild(this.ghost)
@@ -312,16 +341,15 @@ export default class Piece extends uR.Object {
       this.off_x = Math.min(...this.squares.map(s => s.dx))
       this.off_y = Math.min(...this.squares.map(s => s.dy))
     }
-    this.ghost.y = (this.off_y + this.ghost_dy) * 20
+    this.ghost.dy = ghost_dy
+    this.ghost.y = (this.off_y + ghost_dy) * 20
     this.ghost.x = this.off_x * 20
   }
 
   drop() {
-    let fell = 0
-    while (this.moveDown()) {
-      fell++
-    }
-    return fell
+    const { dy } = this.ghost
+    this.ghost.dy = 0
+    return this.y += dy
   }
 
   lock() {
@@ -348,6 +376,7 @@ export default class Piece extends uR.Object {
   _move([dx, dy], force) {
     this.x += dx
     this.y += dy
+    this.skirt.x+= dx
     if (this.check() || force) {
       this.getGhost()
       this.redraw()
