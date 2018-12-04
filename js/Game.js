@@ -13,7 +13,7 @@ export default class Game extends uR.Object {
   static fields = {
     a_level: 1, // determines speed of clock
     b_level: 10, // determines how high up pieces start
-    d_level: 10,
+    d_level: 0,
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
     x_margin: 100,
@@ -44,7 +44,7 @@ export default class Game extends uR.Object {
       //this.pieces = this.pieces.concat(['i','i','i','i','i','i','i','i',])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
-      //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
+      this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
     }
 
     this.level = 1
@@ -201,6 +201,7 @@ export default class Game extends uR.Object {
       this.act[key] = () => {
         this.actions.push(key)
         this._act[key]()
+        this.board.update() // refreshes riot tag
       }
     }
   }

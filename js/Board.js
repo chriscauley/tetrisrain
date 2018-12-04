@@ -6,6 +6,7 @@ import config from './config'
 import uR from './unrest.js'
 import uP from './pixi'
 import Piece from './Piece'
+import _tb from './tetris-board.tag'
 
 export default class Board extends uR.Object {
   static fields = {
@@ -29,6 +30,11 @@ export default class Board extends uR.Object {
     this.reset()
     window.B = this
     window.BP = this.pieces
+    /*uR.element.create("tetris-board",{
+      parent: "#game",
+    }, {
+      board: this
+    })*/
   }
 
   reset() {
@@ -47,6 +53,10 @@ export default class Board extends uR.Object {
 
   redraw() {
     this.pixi.app.stage.children.forEach(c => c.move())
+  }
+
+  update() {
+    this.tag && this.tag.update()
   }
 
   getSkyline() {
