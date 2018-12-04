@@ -1,9 +1,13 @@
 import uR from './Object'
-
 import Ready from './ready'
+import element from './element'
 
-uR.Ready = Ready
-uR.ready = Ready()
+Object.assign(uR,{
+  ready: Ready(),
+  Ready,
+  element,
+})
+
 window.onload = uR.ready.start
 window.uR = uR
 
