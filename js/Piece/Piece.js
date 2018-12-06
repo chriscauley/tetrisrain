@@ -142,8 +142,22 @@ export default class Piece extends uR.Object {
   }
 
   redraw(dirty) {
-    this.pixi.x = this.x * 20
-    this.pixi.y = this.y * 20
+    if (this.sprite_x != this.x) {
+      // horizontal easing looks weird
+      this.sprite_x = this.x
+      this.sprite_y = this.y
+      this.pixi.x = this.x*this.board.scale
+      this.pixi.y = this.y*this.board.scale
+    }
+    if (this.sprite_y !== this.y) {
+      this.sprite_y = this.y
+      uP.sprites.easeXY(
+        this.pixi,
+        this.x,
+        this.y,
+        this.board.scale,
+      )
+    }
     if (dirty) {
       // rotated or modified, need to reposition squares
       this.squares.forEach(s => {
