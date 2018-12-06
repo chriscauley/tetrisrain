@@ -155,6 +155,7 @@ export default class Board extends uR.Object {
     this.game.getSkyline()
     this.findGoldBars()
     this.detectShake()
+    this.tickPieces()
   }
 
   wipeLines(ys) {
@@ -360,5 +361,15 @@ export default class Board extends uR.Object {
     this.pieces.forEach(p => p.markShake(p._can_shake))
   }
   shake() {
+    _.range(this.deep_line-1,this.skyline-1).forEach(
+      y => this.getLine(y).forEach((s,i) => {
+        if (!s.piece.can_shake) { return }
+        s.piece.markShake(false)
+        s.piece.remove()
+        while (s.piece.moveDown()) { }
+        s.piece.set()
+      })
+    )
+    this.removeLines()
   }
 }

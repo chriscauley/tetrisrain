@@ -88,7 +88,6 @@ export default class Game extends uR.Object {
   nextTurn() {
     this.getSkyline()
     this.board.removeLines()
-    this.board.tickPieces()
     this.turn++
     this.getPiece()
     if (!this.current_piece.check()) {
