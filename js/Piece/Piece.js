@@ -38,11 +38,15 @@ export class Square extends uR.Object {
       this.gem ||
       uP.sprites.getColor('#cccccc', {
         parent: this.sprite,
-        width: 0.7,
-        height: 0.7,
-        x: this.dx + 0.15,
-        y: this.dy + 0.15,
+        width: 0.5,
+        height: 0.5,
+        x: this.dx + 0.25,
+        y: this.dy + 0.25,
       })
+  }
+  removeGem() {
+    this.sprite.removeChild(this.gem)
+    this.gem = undefined
   }
   get x() {
     return this.dx + this.piece.x
@@ -135,7 +139,7 @@ export default class Piece extends uR.Object {
     this.squares.forEach(s => {
       s.makePixi()
     })
-    this.squares[0].makeGem()
+    this.makeGem()
     this.addPixi()
     this.tick()
     this.redraw(true)
@@ -306,6 +310,7 @@ export default class Piece extends uR.Object {
     }
     // reset to home_square (if moved)
     this.recenter(home_square.dx, home_square.dy)
+    this.makeGem()
     this.redraw(true)
   }
 
@@ -422,5 +427,16 @@ export default class Piece extends uR.Object {
   markShake(state) {
     this.can_shake = state
     this.squares.forEach(s => (s.shakeSprite.visible = state))
+  }
+
+  makeGem() {
+    const first = this.squares.find(s => !s.dy && !s.dx)
+    if (first.gem) {
+      return
+    }
+    this.squares
+      .filter(s => s.gem && (s.dx || s.dy)) // shouldn't have gem
+      .forEach(s => removeGem())
+    first.makeGem()
   }
 }
