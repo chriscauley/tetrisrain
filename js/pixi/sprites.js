@@ -11,14 +11,22 @@ const ease = (obj, props, time) => {
 }
 
 const easeXY = (obj, x, y, scale, time = 250) => {
-  ease(
-    obj,
-    {
-      x: scale * x,
-      y: scale * y,
-    },
-    time,
-  )
+  if (obj._ease_x === undefined && obj._ease_y === undefined) {
+    obj.x = scale * x
+    obj.y = scale * y
+  }
+  else {
+    ease(
+      obj,
+      {
+        x: scale * x,
+        y: scale * y,
+      },
+      time,
+    )
+  }
+  obj._ease_x = x
+  obj._ease_y = y
 }
 
 const Sprite = opts => {
