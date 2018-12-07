@@ -113,6 +113,7 @@ export default class Piece extends uR.Object {
     color: 'pink',
     shape: undefined,
     _needs_split: false,
+    _is_current: false,
   }
   constructor(opts) {
     _.defaults(opts, {
@@ -150,6 +151,11 @@ export default class Piece extends uR.Object {
       this.pixi.y = this.y*this.board.scale
     }
     if (this.sprite_y !== this.y) {
+      if (this._is_current) {
+        // dropping from too high looks weird
+        this.pixi.x = this.x*this.board.scale
+        this.pixi.y = (this.y-1)*this.board.scale
+      }
       this.sprite_y = this.y
       uP.sprites.easeXY(
         this.pixi,

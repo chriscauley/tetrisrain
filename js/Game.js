@@ -134,12 +134,16 @@ export default class Game extends uR.Object {
   getPiece(shape = this.updatePieceList()) {
     let y = Math.max(this.board.top - this.b_level, 0)
     y = Math.max(y, this.board.top)
+    if (this.current_piece) {
+      this.current_piece._is_current = false
+    }
     this.current_piece = new Piece({
       x: this.board.W / 2,
       y: y,
       r: 0,
       board: this.board,
       shape,
+      _is_current: true,
     })
   }
 
