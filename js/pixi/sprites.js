@@ -29,7 +29,7 @@ const easeXY = (obj, x, y, scale, time = 250) => {
   obj._ease_y = y
 }
 
-const Sprite = opts => {
+const Sprite = (opts={}) => {
   const sprite = new PIXI.Sprite(opts.texture)
   _.assign(sprite, _.pick(opts, ['x', 'y', 'width', 'height', 'alpha']))
   opts.parent && opts.parent.addChild(sprite)
@@ -83,7 +83,7 @@ const makeLine = (board, color, opts = {}) => {
     width: (board.W + 2) * board.scale,
     height: 3,
     x: board.game.x_margin - board.scale,
-    parent: board.pixi.app.stage,
+    parent: board.pixi.stage,
     scale: board.scale,
   })
   return getColor(color, opts)

@@ -52,7 +52,7 @@ export default class Board extends uR.Object {
   }
 
   redraw() {
-    this.pixi.app.stage.children.forEach(c => c.move())
+    this.pixi.stage.children.forEach(c => c.move && c.move())
   }
 
   update() {
@@ -74,7 +74,7 @@ export default class Board extends uR.Object {
   }
 
   makePixi = () => {
-    this.pixi = new uP.Pixi({
+    this.pixi = uP.Pixi({
       width: 400,
       height: 600,
       container: '#game',
@@ -93,7 +93,7 @@ export default class Board extends uR.Object {
         this.scale,
       )
     }
-    this.pixi.app.stage.addChild(this.pixi.board)
+    this.pixi.stage.addChild(this.pixi.board)
 
     uP.sprites.makeGrid(this, {
       width: this.W * this.scale + 1,

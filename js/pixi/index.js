@@ -15,12 +15,11 @@ const uP = (window.uP = {
 
 export default uP
 
-uP.Pixi = class Pixi {
-  constructor(opts) {
-    this.app = new PIXI.Application(_.pick(opts, ['width', 'height']))
-    this.stage = this.app.stage = new PIXI.display.Stage()
-    this.stage.group.enableSort = true
-    opts.container &&
-      document.querySelector(opts.container).appendChild(this.app.view)
-  }
+uP.Pixi = (opts={}) => {
+  const app = uP.app = new PIXI.Application(_.pick(opts, ['width', 'height']))
+  app.stage = new PIXI.display.Stage()
+  app.stage.group.enableSort = true
+  opts.container &&
+    document.querySelector(opts.container).appendChild(app.view)
+  return app
 }

@@ -348,7 +348,7 @@ export default class Piece extends uR.Object {
   toTexture() {
     const slug = `${this.shape}r${this.r}.piece`
     if (!uP.cache[slug]) {
-      const canvas = this.board.pixi.app.renderer.extract.canvas(this.pixi)
+      const canvas = this.board.pixi.renderer.extract.canvas(this.pixi)
       uP.cache[slug] = uP.PIXI.Texture.fromCanvas(canvas)
       if (!this.r) {
         const bg = `background-image: url(${canvas.toDataURL()})`
