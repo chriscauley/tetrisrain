@@ -41,18 +41,6 @@ export class Square extends uR.Object {
     this.toggleEdge()
   }
 
-  makeGem() {
-    // first sprite gets a special inner square
-    this.gem =
-      this.gem ||
-      uP.sprites.getColor('#cccccc', {
-        parent: this.sprite,
-        width: 0.5,
-        height: 0.5,
-        x: this.dx + 0.25,
-        y: this.dy + 0.25,
-      })
-  }
   toggleEdge() {
     const combo = edge.DIRECTIONS.map( (dxdy,i) => {
       const dx = dxdy[0] + this.dx
@@ -62,10 +50,6 @@ export class Square extends uR.Object {
     }).join("")
     this.sprite.shake.texture = uP.cache.shake[combo]
     this.sprite.edge.texture = uP.cache.edge[combo]
-  }
-  removeGem() {
-    this.sprite.removeChild(this.gem)
-    this.gem = undefined
   }
   get x() {
     return this.dx + this.piece.x
@@ -154,11 +138,10 @@ export default class Piece extends uR.Object {
     this._opts = opts
     this.max_r = template ? template.rotations : 0 // 0,2,4 depending on shape
     this.squares.forEach(s => (s.piece = this)) //#! TODO this should be handled as a FK
-    this.pixi = new uP.PIXI.Container()
+    this.pixi = uP.sprites.Sprite()
     this.squares.forEach(s => {
       s.makePixi()
     })
-    this.makeGem()
     this.addPixi()
     this.tick()
     this.redraw(true)
@@ -210,16 +193,7 @@ export default class Piece extends uR.Object {
       )
       this.skirt.x = this.x+dx0
       this.squares.forEach(s => s.toggleEdge())
-    }
-  }
-
-  reset() {
-    // #! TODO is this still used?
-    this.x = this.board.W / 2
-    const y = Math.max(this.board.top - this.board.game.b_level, 0)
-    this.y = Math.max(y, this.board.top)
-    while (this.r) {
-      this.rotate(-Math.sign(this.r), true)
+      this.makeGem()
     }
   }
 
@@ -330,7 +304,6 @@ export default class Piece extends uR.Object {
     }
     // reset to home_square (if moved)
     this.recenter(home_square.dx, home_square.dy)
-    this.makeGem()
     this.redraw(true)
   }
 
@@ -453,13 +426,12 @@ export default class Piece extends uR.Object {
   }
 
   makeGem() {
-    const first = this.squares.find(s => !s.dy && !s.dx)
-    if (first.gem) {
-      return
-    }
-    this.squares
-      .filter(s => s.gem && (s.dx || s.dy)) // shouldn't have gem
-      .forEach(s => removeGem())
-    first.makeGem()
+    this.gem = uP.sprites.getColor('#cccccc', {
+      parent: this.pixi,
+      width: this.board.scale/2,
+      height: this.board.scale/2,
+      x: this.board.scale/4,
+      y: this.board.scale/4,
+    })
   }
 }

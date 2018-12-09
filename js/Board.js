@@ -151,7 +151,6 @@ export default class Board extends uR.Object {
   removeLines(removed_ys = this._getFullYs(), force) {
     this.wipeLines(removed_ys)
     this._removeLines(removed_ys, force)
-    _.remove(this.pieces, p => !p.squares.length)
     this.game.getSkyline()
     this.findGoldBars()
     this.detectShake()
@@ -204,8 +203,7 @@ export default class Board extends uR.Object {
       return
     }
 
-    // remove empty pieces from board
-    this.pieces = this.pieces.filter(p => p.squares.length)
+    _.remove(this.pieces, p => !p.squares.length).forEach(p=>p.removePixi())
 
     // split pieces
     this.pieces.forEach(p => p.checkSplit())

@@ -189,8 +189,7 @@ export default class Game extends uR.Object {
         } else {
           const old_piece = this.swapped_piece
           this.swapped_piece = this.current_piece
-          this.current_piece = old_piece
-          this.current_piece.reset()
+          this.getPiece(old_piece.shape)
         }
         this.current_piece.addPixi()
         this.tags.piece_stash.setPieces([this.swapped_piece], 0)
