@@ -31,7 +31,7 @@ const easeXY = (obj, x, y, scale, time = 250) => {
 
 const Sprite = (opts={}) => {
   const sprite = new PIXI.Sprite(opts.texture)
-  _.assign(sprite, _.pick(opts, ['x', 'y', 'width', 'height', 'alpha']))
+  _.assign(sprite, _.pick(opts, ['x', 'y', 'width', 'height', 'alpha','visible']))
   opts.parent && opts.parent.addChild(sprite)
   if (opts.move) {
     const _move = () => {

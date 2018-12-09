@@ -4,11 +4,7 @@ import newElement from '../newElement'
 import config from '../config'
 import uP from '../pixi'
 import uR from '../unrest.js'
-
-const DIRECTIONS = [
-  [0,-1],[0,1],[-1,0],[1,0], //up, down, left, right
-  [1,-1],[1,1],[-1,1],[-1,-1]
-]
+import edge from './edge'
 
 export class Square extends uR.Object {
   static fields = {
@@ -28,14 +24,21 @@ export class Square extends uR.Object {
       height: this.piece.board.scale,
       parent: this.piece.pixi,
     })
-    this.shakeSprite = uP.sprites.getColor('#FF0000', {
-      width: 1,
-      height: 1 / 4,
-      y: 0.75,
+    if (!uP.cache.edge) {
+      edge.makeEdges(this)
+    }
+    this.sprite.shake = uP.sprites.Sprite({
       parent: this.sprite,
+      width: 1,
+      height: 1,
+      visible: false,
     })
-    this.shakeSprite.visible = false
-    this.makeEdge()
+    this.sprite.edge = uP.sprites.Sprite({
+      parent: this.sprite,
+      width: 1,
+      height: 1,
+    })
+    this.toggleEdge()
   }
 
   makeGem() {
@@ -50,29 +53,15 @@ export class Square extends uR.Object {
         y: this.dy + 0.25,
       })
   }
-  makeEdge() {
-    this.sprite.edges = {}
-    const width = 0.1 // how wide the edge is
-    const offset = 1-width // rest of square
-    const sprite = this.sprite
-    DIRECTIONS.map( dxdy => {
-      sprite.edges[dxdy] = uP.sprites.getColor('#000000', {
-        width: dxdy[0]?width:1,
-        height: dxdy[1]?width:1,
-        y: dxdy[1] > 0 ? offset:0,
-        x: dxdy[0] > 0 ? offset:0,
-        parent: sprite,
-      })
-    })
-    this.toggleEdge()
-  }
   toggleEdge() {
-    DIRECTIONS.map( dxdy => {
+    const combo = edge.DIRECTIONS.map( (dxdy,i) => {
       const dx = dxdy[0] + this.dx
       const dy = dxdy[1] + this.dy
       const no_edge = this.piece.squares.find(s => (s.dx === dx) && (s.dy === dy))
-      this.sprite.edges[dxdy].alpha = no_edge?0:1
-    })
+      return no_edge?0:1
+    }).join("")
+    this.sprite.shake.texture = uP.cache.shake[combo]
+    this.sprite.edge.texture = uP.cache.edge[combo]
   }
   removeGem() {
     this.sprite.removeChild(this.gem)
@@ -457,7 +446,10 @@ export default class Piece extends uR.Object {
   }
   markShake(state) {
     this.can_shake = state
-    this.squares.forEach(s => (s.shakeSprite.visible = state))
+    this.squares.forEach(s => {
+      s.sprite.shake.visible = state
+      s.sprite.edge.visible = !state
+    })
   }
 
   makeGem() {
