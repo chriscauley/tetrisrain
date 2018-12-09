@@ -115,7 +115,7 @@ export default class Board extends uR.Object {
 
     const line_x = this.game.x_margin / this.scale - 1
     this.pixi.trigger_line = uP.sprites.makeLine(this, '#FF0000', {
-      move: () => [line_x, Math.max(this.top, this.game.b_level)],
+      move: () => [line_x, this.game.b_level],
     })
 
     this.pixi.b_level = uP.sprites.makeLine(this, '#0000FF', {
