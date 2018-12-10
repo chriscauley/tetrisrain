@@ -42,12 +42,12 @@ export class Square extends uR.Object {
   }
 
   toggleEdge() {
-    const combo = edge.DIRECTIONS.map( (dxdy,i) => {
+    const combo = edge.DIRECTIONS.map(dxdy => {
       const dx = dxdy[0] + this.dx
       const dy = dxdy[1] + this.dy
-      const no_edge = this.piece.squares.find(s => (s.dx === dx) && (s.dy === dy))
-      return no_edge?0:1
-    }).join("")
+      const no_edge = this.piece.squares.find(s => s.dx === dx && s.dy === dy)
+      return no_edge ? 0 : 1
+    }).join('')
     this.sprite.shake.texture = uP.cache.shake[combo]
     this.sprite.edge.texture = uP.cache.edge[combo]
   }
@@ -76,7 +76,7 @@ export class Square extends uR.Object {
       return
     }
     this.piece._needs_split = true
-    this.piece.pixi.removeChild(this.sprite)// #A remove squares
+    this.piece.pixi.removeChild(this.sprite) // #A remove squares
     _.remove(this.piece.squares, this)
     this.piece.board.remove(this.x, this.y)
   }
@@ -148,23 +148,23 @@ export default class Piece extends uR.Object {
   }
 
   redraw(dirty) {
-    if (this.sprite_x != this.x) {
+    if (this.sprite_x !== this.x) {
       // horizontal easing looks weird
       this.sprite_x = this.x
       this.sprite_y = this.y
-      this.pixi.x = this.x*this.board.scale
-      this.pixi.y = this.y*this.board.scale
+      this.pixi.x = this.x * this.board.scale
+      this.pixi.y = this.y * this.board.scale
     }
     if (this.sprite_y !== this.y) {
       if (this._is_current) {
         // dropping from too high looks weird
-        _.assign(this.pixi,{
-          x: this.x*this.board.scale,
-          y: (this.y-1)*this.board.scale,
+        _.assign(this.pixi, {
+          x: this.x * this.board.scale,
+          y: (this.y - 1) * this.board.scale,
         })
       }
       this.sprite_y = this.y
-      uP.easeXY(this.pixi,this.x,this.y)
+      uP.easeXY(this.pixi, this.x, this.y)
     }
     if (dirty) {
       // rotated or modified, need to reposition squares
@@ -175,19 +175,13 @@ export default class Piece extends uR.Object {
 
       // from here down is calculating skirt
       // this doesn't have anythign to do with drawing
-      const dxs = this.squares.map(s=> s.dx)
-      const dys = this.squares.map(s=> s.dy)
+      const dxs = this.squares.map(s => s.dx)
       const dx0 = _.min(dxs)
-      const dymax = _.max(dys)
-      const width = _.max(dxs)-dx0+1
-      this.skirt = _.range(width).map(
-        i => _.max(
-          this.squares
-            .filter(s => s.dx === dx0+i)
-            .map(s=>s.dy)
-        )
+      const width = _.max(dxs) - dx0 + 1
+      this.skirt = _.range(width).map(i =>
+        _.max(this.squares.filter(s => s.dx === dx0 + i).map(s => s.dy)),
       )
-      this.skirt.x = this.x+dx0
+      this.skirt.x = this.x + dx0
       this.squares.forEach(s => s.toggleEdge())
       this.makeGem()
     }
@@ -257,9 +251,9 @@ export default class Piece extends uR.Object {
       s.dx -= dx
       s.dy -= dy
     })
-    _.assign(this.pixi,{
-      x: this.x*this.board.scale,
-      y: this.y*this.board.scale,
+    _.assign(this.pixi, {
+      x: this.x * this.board.scale,
+      y: this.y * this.board.scale,
     })
   }
 
@@ -330,12 +324,12 @@ export default class Piece extends uR.Object {
     // check whether the skirt can fit at given y
     // only useful in determining if a piece can move down
     let blocked = undefined
-    this.skirt.forEach(
-      (dy,dx) => {
-        if (y + dy >= this.board.H) { blocked = true }
-        blocked = blocked || this.board.get(this.skirt.x + dx, y + dy)
+    this.skirt.forEach((dy, dx) => {
+      if (y + dy >= this.board.H) {
+        blocked = true
       }
-    )
+      blocked = blocked || this.board.get(this.skirt.x + dx, y + dy)
+    })
     return !blocked
   }
 
@@ -346,8 +340,10 @@ export default class Piece extends uR.Object {
       return
     }
     let ghost_dy = 0
-    while (this.checkSkirt(this.y+ghost_dy+1)) {
-      if (ghost_dy > 25) { break }
+    while (this.checkSkirt(this.y + ghost_dy + 1)) {
+      if (ghost_dy > 25) {
+        break
+      }
       ghost_dy++
     }
     if (redraw) {
@@ -368,7 +364,7 @@ export default class Piece extends uR.Object {
   drop() {
     const { dy } = this.ghost
     this.ghost.dy = 0
-    return this.y += dy
+    return (this.y += dy)
   }
 
   lock() {
@@ -395,7 +391,7 @@ export default class Piece extends uR.Object {
   _move([dx, dy], force) {
     this.x += dx
     this.y += dy
-    this.skirt.x+= dx
+    this.skirt.x += dx
     if (this.check() || force) {
       this.redraw()
       return true
@@ -428,10 +424,10 @@ export default class Piece extends uR.Object {
   makeGem() {
     this.gem = uP.sprites.getColor('#cccccc', {
       parent: this.pixi,
-      width: this.board.scale/2,
-      height: this.board.scale/2,
-      x: this.board.scale/4,
-      y: this.board.scale/4,
+      width: this.board.scale / 2,
+      height: this.board.scale / 2,
+      x: this.board.scale / 4,
+      y: this.board.scale / 4,
     })
   }
 }

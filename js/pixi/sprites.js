@@ -3,9 +3,12 @@ import * as PIXI from 'pixi.js'
 
 const color_cache = {}
 
-const Sprite = (opts={}) => {
+const Sprite = (opts = {}) => {
   const sprite = new PIXI.Sprite(opts.texture)
-  _.assign(sprite, _.pick(opts, ['x', 'y', 'width', 'height', 'alpha','visible']))
+  _.assign(
+    sprite,
+    _.pick(opts, ['x', 'y', 'width', 'height', 'alpha', 'visible']),
+  )
   opts.parent && opts.parent.addChild(sprite)
   if (opts.move) {
     const _move = () => {

@@ -83,13 +83,10 @@ export default class Board extends uR.Object {
 
     this.pixi.board = new uP.PIXI.Container()
     // All of the following are because the container doesn't come from uP.getColor
-    this.pixi.board.x = this.x_offset*this.scale
+    this.pixi.board.x = this.x_offset * this.scale
     this.pixi.board.y = this.scale * -this.top
-    this.pixi.board.move = () => uP.easeXY(
-      this.pixi.board,
-      this.x_offset,
-      this.top*-1
-    )
+    this.pixi.board.move = () =>
+      uP.easeXY(this.pixi.board, this.x_offset, this.top * -1)
     this.pixi.stage.addChild(this.pixi.board)
 
     uP.sprites.makeGrid(this, {
@@ -127,7 +124,7 @@ export default class Board extends uR.Object {
       move: () => [0, this.deep_line - this.top],
       x: 0,
       width: this.scale * (this.W + this.x_offset * 2),
-      height: this.scale*10,
+      height: this.scale * 10,
       alpha: 0.25,
     })
 
@@ -190,7 +187,7 @@ export default class Board extends uR.Object {
 
   _repiece() {
     // remove dead pieces and check splits
-    _.remove(this.pieces, p => !p.squares.length).forEach(p=>p.removePixi())
+    _.remove(this.pieces, p => !p.squares.length).forEach(p => p.removePixi())
     this.pieces.forEach(p => p.checkSplit())
   }
 
@@ -349,34 +346,38 @@ export default class Board extends uR.Object {
   }
 
   detectShake() {
-    this.pieces.forEach(p => p._can_shake = true)
-    this.getLine(this.H-1).forEach(s => s.piece._can_shake = false)
-    _.range(this.H,this.skyline-1).forEach(
-      y => this.getLine(y).forEach(s => {
-        if (!s.piece._can_shake) { return }
+    this.pieces.forEach(p => (p._can_shake = true))
+    this.getLine(this.H - 1).forEach(s => (s.piece._can_shake = false))
+    _.range(this.H, this.skyline - 1).forEach(y =>
+      this.getLine(y).forEach(s => {
+        if (!s.piece._can_shake) {
+          return
+        }
         const s2 = this.get(s.x, s.y + 1)
         s.piece._can_shake = !s2 || s2.piece._can_shake
-      })
+      }),
     )
 
     this.pieces.forEach(p => p.markShake(p._can_shake))
   }
 
   shake() {
-    this.pieces.forEach(p => p._shaked_y = 0)
+    this.pieces.forEach(p => (p._shaked_y = 0))
     let any_shaked = true
     while (any_shaked) {
       any_shaked = false
-      _.range(this.deep_line-1,this.skyline-1).forEach(
-        y => this.getLine(y).forEach((s,i) => {
-          if (!s.piece.can_shake) { return }
+      _.range(this.deep_line - 1, this.skyline - 1).forEach(y =>
+        this.getLine(y).forEach(s => {
+          if (!s.piece.can_shake) {
+            return
+          }
           s.piece.remove()
           while (s.piece.moveDown()) {
-            s.piece._shaked_y ++
+            s.piece._shaked_y++
             any_shaked = true
           }
           s.piece.set()
-        })
+        }),
       )
     }
     this.removeLines()

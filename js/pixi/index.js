@@ -17,14 +17,12 @@ const uP = (window.uP = {
 
 export default uP
 
-uP.Pixi = (opts={}) => {
+uP.Pixi = (opts = {}) => {
   uP.scale = opts.scale
-  const app = uP.app = new PIXI.Application(_.pick(opts, ['width', 'height']))
+  const app = (uP.app = new PIXI.Application(_.pick(opts, ['width', 'height'])))
   animation(uP)
   app.stage = new PIXI.display.Stage()
   app.stage.group.enableSort = true
-  opts.container &&
-    document.querySelector(opts.container).appendChild(app.view)
+  opts.container && document.querySelector(opts.container).appendChild(app.view)
   return app
 }
-

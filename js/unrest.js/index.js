@@ -2,7 +2,7 @@ import uR from './Object'
 import Ready from './ready'
 import element from './element'
 
-Object.assign(uR,{
+Object.assign(uR, {
   ready: Ready(),
   Ready,
   element,
