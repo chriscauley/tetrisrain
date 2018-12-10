@@ -41,8 +41,6 @@ export default class Board extends uR.Object {
   reset() {
     this.pieces && this.pieces.forEach(p => p.removePixi())
     this.pieces = []
-    this.skyline = this.H - 1
-    this.top = this.H - this.game.visible_height
 
     this.squares = this.squares.map(() => undefined)
     _.range(this.game.d_level).forEach(i => {
@@ -50,6 +48,7 @@ export default class Board extends uR.Object {
       this.pieces.push(p)
       p.set()
     })
+    this.getSkyline()
   }
 
   redraw() {
@@ -149,7 +148,7 @@ export default class Board extends uR.Object {
   removeLines(removed_ys = this._getFullYs(), force) {
     this.wipeLines(removed_ys)
     this._removeLines(removed_ys, force)
-    this.game.getSkyline()
+    this.getSkyline()
     this.findGoldBars()
     this.detectShake()
     this.tickPieces()

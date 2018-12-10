@@ -64,7 +64,7 @@ export default class Game extends uR.Object {
     this.getPiece()
     this.tags.scores && this.tags.scores.reset()
     this.updatePieceList()
-    this.getSkyline()
+    this.board.getSkyline()
   }
 
   replay() {
@@ -84,7 +84,7 @@ export default class Game extends uR.Object {
   }
 
   nextTurn() {
-    this.getSkyline()
+    this.board.getSkyline()
     this.board.removeLines()
     this.turn++
     this.getPiece()
@@ -103,17 +103,6 @@ export default class Game extends uR.Object {
     this.deserialize(data)
     this.reset()
     this.replay()
-  }
-
-  getSkyline() {
-    const old_top = Math.max(this.top, 0)
-    this.board.getSkyline()
-    if (this.top !== old_top) {
-      this.top_from = old_top
-      this.animations = [
-        { from: old_top, to: this.top, start: new Date().valueOf() },
-      ]
-    }
   }
 
   updatePieceList() {
