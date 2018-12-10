@@ -259,6 +259,10 @@ export default class Piece extends uR.Object {
       s.dx -= dx
       s.dy -= dy
     })
+    _.assign(this.pixi,{
+      x: this.x*this.board.scale,
+      y: this.y*this.board.scale,
+    })
   }
 
   checkSplit() {

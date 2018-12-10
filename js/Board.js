@@ -188,6 +188,12 @@ export default class Board extends uR.Object {
     return full_ys
   }
 
+  _repiece() {
+    // remove dead pieces and check splits
+    _.remove(this.pieces, p => !p.squares.length).forEach(p=>p.removePixi())
+    this.pieces.forEach(p => p.checkSplit())
+  }
+
   _removeLines(remove_ys, force) {
     const drop_ys = remove_ys.filter(y => {
       // try to remove squares on line
@@ -198,9 +204,7 @@ export default class Board extends uR.Object {
       return !this.getLine(y).length
     })
 
-    _.remove(this.pieces, p => !p.squares.length).forEach(p=>p.removePixi())
-    // split pieces
-    this.pieces.forEach(p => p.checkSplit())
+    this._repiece()
 
     if (!drop_ys.length) {
       return
@@ -292,6 +296,7 @@ export default class Board extends uR.Object {
           reset()
         }
       })
+    this._repiece()
   }
   print() {
     /*eslint-disable */
