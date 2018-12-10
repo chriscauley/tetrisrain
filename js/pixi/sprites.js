@@ -1,33 +1,7 @@
 import _ from 'lodash'
 import * as PIXI from 'pixi.js'
-import Ease from 'pixi-ease'
 
 const color_cache = {}
-
-const ease_list = new Ease.list()
-
-const ease = (obj, props, time) => {
-  ease_list.add(new Ease.to(obj, props, time))
-}
-
-const easeXY = (obj, x, y, scale, time = 250) => {
-  if (obj._ease_x === undefined && obj._ease_y === undefined) {
-    obj.x = scale * x
-    obj.y = scale * y
-  }
-  else {
-    ease(
-      obj,
-      {
-        x: scale * x,
-        y: scale * y,
-      },
-      time,
-    )
-  }
-  obj._ease_x = x
-  obj._ease_y = y
-}
 
 const Sprite = (opts={}) => {
   const sprite = new PIXI.Sprite(opts.texture)
@@ -36,7 +10,7 @@ const Sprite = (opts={}) => {
   if (opts.move) {
     const _move = () => {
       const [x, y] = opts.move()
-      easeXY(sprite, x, y, opts.scale)
+      uP.easeXY(sprite, x, y)
     }
     sprite.move = () => {
       const [x, y] = opts.move()
@@ -134,8 +108,6 @@ export default {
   recolor,
   makeGrid,
   makeLine,
-  easeXY,
-  ease,
   gradient,
   Sprite,
 }

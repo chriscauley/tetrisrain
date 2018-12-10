@@ -76,7 +76,7 @@ export class Square extends uR.Object {
       return
     }
     this.piece._needs_split = true
-    this.piece.pixi.removeChild(this.sprite)
+    this.piece.pixi.removeChild(this.sprite)// #A remove squares
     _.remove(this.piece.squares, this)
     this.piece.board.remove(this.x, this.y)
   }
@@ -159,16 +159,13 @@ export default class Piece extends uR.Object {
     if (this.sprite_y !== this.y) {
       if (this._is_current) {
         // dropping from too high looks weird
-        this.pixi.x = this.x*this.board.scale
-        this.pixi.y = (this.y-1)*this.board.scale
+        _.assign(this.pixi,{
+          x: this.x*this.board.scale,
+          y: (this.y-1)*this.board.scale,
+        })
       }
       this.sprite_y = this.y
-      uP.sprites.easeXY(
-        this.pixi,
-        this.x,
-        this.y,
-        this.board.scale,
-      )
+      uP.easeXY(this.pixi,this.x,this.y)
     }
     if (dirty) {
       // rotated or modified, need to reposition squares
@@ -308,6 +305,8 @@ export default class Piece extends uR.Object {
   }
 
   toTexture() {
+    // get the texture (hopefully cached) for the current piece
+    // this is used to create the ghost (rather than making a second piece)
     const slug = `${this.shape}r${this.r}.piece`
     if (!uP.cache[slug]) {
       const canvas = this.board.pixi.renderer.extract.canvas(this.pixi)

@@ -77,22 +77,19 @@ export default class Board extends uR.Object {
     this.pixi = uP.Pixi({
       width: 400,
       height: 600,
+      scale: this.scale,
       container: '#game',
     })
 
     this.pixi.board = new uP.PIXI.Container()
-    // All of the following are because the container doesn't come from uP.getColo
+    // All of the following are because the container doesn't come from uP.getColor
     this.pixi.board.x = this.game.x_margin
     this.pixi.board.y = this.scale * -this.top
-    this.pixi.board.move = () => {
-      uP.sprites.easeXY(
-        this.pixi.board,
-        // TODO move game_margin to board and measure it in units, not px
-        this.game.x_margin / this.scale,
-        -this.top,
-        this.scale,
-      )
-    }
+    this.pixi.board.move = () => uP.easeXY(
+      this.pixi.board,
+      this.game.x_margin / this.scale,
+      this.top*-1
+    )
     this.pixi.stage.addChild(this.pixi.board)
 
     uP.sprites.makeGrid(this, {
@@ -167,7 +164,7 @@ export default class Board extends uR.Object {
         width: this.scale * this.W,
         height: this.scale,
       })
-      uP.sprites.ease(sprite, { alpha: 0 }, 300)
+      uP.ease(sprite, { alpha: 0 })
     })
   }
 
