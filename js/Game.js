@@ -16,8 +16,6 @@ export default class Game extends uR.Object {
     d_level: 0,
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
-    x_margin: 100,
-    y_margin: 20,
     pieces: [],
     actions: [],
   }

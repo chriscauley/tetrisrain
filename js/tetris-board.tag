@@ -14,6 +14,7 @@ this.board = {squares: []}
 this.on("before-mount",function() {
   window.TB = this
   this.board = this.opts.board
+  this.margin_left = this.board.x_offset*this.board.scale
   this.board.tag = this
   this.trigger('resize')
 })
@@ -22,7 +23,7 @@ this.on('resize',() => {
   this.board_style = `
   width: ${(scale+1)*W};
   height: ${(scale+1)*(H-top)};
-  margin-left: ${this.board.game.x_margin}px;
+  margin-left: ${this.margin_left}px;
 `
 })
 

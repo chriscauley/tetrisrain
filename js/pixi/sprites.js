@@ -56,7 +56,7 @@ const makeLine = (board, color, opts = {}) => {
   _.defaults(opts, {
     width: (board.W + 2) * board.scale,
     height: 3,
-    x: board.game.x_margin - board.scale,
+    x: board.x_offset - 1,
     parent: board.pixi.stage,
     scale: board.scale,
   })

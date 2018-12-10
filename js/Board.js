@@ -14,6 +14,7 @@ export default class Board extends uR.Object {
     H: 40,
     DEEP: 8,
     pieces: uR.List(Piece),
+    x_offset: 5,
   }
   static opts = {
     game: uR.REQUIRED,
@@ -83,11 +84,11 @@ export default class Board extends uR.Object {
 
     this.pixi.board = new uP.PIXI.Container()
     // All of the following are because the container doesn't come from uP.getColor
-    this.pixi.board.x = this.game.x_margin
+    this.pixi.board.x = this.x_offset*this.scale
     this.pixi.board.y = this.scale * -this.top
     this.pixi.board.move = () => uP.easeXY(
       this.pixi.board,
-      this.game.x_margin / this.scale,
+      this.x_offset,
       this.top*-1
     )
     this.pixi.stage.addChild(this.pixi.board)
@@ -110,7 +111,7 @@ export default class Board extends uR.Object {
       parent: this.pixi.board,
     })
 
-    const line_x = this.game.x_margin / this.scale - 1
+    const line_x = this.x_offset - 1
     this.pixi.trigger_line = uP.sprites.makeLine(this, '#FF0000', {
       move: () => [line_x, this.game.b_level],
     })
@@ -126,8 +127,8 @@ export default class Board extends uR.Object {
     this.pixi.water = uP.sprites.makeLine(this, '#0000FF', {
       move: () => [0, this.deep_line - this.top],
       x: 0,
-      width: this.W * this.scale + this.game.x_margin * 2,
-      height: 200,
+      width: this.scale * (this.W + this.x_offset * 2),
+      height: this.scale*10,
       alpha: 0.25,
     })
 
