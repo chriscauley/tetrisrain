@@ -143,9 +143,8 @@ export default class Piece extends uR.Object {
       s.makePixi()
     })
     this.addPixi()
-    this.tick()
     this.redraw(true)
-    this.getGhost(true) // #! TODO should be part of tick
+    this.tick()
   }
 
   redraw(dirty) {
@@ -192,6 +191,7 @@ export default class Piece extends uR.Object {
       this.squares.forEach(s => s.toggleEdge())
       this.makeGem()
     }
+    this.getGhost(dirty)
   }
 
   rotate(spin, force) {
@@ -218,12 +218,10 @@ export default class Piece extends uR.Object {
     })
     if (this.check() || force) {
       this.redraw(true)
-      this.getGhost(true)
       return true
     } else {
       this.rotate(-spin)
       this.redraw(true)
-      this.getGhost(true)
     }
   }
   moveLeft = () => this._move([-1, 0])
@@ -344,7 +342,7 @@ export default class Piece extends uR.Object {
   getGhost(redraw) {
     // when cloning pieces, it generates unecessary ghosts
     // #! TODO: this stops that, but the problem needs to be fixed upstream
-    if (!this.shape) {
+    if (!this._is_current) {
       return
     }
     let ghost_dy = 0
@@ -399,7 +397,6 @@ export default class Piece extends uR.Object {
     this.y += dy
     this.skirt.x+= dx
     if (this.check() || force) {
-      this.getGhost()
       this.redraw()
       return true
     } else {

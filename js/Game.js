@@ -182,7 +182,7 @@ export default class Game extends uR.Object {
       },
       shake: () => {
         this.board.shake()
-        this.current_piece.getGhost()
+        this.current_piece.redraw()
       },
     }
     this.act = {}

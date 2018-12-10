@@ -137,6 +137,7 @@ export default class Board extends uR.Object {
         board: this,
         shape: piece.shape,
       })
+      _piece.toTexture()
       _piece.removePixi()
     })
   }
