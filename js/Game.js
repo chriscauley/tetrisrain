@@ -64,7 +64,6 @@ export default class Game extends uR.Object {
     this.getPiece()
     this.tags.scores && this.tags.scores.reset()
     this.updatePieceList()
-    this.board.getSkyline()
   }
 
   replay() {
@@ -183,6 +182,7 @@ export default class Game extends uR.Object {
       },
       shake: () => {
         this.board.shake()
+        this.current_piece.getGhost()
       },
     }
     this.act = {}
