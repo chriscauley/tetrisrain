@@ -197,14 +197,14 @@ export default class Board extends uR.Object {
       // A line gets dropped if the entire row was successfully removed
       return !this.getLine(y).length
     })
+
+    _.remove(this.pieces, p => !p.squares.length).forEach(p=>p.removePixi())
+    // split pieces
+    this.pieces.forEach(p => p.checkSplit())
+
     if (!drop_ys.length) {
       return
     }
-
-    _.remove(this.pieces, p => !p.squares.length).forEach(p=>p.removePixi())
-
-    // split pieces
-    this.pieces.forEach(p => p.checkSplit())
 
     this.pieces
       .filter(p => p.y < this.deep_line)
