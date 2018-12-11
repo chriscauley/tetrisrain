@@ -1,7 +1,11 @@
+// Usage uR.element.create("my-tag",attrs,options)
+// element = <attrs.parent><my-tag {...attrs}></attrs.parent>
+// options && riot.mount(element,options)
+
 import assign from 'lodash'
 import riot from 'riot'
 
-export default (tagName, attrs, opts) => {
+export default (tagName, attrs, riot_opts) => {
   const element = document.createElement(tagName)
   if (attrs.parent) {
     if (typeof attrs.parent === 'string') {
@@ -11,10 +15,10 @@ export default (tagName, attrs, opts) => {
     delete attrs.parent
   }
 
-  assign(element, attrs)
+  Object.assign(element, attrs)
 
-  if (opts) {
-    riot.mount(element, opts)
+  if (riot_opts) {
+    riot.mount(element, riot_opts)
   }
   return element
 }
