@@ -1,4 +1,5 @@
 import FormMixin from './FormMixin'
+import ThemeMixin from '../css/ThemeMixin'
 
 <ur-form>
   <div class={ theme.outer }>
@@ -9,11 +10,11 @@ import FormMixin from './FormMixin'
         <yield from="pre-form"/>
 
         <div each={ _f,_i in fields } class={ _f.field_class }>
-          <label if={ _f.label } for={ _f.id } class={ _f.label_class }>
+          <label if={ css.form.label } for={ _f.id } class={ _f.label_class }>
             { _f.label }
           </label>
           <div data-is={ _f.tagName } field={ _f }></div>
-          <div class={ "css.error" }>{ _f.error }</div>
+          <div class={ css.error }>{ _f.error }</div>
           <div class={ "css.help_text" }>{ _f.help_text }</div>
         </div>
 
@@ -31,6 +32,7 @@ import FormMixin from './FormMixin'
 
 <script>
 this.mixin(FormMixin)
+this.mixin(ThemeMixin)
 
 this.on("update", () => {
   this.checkValidity()

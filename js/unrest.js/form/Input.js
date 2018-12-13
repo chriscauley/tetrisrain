@@ -19,9 +19,6 @@ class Input {
   get field_class() {
     return css.form.field
   }
-  get label_class() {
-    return css.form.label
-  }
 
   bindTag(tag) {
     this.tag = tag

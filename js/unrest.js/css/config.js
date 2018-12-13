@@ -48,6 +48,7 @@ const spectre = {
   btn: {
     group_block: "btn-group btn-group-block",
   },
+  error: "label label-error",
 }
 
 // #! TODO
