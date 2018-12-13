@@ -20,7 +20,7 @@ class Input {
   _updateCss() {
     this.css.error = {
       [css.error]: true,
-      [css.hide]: this.valid || !this.active,
+      [css.hide]: this.valid || !this.show_error,
     }
   }
 
@@ -40,7 +40,7 @@ class Input {
       this.validators.forEach(f => f(value))
       this.valid = true
       this.error = undefined
-      this.active = true
+      this.show_error = true
     } catch (error) {
       this.error = error
     }
