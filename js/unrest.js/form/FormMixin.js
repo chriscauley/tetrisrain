@@ -3,6 +3,14 @@ import _ from "lodash"
 import config from './config'
 import schema from '../schema'
 
+const prepField = field => {
+  // converts a schema object to a field
+  return _.defaults(field,{
+    tagName: 'ur-input',
+    label: schema.unslugify(field.name),
+  })
+}
+
 export default {
   init: function() {
     this.fields = []
@@ -19,10 +27,20 @@ export default {
           this.schema = schema.prep(schema)
         } else if (opts.instance) {
           this.schema = schema.fromObject(opts.instance)
+          opts.submit = () => {
+            opts.instance.deserialize(this.getData())
+            this.unmount()
+          }
+        } else if (opts.constructor) {
+          this.schema = schema.fromConstructor(opts.constructor)
+          opts.submit = () => {
+            new opts.constructor(this.getData())
+            this.unmount()
+          }
         } else {
-          throw "ValueError: <ur-form> requires a schema or an instance"
+          throw "ValueError: <ur-form> requires a schema, constructor, or instance"
         }
-        this.schema.forEach(this.addField)
+        this.schema.map(prepField).forEach(this.addField)
       },
 
       addField: field_opts => {
@@ -33,7 +51,16 @@ export default {
       checkValidity: () => {
         // form is valid if there are no invalid fields
         this.valid = !this.fields.filter(f => !f.valid).length
+        return this.valid
       },
+
+      getData() {
+        const result = {}
+        this.fields.forEach(f=>result[f.name] = f.value)
+        console.log(result)
+        return result
+      }
+
     })
 
     this.addFields(this.opts)

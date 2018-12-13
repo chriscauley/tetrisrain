@@ -38,8 +38,14 @@ this.on("update", () => {
   this.checkValidity()
 })
 
-submit() {
-  throw "Not Implemented"
+submit(e) {
+  e && e.preventDefault && e.preventDefault()
+  if (!this.checkValidity()) { // one last check
+    this.form.fields.forEach( field => field.show_error = true );
+    this.update();
+    return;
+  }
+  this.opts.submit()
 }
 
 cancel() {
