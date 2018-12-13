@@ -32,6 +32,7 @@ const _Object = class {
   //opts = {} // non-data initialization options
 
   constructor(opts) {
+    this.opts = opts // maybe move this.opts and this.fields into this.META?
     this.makeOpts(opts)
     this.makeFields()
     this.deserialize(opts)
@@ -45,27 +46,26 @@ const _Object = class {
     }
   }
 
-  makeFields() {
-    this.fields = { ...this.constructor.fields }
+  makeFields(fields=this.constructor.fields) {
+    this.fields = new Map(Object.entries(_.clone(fields)))
   }
 
   deserialize(json = {}) {
-    for (const key in this.fields) {
-      const field = this.fields[key]
-      const value = _.find([json[key], field.initial, this[key], field], notNil)
+    this.fields.forEach( (field,name) => {
+      const value = _.find([json[name], field.initial, this[name], field], notNil)
       if (field.deserialize) {
-        this[key] = field.deserialize(value)
+        this[name] = field.deserialize(value)
       } else if (typeof field === 'function') {
         // this is not a 100% accurate test for when to use new
         // https://stackoverflow.com/a/40922715
         // maybe check if object is a subclass of uR.Object?
-        this[key] = field.prototype
+        this[name] = field.prototype
           ? new field(this, value)
           : field(this, value)
       } else {
-        this[key] = value
+        this[name] = value
       }
-    }
+    })
   }
 
   serialize(keys = Object.keys(this.fields)) {
