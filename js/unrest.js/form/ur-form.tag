@@ -1,14 +1,14 @@
-import Form from './Form'
+import FormMixin from './FormMixin'
 
 <ur-form>
   <div class={ theme.outer }>
-    <div class={ theme.header } if={ form.title }>{ form.title }</div>
+    <div class={ theme.header } if={ title }>{ title }</div>
     <div class={ theme.content }>
       <div class="rendered_content"></div>
-      <form onsubmit={ submit } class={ form.className }>
+      <form onsubmit={ submit } class={ className }>
         <yield from="pre-form"/>
 
-        <div each={ _f,_i in form.fields } class={ _f.field_class }>
+        <div each={ _f,_i in fields } class={ _f.field_class }>
           <label if={ _f.label } for={ _f.id } class={ _f.label_class }>
             { _f.label }
           </label>
@@ -17,16 +17,30 @@ import Form from './Form'
           <div class={ "css.help_text" }>{ _f.help_text }</div>
         </div>
 
+        <div class="button_div">
+          <yield from="button_div"/>
+          <button class={ css.btn.success } onclick={ submit } disabled={!valid}>
+            { opts.success_text }</button>
+          <button class={ css.btn.cancel } if={ opts.cancel } onclick={ cancel }>
+            { cancel_text }</button>
+        </div>
+
       </form>
     </div>
   </div>
 
 <script>
-this.on('before-mount',() => {
-  this.form = new Form(this)
+this.mixin(FormMixin)
+
+this.on("update", () => {
+  this.checkValidity()
 })
 
 submit() {
+  throw "Not Implemented"
+}
+
+cancel() {
   throw "Not Implemented"
 }
 </script>
