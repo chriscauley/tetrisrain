@@ -14,7 +14,7 @@ this.on("before-mount",() => {
   )
   attrs.type = this.field.input_type
   attrs.parent = this.root
-  attrs.className = this.field.className
+  attrs.className = this.field.css.input
   this._input = create(
     this.field.input_tagname,
     _.omitBy(attrs,_.isNil)

@@ -49,6 +49,7 @@ const spectre = {
     group_block: "btn-group btn-group-block",
   },
   error: "label label-error",
+  hide: 'd-hide',
 }
 
 // #! TODO

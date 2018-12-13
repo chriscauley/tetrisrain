@@ -2,8 +2,6 @@ import _ from "lodash"
 import config from './config'
 import css from "../css"
 
-const EVENTS = ['change','focus','blur','keyup','keydown']
-
 class Input {
   tagName = "ur-input"
   constructor(opts) {
@@ -12,12 +10,18 @@ class Input {
       input_type: opts.type,
       validators: []
     })
+    this.css = {
+      label: css.form.label,
+      field: css.form.field,
+      input: css.form.input,
+    }
+    this._updateCss()
   }
-  get className() {
-    return css.form.input
-  }
-  get field_class() {
-    return css.form.field
+  _updateCss() {
+    this.css.error = {
+      [css.error]: true,
+      [css.hide]: this.valid || !this.active,
+    }
   }
 
   bindTag(tag) {
@@ -36,6 +40,7 @@ class Input {
       this.validators.forEach(f => f(value))
       this.valid = true
       this.error = undefined
+      this.active = true
     } catch (error) {
       this.error = error
     }
@@ -44,14 +49,21 @@ class Input {
   }
 
   bindEvents(input) {
+    const EVENTS = ['change','focus','keyup','keydown']
+
     EVENTS.forEach(name => {
       input.addEventListener(name,e => {
         if (this.value !== input.value) {
           this.value = input.value
           this._checkValidity()
+          this._updateCss()
           this.tag.parent.update()
         }
       })
+    })
+    input.addEventListener('blur',e => {
+      this.active = true
+      this._updateCss()
     })
   }
 
