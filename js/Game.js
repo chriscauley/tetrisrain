@@ -25,7 +25,6 @@ export default class Game extends uR.Object {
     this.DEBUG = ~window.location.search.indexOf('debug')
     this.makeVars()
     this.container = document.getElementById('game')
-    this.tags = {}
 
     this.makeActions()
     this.controller = new Controller(this)
@@ -55,14 +54,13 @@ export default class Game extends uR.Object {
     this.current_piece && this.current_piece.removePixi()
     this.current_piece = undefined
     this.swapped_piece = undefined
-    this.tags.piece_stash && this.tags.piece_stash.setPieces([], 0)
     this.makeVars()
     this.turn = 0
 
     this.controller.reset(id)
     this.board.reset()
     this.getPiece()
-    this.tags.scores && this.tags.scores.reset()
+    this.scores && this.scores.reset()
     this.updatePieceList()
   }
 
@@ -100,8 +98,14 @@ export default class Game extends uR.Object {
   load(name) {
     const data = this.saved_games.get(name)
     this.deserialize(data)
-    this.reset()
-    this.replay()
+  }
+
+  deserialize(data) {
+    super.deserialize(data)
+    if (this.board) {
+      this.reset()
+      this.replay()
+    }
   }
 
   updatePieceList() {
@@ -113,7 +117,6 @@ export default class Game extends uR.Object {
       this.turn + 1 + this.n_preview,
     )
     const empty = this.n_preview - visible.length
-    this.tags.next_piece && this.tags.next_piece.setPieces(visible, empty)
     return this.pieces[this.turn]
   }
 
@@ -178,7 +181,6 @@ export default class Game extends uR.Object {
           this.getPiece(old_piece.shape)
         }
         this.current_piece.addPixi()
-        this.tags.piece_stash.setPieces([this.swapped_piece], 0)
       },
       shake: () => {
         this.board.shake()
@@ -190,7 +192,7 @@ export default class Game extends uR.Object {
       this.act[key] = () => {
         this.actions.push(key)
         this._act[key]()
-        this.board.update() // refreshes riot tag
+        this.root.update()
       }
     }
   }

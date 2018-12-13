@@ -26,7 +26,6 @@ import config from './config'
     this.bounce = debounce(this.update);
     setTimeout(() => {
       this.opts.game.scores = this;
-      this.opts.game.tags['scores'] = this;
     })
   });
 
@@ -78,16 +77,22 @@ import config from './config'
     this.root.classList.add(this.opts.name);
     this.pieces = [undefined];
     this.update();
-    setTimeout(() => {
-      this.opts.game.tags[this.opts.name] = this
-      this.opts.game.updatePieceList()
-    })
+  })
+
+  this.on('update', () => {
+    const game = this.opts.game
+    if (!game) { return }
+    if (this.opts.name == "piece_stash") {
+      const piece = game.swapped_piece
+      this.pieces = [piece && piece.shape]
+    } else {
+      const { turn, n_preview } = game
+      this.pieces = game.pieces.slice(turn + 1,turn + 1 + n_preview)
+    }
   })
 
   setPieces(pieces,empty) {
-    this.pieces = pieces.map(p => p.shape || p)
-    this.empty_pieces = new Array(empty);
-    this.update();
+
   }
 </piece-stack>
 

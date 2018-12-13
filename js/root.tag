@@ -21,6 +21,7 @@ this.on('mount',() => {
   // this.game.buildCanvas() or something
   // this will also get rid of some of the setTimeout(f,0) in many other places
   this.game = window.GAME = new Game()
+  this.game.root = this
 })
 
 </root>
