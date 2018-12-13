@@ -3,13 +3,15 @@
      name: string, // required, literally input[name]
      type: string, // required, analogous to input[type]
      value: any, // intial value for input[value]
-     tagName: string, // riot tag to mount, defaults to ur-input
-     input_type: string, // used by ur-input, overrides to field.type
-     input_tagname, // used by ur-input, "input|textarea|select"
    }
+   An unrest schema object asks "What would this look like in the database"
 */
+import fromConstructor from "./fromConstructor"
 import fromObject from "./fromObject"
+import unslugify from "./unslugify"
 
 export default {
+  fromConstructor,
   fromObject,
+  unslugify,
 }
