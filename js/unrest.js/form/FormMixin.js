@@ -5,8 +5,9 @@ import schema from '../schema'
 
 const prepField = field => {
   // converts a schema object to a field
+  const default_tag = field.choices?'ur-select':'ur-input'
   return _.defaults(field,{
-    tagName: 'ur-input',
+    tagName: default_tag,
     label: schema.unslugify(field.name),
   })
 }
@@ -29,7 +30,6 @@ export default {
           _fields = new Map([...object.fields])
           fieldnames = object.constructor.editable_fieldnames || []
           this.opts.submit = () => {
-            console.log("ser",this.getData())
             object.deserialize(this.getData())
             this.unmount()
           }

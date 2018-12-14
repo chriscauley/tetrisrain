@@ -1,14 +1,19 @@
 import _ from "lodash"
+
 import config from './config'
 import css from "../css"
+import create from "../element/create"
 
 class Input {
-  tagName = "ur-input"
+  // html attributes from opts
+  _attrs = [ 'name', 'id', 'placeholder', 'required', 'minlength', 'value' ]
+
   constructor(opts) {
     _.defaults(this,opts,{
+      tagName: "ur-input",
       input_tagname: "input",
       input_type: opts.type,
-      validators: []
+      validators: [],
     })
     this.css = {
       label: css.form.label,
@@ -25,14 +30,29 @@ class Input {
     }
   }
 
+  _createInput() {
+    const attrs = _.pick(this,this._attrs)
+
+    attrs.type = this.input_type
+    attrs.parent = this.tag.root
+    attrs.className = this.css.input
+    this._input = create(
+      this.input_tagname,
+      _.omitBy(attrs,_.isNil)
+    )
+  }
+
   bindTag(tag) {
     this.tag = tag
+    tag.field = this
+    this._createInput()
+    this.bindEvents(this._input)
     this._checkValidity()
   }
 
   _checkValidity(value=this.value) {
     this.valid = false
-    if (!this.tag._input.checkValidity()) {
+    if (!this._input.checkValidity()) {
       return this.valid
     }
 
@@ -54,8 +74,9 @@ class Input {
 
     EVENTS.forEach(name => {
       input.addEventListener(name,e => {
-        if (this.value !== input.value) {
-          this.value = input.value
+        const new_value = this.coerce(input.value)
+        if (this.value !== new_value) {
+          this.value = new_value
           this._checkValidity()
           this._updateCss()
           this.tag.parent.update()
@@ -67,6 +88,13 @@ class Input {
       this._updateCss()
       this.tag.parent.update()
     })
+  }
+
+  coerce(value) {
+    if (this.type === "number") {
+      return Number(value)
+    }
+    return value
   }
 
   focus = (e) => {}
