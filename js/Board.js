@@ -11,7 +11,6 @@ import _tb from './tetris-board.tag'
 export default class Board extends uR.Object {
   static fields = {
     W: 10,
-    H: 40,
     DEEP: 8,
     pieces: uR.List(Piece),
     x_offset: 5,
@@ -25,24 +24,26 @@ export default class Board extends uR.Object {
     super(opts)
 
     // nested arrays of zeros make up the initial board
-    this.squares = range(this.H * this.W).map(() => undefined)
     this.pallet = new Pallet({ board: this })
+    this.H = this.MAX_H= 100 // set so makePixi can work
     this.makePixi()
     this.reset()
     window.B = this
     window.BP = this.pieces
-    /*uR.element.create("tetris-board",{
-      parent: "#game",
-    }, {
-      board: this
-    })*/
+    /*uR.element.create(
+      "tetris-board",
+      { parent: "#game" },
+      { board: this }
+    )*/
   }
 
   reset() {
+    this.pixi.grid.y = (this.H-this.MAX_H)*this.scale
     this.pieces && this.pieces.forEach(p => p.removePixi())
     this.pieces = []
+    this.H = this.game.b_level + this.game.d_level + this.game.visible_height
 
-    this.squares = this.squares.map(() => undefined)
+    this.squares = range(this.H * this.W).map(() => undefined)
     _.range(this.game.d_level).forEach(i => {
       const p = Piece.Line({ board: this, y: this.H - i - 1, x: 0 })
       this.pieces.push(p)
@@ -89,7 +90,7 @@ export default class Board extends uR.Object {
       uP.easeXY(this.pixi.board, this.x_offset, this.top * -1)
     this.pixi.stage.addChild(this.pixi.board)
 
-    uP.sprites.makeGrid(this, {
+    this.pixi.grid = uP.sprites.makeGrid(this, {
       width: this.W * this.scale + 1,
       height: this.H * this.scale,
       parent: this.pixi.board,
