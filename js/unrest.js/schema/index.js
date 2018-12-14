@@ -9,9 +9,13 @@
 import config from "./config"
 import prep from "./prep"
 import unslugify from "./unslugify"
+import parseChoices from "./parseChoices"
+import prepChoices from "./prepChoices"
 
 export default {
   config,
   prep,
   unslugify,
+  parseChoices,
+  prepChoices,
 }

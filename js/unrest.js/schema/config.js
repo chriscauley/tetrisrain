@@ -9,4 +9,6 @@ export default {
   type: {
     number: { type: 'number', validators: [isEven] },
   },
+  name: {
+  }
 }
