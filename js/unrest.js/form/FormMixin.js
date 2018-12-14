@@ -14,6 +14,7 @@ const prepField = field => {
 export default {
   init: function() {
     this.fields = []
+    window.uR._latest_form = this
     _.defaults(this.opts,{
       success_text: "Submit",
       cancel_text: "Cancel",
@@ -21,31 +22,34 @@ export default {
 
     _.assign(this, {
 
-      addFields: opts => {
-        if (opts.schema) {
-          throw "NotImplemented" // #! TODO
-          this.schema = schema.prep(schema)
-        } else if (opts.instance) {
-          this.schema = schema.fromObject(opts.instance)
-          opts.submit = () => {
-            opts.instance.deserialize(this.getData())
+      addFields: (opts=this.opts) => {
+        const { object, constructor } = opts
+        let _fields,fieldnames
+        if (object) {
+          _fields = new Map([...object.fields])
+          fieldnames = object.constructor.editable_fieldnames || []
+          this.opts.submit = () => {
+            console.log("ser",this.getData())
+            object.deserialize(this.getData())
             this.unmount()
           }
-        } else if (opts.constructor) {
-          this.schema = schema.fromConstructor(opts.constructor)
-          opts.submit = () => {
+        } else if (constructor && constructor !== Object) {
+          _fields = new Map([...constructor.fields])
+          fieldnames = constructor.editable_fieldnames || []
+          this.opts.submit = () => {
             new opts.constructor(this.getData())
             this.unmount()
           }
         } else {
-          throw "ValueError: <ur-form> requires a schema, constructor, or instance"
+          throw "ValueError: <ur-form> requires a schema, constructor, or object"
         }
-        this.schema.map(prepField).forEach(this.addField)
-      },
-
-      addField: field_opts => {
-        const cls = config.tag2class[field_opts.tagName]
-        this.fields.push(new cls(field_opts))
+        [..._fields]
+          .filter(([name,obj]) => fieldnames.indexOf(name) !== -1)
+          .map(schema.prep).forEach( field_opts => {
+            field_opts = prepField(field_opts)
+            const cls = config.tag2class[field_opts.tagName]
+            this.fields.push(new cls(field_opts))
+          })
       },
 
       checkValidity: () => {
@@ -57,7 +61,6 @@ export default {
       getData() {
         const result = {}
         this.fields.forEach(f=>result[f.name] = f.value)
-        console.log(result)
         return result
       }
 

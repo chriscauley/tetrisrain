@@ -17,6 +17,7 @@ class Input {
     }
     this._updateCss()
   }
+
   _updateCss() {
     this.css.error = {
       [css.error]: true,
@@ -62,8 +63,9 @@ class Input {
       })
     })
     input.addEventListener('blur',e => {
-      this.active = true
+      this.show_error = true
       this._updateCss()
+      this.tag.parent.update()
     })
   }
 
