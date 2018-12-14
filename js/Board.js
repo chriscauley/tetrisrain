@@ -41,11 +41,11 @@ export default class Board extends uR.Object {
     this.pixi.grid.y = (this.H-this.MAX_H)*this.scale
     this.pieces && this.pieces.forEach(p => p.removePixi())
     this.pieces = []
-    this.H = this.game.b_level + this.game.d_level + this.game.visible_height
+    this.H = this.game.b_level + this.game.d_level
 
     this.squares = range(this.H * this.W).map(() => undefined)
     _.range(this.game.d_level).forEach(i => {
-      const p = Piece.Line({ board: this, y: this.H - i - 1, x: 0 })
+      const p = Piece[this.game.piece_generator]({ board: this, y: this.H - i - 1, x: 0 })
       this.pieces.push(p)
       p.set()
     })

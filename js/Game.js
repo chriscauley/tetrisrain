@@ -9,16 +9,26 @@ import storage from './unrest.js/storage'
 
 import './ui.tag'
 
+_.merge(uR.schema.config.name,{
+  d_level: { choices: _.range(5,30,5) },
+  c_level: { choices: _.range(1,10) },
+  piece_generator: { choices: Piece.GENERATORS },
+})
+
 export default class Game extends uR.Object {
   static fields = {
-    a_level: 1, // determines speed of clock
-    b_level: 10, // determines how high up pieces start
-    d_level: 0,
+    a_level: 1, // determines speed of clock (unused)
+    b_level: 10, // distance from top before death
+    c_level: 1, // number of holes in each line
+    d_level: 10, // number of lines in the level
+    piece_generator: 'Random', // used to fill up to d_level
+
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
     pieces: [],
     actions: [],
   }
+  static editable_fieldnames = ['a_level','b_level','d_level','piece_generator']
   constructor(opts) {
     super(opts)
     this.saved_games = new storage.Storage('saved_games')
@@ -31,17 +41,18 @@ export default class Game extends uR.Object {
     this.board = new Board({ game: this })
 
     this.reset()
+    // uR.element.alert('ur-form',{},{object: this})
   }
 
   makeVars() {
     for (let i = 0; i < 1; i++) {
       //this.pieces = this.pieces.concat(['z', 'z', 'z', 'z', 'z', 'i'])
       //this.pieces = this.pieces.concat(['i', 'l', 'j', 'o'])
-      //this.pieces = this.pieces.concat(['t', 't', 't', 't', 't', 'i'])
+      this.pieces = this.pieces.concat(['t', 't', 't', 't', 't', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i','i','i','i','i',])
       //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
       //this.pieces = this.pieces.concat(['i','i','i','i'])
-      this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
+      //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
     }
 
     this.level = 1
