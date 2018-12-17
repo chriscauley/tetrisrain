@@ -2,28 +2,8 @@ import _ from "lodash"
 
 import _Random from '../index'
 import uR from '../../index'
-
-
-const binRandom = numbers => {
-  const counts = _.range(10).map(_i => 0)
-  numbers.forEach(n => counts[Math.floor(n*10)]++)
-  return counts
-}
-
-
-const histogram = (datasets,querySelector) => {
-  const series = []
-  datasets.forEach(data => series.push(binRandom(data)))
-  const labels = _.range(10).map(_i => (_i*0.1).toFixed(1))
-  var data = { labels, series, }
-
-  var options = {
-    height: 400,
-  }
-
-  new Chartist.Bar(querySelector, data, options)
-}
-  
+import histogram from './histogram'
+import plots from './plots'
 
 <ur-random>
   <div>
@@ -68,40 +48,25 @@ this.legend_labels = ['1st','2nd','3rd','4th']
 const Random = _Random
 const range = _.range
 
-function makeFirstTen() {
-  const random = Random(1234);
-  return range(10).map(random)
-}
-
-this.first_ten = makeFirstTen()
-
-function makeNthSeries() {
-  const n_series = 4
-  const nth_digits = range(n_series).map(_i=>[])
-  range(10000).map(() => {
-    const r = Random(Math.floor(Math.random()*1000))
-    range(n_series).map( nth => nth_digits[nth].push(r()))
-  })
-  return nth_digits
-}
+this.first_ten = plots.makeFirstTen()
 
 function makeDistribution() {
   const random456 = Random(456)
   return range(10000).map(random456)
 }
 
-for (let f of [makeFirstTen, makeNthSeries, makeDistribution]) {
-  this[f.name+"_string"] = f.toString().replace(/\n  /g,'\n')
+for (let key in plots ) {
+  this[key+"_string"] = plots[key].toString().replace(/\n  /g,'\n')
 }
 
 this.on("mount",() => {
-  histogram([makeDistribution()],"#dist_chart")
-  histogram(makeNthSeries(), "#nth_chart")
+  histogram([plots.makeDistribution()],"#dist_chart")
+  histogram(plots.makeNthSeries(), "#nth_chart")
 })
 </script>
 </ur-random>
 
-// parcel's HMR doesn't play nice with this page. Hard reload whenever HMR fires.
+// Hard reload whenever parcel's HMR fires (it doesn't play nice with this page).
 if (document.querySelector("ur-random")) {
   window.location.reload()
 } else {
