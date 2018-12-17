@@ -26,6 +26,7 @@ export default seed => {
   }
 
   let _current
+  let n_seed
   const random = () => (random.raw() - 1) / 2147483646 // 0-1
 
   Object.assign(random, {
@@ -39,10 +40,14 @@ export default seed => {
       return Math.floor(random() * (max - min) + min)
     },
     raw: () => (_current = (_current * 16807) % 2147483647), // 0-2147483646
+    getNextSeed: () => (n_seed = (n_seed * 16807) % 2147483647), // 0-2147483646
     choice: array => array[random.int(array.length)],
     reset: () => {
       _current = seed % 2147483647
       if (_current <= 0) _current += 2147483646
+      // for SEED < 10,000 the first number is always ~ 0.01, so let's burn that one
+      // might as well use it to randomize where child seeds come from
+      n_seed = Math.floor(1e6/random())
     },
     _getCurrent: () => _current,
     shuffle: array => {
@@ -64,12 +69,10 @@ export default seed => {
   })
   random.reset()
 
-  // for SEED < 10,000 the first number is always ~ 0.01, so let's burn that one
-  random()
   return random
 }
 
-export const RandomMixin = superclass =>
+export const RandomMixin = (superclass=Object) =>
   class Random extends superclass {
     // creates a method this.random which is a PRNG based on opts._SEED or opts.parent.random
     constructor(opts = {}) {
@@ -81,6 +84,6 @@ export const RandomMixin = superclass =>
         this._SEED = opts._SEED || opts.seed
       }
 
-      this.random = new Random(this._SEED)
+      this.random = Random(this._SEED)
     }
   }

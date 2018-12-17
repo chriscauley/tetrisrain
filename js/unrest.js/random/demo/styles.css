@@ -1,3 +1,15 @@
+section {
+  margin-bottom: 3rem;
+}
+
+.column {
+  margin-bottom: 1rem;
+}
+
+.columns {
+  margin-bottom: -1rem;
+}
+
 body {
   --color-a: #D70207;
   --color-b: #D9B302;
@@ -11,6 +23,9 @@ body {
   height: 1em;
 }
 
+section.distribution .ct-series-a .ct-bar {
+  stroke-width: 25px;
+}
 .series-legend.a, .ct-series-a .ct-bar {
   stroke: var(--color-a);
   background: var(--color-a);

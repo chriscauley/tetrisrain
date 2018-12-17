@@ -7,8 +7,7 @@ const binRandom = numbers => {
 }
 
 export default (datasets, querySelector) => {
-  const series = []
-  datasets.forEach(data => series.push(binRandom(data)))
+  const series = datasets.map(data => binRandom(data))
   const labels = _.range(10).map(_i => (_i * 0.1).toFixed(1))
   const data = { labels, series }
 
