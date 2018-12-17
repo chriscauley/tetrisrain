@@ -7,20 +7,37 @@ import plots from './plots'
 
 <ur-random>
   <div>
-    <h2>First 10 random numbers</h2>
+    <h2>First 12 random numbers</h2>
     <p>
-      Here are the first 10 numbers of a seeded pseudo random number generator.
+      Here are the first 12 numbers of a seeded pseudo random number generator.
       Refresh to verify that they do not change!
     </p>
-    <pre><code class="language-js">{ makeFirstTen_string }</code></pre>
+    <div class="columns">
+      <div class={col}>
+        <pre><code class="language-js">{ makeFirstTwelve_string }</code></pre>
+      </div>
+      <div class={col}>
+        <table class="table">
+          <tr each={ row,_ir in _split }>
+            <td each={ n,_i in row }>{n}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
   </div>
   <div>
     <h2>Distribution of 10,000 numbers</h2>
     <p>
       This is to verify that the the first 10,000 numbers of the PRNG with seed 456 are uniform.
     </p>
-    <pre><code class="language-js">{makeDistribution_string}</code></pre>
-    <div id="dist_chart"></div>
+    <div class="columns">
+      <div class={col}>
+        <pre><code class="language-js">{makeDistribution_string}</code></pre>
+      </div>
+      <div class={col}>
+        <div id="dist_chart"></div>
+      </div>
+    </div>
   </div>
   <div>
     <h2>Distribution of nth number for 100 PRNGs</h2>
@@ -42,13 +59,19 @@ import plots from './plots'
     </div>
   </div>
 <script>
+this.col = "column col-6 col-md-12"
 this.legends = "abcd".split("")
 this.legend_labels = ['1st','2nd','3rd','4th']
 
 const Random = _Random
 const range = _.range
 
-this.first_ten = plots.makeFirstTen()
+window.R = Random
+
+this.first_twelve = plots.makeFirstTwelve()
+this._split = _.range(5).map(
+  _i=> this.first_twelve.slice(_i*4,(_i+1)*4).map(n => n.toFixed(4)+"...")
+)
 
 function makeDistribution() {
   const random456 = Random(456)
@@ -56,7 +79,7 @@ function makeDistribution() {
 }
 
 for (let key in plots ) {
-  this[key+"_string"] = plots[key].toString().replace(/\n  /g,'\n')
+  this[key+"_string"] = plots[key].toString()
 }
 
 this.on("mount",() => {
@@ -71,6 +94,6 @@ if (document.querySelector("ur-random")) {
   window.location.reload()
 } else {
   uR.element.create("ur-random",{
-    parent: document.body,
+    parent: document.querySelector("#content"),
   },{})
 }
