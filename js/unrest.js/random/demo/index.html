@@ -1,0 +1,54 @@
+<html>
+<body></body>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.0/chartist.min.css" />
+<style>
+body {
+  --color-a: #D70207;
+  --color-b: #D9B302;
+  --color-c: #301395;
+  --color-d: #0AB002;
+}
+
+.series-legend {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.series-legend.a, .ct-series-a .ct-bar {
+  stroke: var(--color-a);
+  background: var(--color-a);
+}
+
+.series-legend.b, .ct-series-b .ct-bar {
+  stroke: var(--color-b);
+  background: var(--color-b);
+}
+
+.series-legend.c, .ct-series-c .ct-bar {
+  stroke: var(--color-c);
+  background: var(--color-c);
+}
+
+.series-legend.d, .ct-series-d .ct-bar {
+  stroke: var(--color-d);
+  background: var(--color-d);
+}
+
+.chart {
+  position: relative;
+}
+.legend {
+  background: white;
+  border: 5px double #555;
+  padding: 0.5em;
+  position: absolute;
+  bottom: 3em;
+  left: 4em;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.0/chartist.min.js"></script>
+<script src="./ur-random.tag"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-twilight.min.css" />
+</html>
