@@ -1,7 +1,3 @@
-<html>
-<body></body>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.0/chartist.min.css" />
-<style>
 body {
   --color-a: #D70207;
   --color-b: #D9B302;
@@ -46,9 +42,3 @@ body {
   bottom: 3em;
   left: 4em;
 }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.0/chartist.min.js"></script>
-<script src="./_demo.tag"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-twilight.min.css" />
-</html>
