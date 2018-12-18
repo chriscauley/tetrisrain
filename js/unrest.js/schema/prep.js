@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import config from './config'
 
-export default ([name,obj]) => {
-  if (typeof obj !== "Object") {
+export default ([name, obj]) => {
+  if (typeof obj !== 'object') {
     obj = { value: obj }
   }
   return {
@@ -10,6 +10,6 @@ export default ([name,obj]) => {
     ...config.type[typeof obj.value],
     ...config.name[name],
     ...obj,
-    name
+    name,
   }
 }

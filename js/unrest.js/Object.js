@@ -46,13 +46,16 @@ const _Object = class {
     }
   }
 
-  makeFields(fields=this.constructor.fields) {
+  makeFields(fields = this.constructor.fields) {
     this.fields = new Map(Object.entries(_.clone(fields)))
   }
 
   deserialize(json = {}) {
-    this.fields.forEach( (field,name) => {
-      const value = _.find([json[name], field.initial, this[name], field], notNil)
+    this.fields.forEach((field, name) => {
+      const value = _.find(
+        [json[name], field.initial, this[name], field],
+        notNil,
+      )
       if (field.deserialize) {
         this[name] = field.deserialize(value)
       } else if (typeof field === 'function') {
@@ -68,7 +71,7 @@ const _Object = class {
     })
   }
 
-  serialize(keys = Object.keys(this.fields)) {
+  serialize(keys = [...this.fields.keys()]) {
     const json = _.pick(this, keys)
     for (const [key, value] of Object.entries(json)) {
       const field = this.constructor.fields[key]

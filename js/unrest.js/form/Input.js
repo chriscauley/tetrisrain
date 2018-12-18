@@ -1,17 +1,17 @@
-import _ from "lodash"
+import _ from 'lodash'
 
 import config from './config'
-import css from "../css"
-import create from "../element/create"
+import css from '../css'
+import create from '../element/create'
 
 class Input {
   // html attributes from opts
-  _attrs = [ 'name', 'id', 'placeholder', 'required', 'minlength', 'value' ]
+  _attrs = ['name', 'id', 'placeholder', 'required', 'minlength', 'value']
 
   constructor(opts) {
-    _.defaults(this,opts,{
-      tagName: "ur-input",
-      input_tagname: "input",
+    _.defaults(this, opts, {
+      tagName: 'ur-input',
+      input_tagname: 'input',
       input_type: opts.type,
       validators: [],
     })
@@ -31,15 +31,12 @@ class Input {
   }
 
   _createInput() {
-    const attrs = _.pick(this,this._attrs)
+    const attrs = _.pick(this, this._attrs)
 
     attrs.type = this.input_type
     attrs.parent = this.tag.root
     attrs.className = this.css.input
-    this._input = create(
-      this.input_tagname,
-      _.omitBy(attrs,_.isNil)
-    )
+    this._input = create(this.input_tagname, _.omitBy(attrs, _.isNil))
   }
 
   bindTag(tag) {
@@ -50,7 +47,7 @@ class Input {
     this._checkValidity()
   }
 
-  _checkValidity(value=this.value) {
+  _checkValidity(value = this.value) {
     this.valid = false
     if (!this._input.checkValidity()) {
       return this.valid
@@ -70,10 +67,10 @@ class Input {
   }
 
   bindEvents(input) {
-    const EVENTS = ['change','focus','keyup','keydown']
+    const EVENTS = ['change', 'focus', 'keyup', 'keydown']
 
     EVENTS.forEach(name => {
-      input.addEventListener(name,e => {
+      input.addEventListener(name, _event => {
         const new_value = this.coerce(input.value)
         if (this.value !== new_value) {
           this.value = new_value
@@ -83,7 +80,7 @@ class Input {
         }
       })
     })
-    input.addEventListener('blur',e => {
+    input.addEventListener('blur', _event => {
       this.show_error = true
       this._updateCss()
       this.tag.parent.update()
@@ -91,17 +88,17 @@ class Input {
   }
 
   coerce(value) {
-    if (this.type === "number") {
+    if (this.type === 'number') {
       return Number(value)
     }
     return value
   }
 
-  focus = (e) => {}
-  keydown = (e) => {}
-  keyup = (e) => {}
-  change = (e) => {}
-  blur = (e) => {}
+  focus = () => {}
+  keydown = () => {}
+  keyup = () => {}
+  change = () => {}
+  blur = () => {}
 }
 
 config.tag2class['ur-input'] = Input

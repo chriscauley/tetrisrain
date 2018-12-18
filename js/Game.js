@@ -5,30 +5,38 @@ import Controller from './Controller'
 import config from './config'
 import Piece from './Piece'
 import uR from './unrest.js'
+import Random from 'ur-random'
 import storage from './unrest.js/storage'
 
 import './ui.tag'
 
-_.merge(uR.schema.config.name,{
-  d_level: { choices: _.range(5,30,5) },
-  c_level: { choices: _.range(1,10) },
+_.merge(uR.schema.config.name, {
+  d_level: { choices: _.range(5, 30, 5) },
+  c_level: { choices: _.range(1, 10) },
   piece_generator: { choices: Piece.GENERATORS },
 })
 
-export default class Game extends uR.Object {
+export default class Game extends Random.Mixin(uR.Object) {
   static fields = {
     a_level: 1, // determines speed of clock (unused)
-    b_level: 10, // distance from top before death
-    c_level: 1, // number of holes in each line
+    b_level: 20, // distance from top before death
+    c_level: 3, // number of holes in each line
     d_level: 10, // number of lines in the level
     piece_generator: 'Random', // used to fill up to d_level
+    _SEED: uR.Int(),
 
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
     pieces: [],
     actions: [],
   }
-  static editable_fieldnames = ['a_level','b_level','d_level','piece_generator']
+  static editable_fieldnames = [
+    'a_level',
+    'b_level',
+    'd_level',
+    'piece_generator',
+    '_SEED',
+  ]
   constructor(opts) {
     super(opts)
     this.saved_games = new storage.Storage('saved_games')
@@ -121,13 +129,8 @@ export default class Game extends uR.Object {
 
   updatePieceList() {
     while (this.pieces.length <= this.turn + this.n_preview + 2) {
-      this.pieces.push(config.PIECE_LIST[_.random(config.N_TYPES - 1)].shape)
+      this.pieces.push(config.PIECE_LIST[this.random.int(config.N_TYPES)].shape)
     }
-    const visible = this.pieces.slice(
-      this.turn + 1,
-      this.turn + 1 + this.n_preview,
-    )
-    const empty = this.n_preview - visible.length
     return this.pieces[this.turn]
   }
 

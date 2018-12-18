@@ -13,7 +13,7 @@ const Sprite = (opts = {}) => {
   if (opts.move) {
     const _move = () => {
       const [x, y] = opts.move()
-      uP.easeXY(sprite, x, y)
+      window.uP.easeXY(sprite, x, y)
     }
     sprite.move = () => {
       const [x, y] = opts.move()

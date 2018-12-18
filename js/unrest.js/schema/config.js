@@ -1,5 +1,5 @@
 const isEven = value => {
-  if (value%2) {
+  if (value % 2) {
     throw `${value} is not even`
   }
 }
@@ -9,6 +9,5 @@ export default {
   type: {
     number: { type: 'number', validators: [isEven] },
   },
-  name: {
-  }
+  name: {},
 }

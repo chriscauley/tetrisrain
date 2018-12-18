@@ -3,14 +3,18 @@
    parseChoices([1,2,[3,'three']]) => [[1,1],[2,2],[3,'three']]
 */
 
-import slugify from "slugify"
-
-export default (choices) => {
-  if (typeof choices == "function") { choices = choices() }
+export default choices => {
+  if (typeof choices === 'function') {
+    choices = choices()
+  }
   return choices.map(c => {
-    const type = typeof(c)
-    if (type === "undefined") { return ["","None"] }
-    if (type === "string" || type === "number") { return [c,c] }
+    const type = typeof c
+    if (type === 'undefined') {
+      return ['', 'None']
+    }
+    if (type === 'string' || type === 'number') {
+      return [c, c]
+    }
     return c
   })
 }

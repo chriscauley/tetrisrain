@@ -4,6 +4,8 @@
 */
 
 export default s => {
-  if (typeof s != "string") { s = s.toString() }
-  return s.replace(/[-_]/g," ").replace(/^(.)|\s(.)/g, ($1) => $1.toUpperCase());
-} 
+  if (typeof s !== 'string') {
+    s = s.toString()
+  }
+  return s.replace(/[-_]/g, ' ').replace(/^(.)|\s(.)/g, $1 => $1.toUpperCase())
+}

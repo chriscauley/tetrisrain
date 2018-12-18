@@ -2,7 +2,6 @@
 // element = <attrs.parent><my-tag {...attrs}></attrs.parent>
 // options && riot.mount(element,options)
 
-import assign from 'lodash'
 import riot from 'riot'
 
 export default (tagName, attrs, riot_opts) => {

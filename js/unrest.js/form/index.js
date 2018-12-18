@@ -9,5 +9,5 @@ export default {
   FormMixin,
   Input,
   config,
-  Select
+  Select,
 }

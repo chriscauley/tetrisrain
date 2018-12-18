@@ -19,13 +19,14 @@ export default class Board extends uR.Object {
     game: uR.REQUIRED,
     scale: 20, // px per block
     pieces: [],
+    red_line: 5,
   }
   constructor(opts) {
     super(opts)
 
     // nested arrays of zeros make up the initial board
     this.pallet = new Pallet({ board: this })
-    this.H = this.MAX_H= 100 // set so makePixi can work
+    this.H = this.MAX_H = 100 // set so makePixi can work
     this.makePixi()
     this.reset()
     window.B = this
@@ -38,14 +39,18 @@ export default class Board extends uR.Object {
   }
 
   reset() {
-    this.pixi.grid.y = (this.H-this.MAX_H)*this.scale
+    this.pixi.grid.y = (this.H - this.MAX_H) * this.scale
     this.pieces && this.pieces.forEach(p => p.removePixi())
     this.pieces = []
     this.H = this.game.b_level + this.game.d_level
 
     this.squares = range(this.H * this.W).map(() => undefined)
     _.range(this.game.d_level).forEach(i => {
-      const p = Piece[this.game.piece_generator]({ board: this, y: this.H - i - 1, x: 0 })
+      const p = Piece[this.game.piece_generator]({
+        board: this,
+        y: this.H - i - 1,
+        x: 0,
+      })
       this.pieces.push(p)
       p.set()
     })
@@ -66,7 +71,7 @@ export default class Board extends uR.Object {
     this.skyline = first.y
     this.top = Math.min(
       this.H - game.visible_height,
-      this.skyline - game.visible_height + game.b_level,
+      this.skyline - this.red_line,
     )
     this.top = Math.max(this.top, 1)
     game.top = this.top * this.scale
@@ -110,11 +115,11 @@ export default class Board extends uR.Object {
 
     const line_x = this.x_offset - 1
     this.pixi.trigger_line = uP.sprites.makeLine(this, '#FF0000', {
-      move: () => [line_x, this.game.b_level],
+      move: () => [line_x, this.red_line],
     })
 
     this.pixi.b_level = uP.sprites.makeLine(this, '#0000FF', {
-      move: () => [line_x, this.game.b_level - this.top + 1],
+      move: () => [line_x, this.red_line - this.top + 1],
     })
 
     this.pixi.floor = uP.sprites.makeLine(this, '#333333', {

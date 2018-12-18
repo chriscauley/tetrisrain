@@ -6,11 +6,11 @@
    }
    An unrest schema object asks "What would this look like in the database"
 */
-import config from "./config"
-import prep from "./prep"
-import unslugify from "./unslugify"
-import parseChoices from "./parseChoices"
-import prepChoices from "./prepChoices"
+import config from './config'
+import prep from './prep'
+import unslugify from './unslugify'
+import parseChoices from './parseChoices'
+import prepChoices from './prepChoices'
 
 export default {
   config,
