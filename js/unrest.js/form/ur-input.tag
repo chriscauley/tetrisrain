@@ -3,7 +3,7 @@ import _ from "lodash"
 <ur-input>
 <script>
 this.on("before-mount",() => {
-  this.opts.field.bindTag(this)
+  this.opts.input.bindTag(this)
 })
 </script>
 </ur-input>

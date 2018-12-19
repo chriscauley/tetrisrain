@@ -16,13 +16,13 @@ config.tag2class['ur-select'] = Select
 
 <ur-select> 
   <select>
-    <option each={ c in field.choices } value={ c.value }>{ c.label }</option>
+    <option each={ c in input.choices } value={ c.value }>{ c.label }</option>
   </select>
 
-this.field = {}
+this.input = {}
 
 this.on("mount",() => {
-  this.opts.field.bindTag(this)
+  this.opts.input.bindTag(this)
   this.update()
 })
 </ur-select>

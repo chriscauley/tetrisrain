@@ -25,7 +25,7 @@ export default {
 
     _.assign(this, {
       addInputs: (opts = this.opts) => {
-        const { object, constructor, _schema } = opts
+        const { object, model, _schema } = opts
         let fields, fieldnames
         if (object) {
           fields = new Map([...object.META.fields])
@@ -34,11 +34,11 @@ export default {
             object.deserialize(this.getData())
             this.unmount()
           }
-        } else if (constructor && constructor !== Object) {
+        } else if (model) {
           fields = new Map([...constructor.META.fields])
-          fieldnames = constructor.editable_fieldnames || []
+          fieldnames = model.editable_fieldnames || []
           this.opts.submit = () => {
-            new opts.constructor(this.getData())
+            new opts.model(this.getData())
             this.unmount()
           }
         } else if (_schema) {

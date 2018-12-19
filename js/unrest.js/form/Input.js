@@ -15,6 +15,10 @@ class Input {
       input_type: opts.type,
       validators: [],
       coerce: v => v,
+
+      //#! TODO: this is because spectre isn't playing nice
+      // remove this and then look at an empty, requierd inupt.
+      placeholder: ' ',
     })
     this.css = {
       label: css.form.label,
@@ -42,7 +46,7 @@ class Input {
 
   bindTag(tag) {
     this.tag = tag
-    tag.field = this
+    tag.input = this
     this._createInput()
     this.bindEvents(this._input)
     this._checkValidity()
