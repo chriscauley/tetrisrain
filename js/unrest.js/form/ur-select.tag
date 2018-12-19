@@ -6,6 +6,9 @@ class Select extends Input {
   _createInput() {
     this.choices = prepChoices(this)
     this._input = this.tag.root.querySelector("select")
+    this._attrs.forEach(attr => {
+      this._input[attr] = this[attr]
+    })
   }
 }
 
@@ -21,6 +24,5 @@ this.field = {}
 this.on("mount",() => {
   this.opts.field.bindTag(this)
   this.update()
-  this.field._input.value = this.field.value
 })
 </ur-select>

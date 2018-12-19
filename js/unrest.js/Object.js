@@ -38,13 +38,10 @@ const Int = (initial, opts = {}) => {
     if (_.isNil(v)) {
       return // this will be caught by required validator
     }
-    assert(
-      typeof v === 'number' && !isNaN(v),
-      `ValueError: ${field} requires a number not ${v}`,
-    )
+    assert(!isNaN(v), `ValueError: ${field} requires a number`)
   })
 
-  field.coerce = v => (typeof c === 'string' ? Number(v) : v)
+  field.coerce = v => (typeof v === 'string' ? Number(v) : v)
 
   return field
 }
@@ -55,7 +52,7 @@ const String = (initial, opts = {}) => {
   field.validators.push(v => {
     assert(
       typeof v === 'string',
-      `ValueError: ${field} requires a string not ${v}`,
+      `ValueError: ${field} requires a string not ${v} ${typeof v}`,
     )
   })
   return field

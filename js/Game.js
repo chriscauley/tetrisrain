@@ -33,6 +33,7 @@ export default class Game extends Random.Mixin(uR.Object) {
   static editable_fieldnames = [
     'a_level',
     'b_level',
+    'c_level',
     'd_level',
     'piece_generator',
     '_SEED',
@@ -49,7 +50,7 @@ export default class Game extends Random.Mixin(uR.Object) {
     this.board = new Board({ game: this })
 
     this.reset()
-    // uR.element.alert('ur-form',{},{object: this})
+    //uR.element.alert('ur-form',{},{object: this})
   }
 
   makeVars() {

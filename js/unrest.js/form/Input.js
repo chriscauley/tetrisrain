@@ -14,6 +14,7 @@ class Input {
       input_tagname: 'input',
       input_type: opts.type,
       validators: [],
+      coerce: v => v,
     })
     this.css = {
       label: css.form.label,
@@ -85,13 +86,6 @@ class Input {
       this._updateCss()
       this.tag.parent.update()
     })
-  }
-
-  coerce(value) {
-    if (this.type === 'number') {
-      return Number(value)
-    }
-    return value
   }
 
   focus = () => {}

@@ -29,7 +29,7 @@
     "prettier": "^1.15.2",
     "riot": "^3.12.0",
     "slugify": "^1.3.4",
-    "ur-random": "^0.0.2-b"
+    "ur-random": "^0.0.2-c"
   },
   "devDependencies": {
     "chai": "^4.2.0",

@@ -9,7 +9,7 @@ import ThemeMixin from '../css/ThemeMixin'
       <form onsubmit={ submit } class={ className }>
         <yield from="pre-form"/>
 
-        <div each={ _f,_i in fields } class={ _f.css.field }>
+        <div each={ _f,_i in inputs } class={ _f.css.field }>
           <label if={ css.form.label } for={ _f.id } class={ _f.css.label }>
             { _f.label }
           </label>
