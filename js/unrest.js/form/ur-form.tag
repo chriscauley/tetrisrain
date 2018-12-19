@@ -33,6 +33,9 @@ import ThemeMixin from '../css/ThemeMixin'
 <script>
 this.mixin(FormMixin)
 this.mixin(ThemeMixin)
+this.on("mount",() => {
+  this.update()
+})
 
 this.on("update", () => {
   this.checkValidity()

@@ -15,6 +15,7 @@ class Input {
       input_type: opts.type,
       validators: [],
       coerce: v => v,
+      value: opts.initial,
 
       //#! TODO: this is because spectre isn't playing nice
       // remove this and then look at an empty, requierd inupt.
