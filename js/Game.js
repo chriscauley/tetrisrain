@@ -23,7 +23,7 @@ export default class Game extends Random.Mixin(uR.Object) {
     c_level: 3, // number of holes in each line
     d_level: 10, // number of lines in the level
     piece_generator: 'Random', // used to fill up to d_level
-    _SEED: uR.Int(),
+    _SEED: uR.String(undefined, { required: false }),
 
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
