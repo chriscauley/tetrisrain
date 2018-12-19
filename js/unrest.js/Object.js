@@ -21,9 +21,10 @@ const Field = (initial, opts = {}) => {
     model: {}, // set by makeMeta on an Object
     deserialize: v => v,
     type: opts.type,
+    required: opts.required || opts.required === undefined,
     opts,
   }
-  opts.required &&
+  opts.required && // defaults to true!
     field.validators.push(v =>
       assert(!_.isNil(v), `ValueError: ${field} is required`),
     )
