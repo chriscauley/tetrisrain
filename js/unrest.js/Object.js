@@ -1,11 +1,73 @@
 import _ from 'lodash'
 
-const Field = initial => {
-  return {
-    initial,
-    serialize: v => v,
-    deserialize: v => v,
+const assert = (bool, exception) => {
+  if (!bool) {
+    throw exception
   }
+}
+
+const Field = (initial, opts = {}) => {
+  const field = {
+    initial,
+    serialize: v => {
+      v = field.coerce(v)
+      // validators will throw errors for invalid values
+      field.validators.forEach(f => f(v))
+      return v
+    },
+    validators: [],
+    coerce: v => v,
+    toString: () => `${field.model.name}.${field.name}`,
+    model: {}, // set by makeMeta on an Object
+    deserialize: v => v,
+    type: opts.type,
+    opts,
+  }
+  opts.required &&
+    field.validators.push(v =>
+      assert(!_.isNil(v), `ValueError: ${field} is required`),
+    )
+  return field
+}
+
+const Int = (initial, opts = {}) => {
+  opts.type = 'int'
+  const field = Field(initial, opts)
+
+  field.validators.push(v => {
+    if (_.isNil(v)) {
+      return // this will be caught by required validator
+    }
+    assert(
+      typeof v === 'number' && !isNaN(v),
+      `ValueError: ${field} requires a number not ${v}`,
+    )
+  })
+
+  field.coerce = v => (typeof c === 'string' ? Number(v) : v)
+
+  return field
+}
+
+const String = (initial, opts = {}) => {
+  opts.type = 'string'
+  const field = Field(initial, opts)
+  field.validators.push(v => {
+    assert(
+      typeof v === 'string',
+      `ValueError: ${field} requires a string not ${v}`,
+    )
+  })
+  return field
+}
+
+const _Number = Int
+const Boolean = Field
+
+const TYPES = {
+  number: _Number,
+  string: String,
+  boolean: Boolean,
 }
 
 const List = type => {
@@ -21,12 +83,9 @@ const List = type => {
   }
 }
 
-const Int = Field
-const String = Field
-
 const notNil = _.negate(_.isNil)
 
-const _Object = class {
+const _Object = class _Object {
   static id = 0
   //fields = {} // defines the data structure to be serialized
   //opts = {} // non-data initialization options
@@ -34,9 +93,9 @@ const _Object = class {
   constructor(opts) {
     this.opts = opts // maybe move this.opts and this.fields into this.META?
     this.makeOpts(opts)
-    this.makeFields()
+    this.makeMeta()
     this.deserialize(opts)
-    this.id = this.constructor.id++
+    this.id = ++this.constructor.id
   }
 
   makeOpts(opts) {
@@ -46,12 +105,39 @@ const _Object = class {
     }
   }
 
-  makeFields(fields = this.constructor.fields) {
-    this.fields = new Map(Object.entries(_.clone(fields)))
+  makeMeta() {
+    this.constructor.makeMeta()
+    this.META = this.constructor.META
+  }
+
+  static makeMeta() {
+    // #! TODO should this be static?
+    this.META = {}
+    let cls = this
+    const fieldsets = []
+    while (cls !== _Object) {
+      fieldsets.push(cls.fields)
+      cls = Object.getPrototypeOf(cls)
+    }
+    const fields = (this.META.fields = new Map(
+      Object.entries(_.defaults({}, ...fieldsets)),
+    ))
+    fields.forEach((field, name) => {
+      const type = TYPES[typeof field]
+
+      // primitives are lazily coerced
+      if (type) {
+        fields.set(name, (field = type(field)))
+      }
+      field.name = name
+      field.model = this
+    })
+
+    this.makeMeta = () => {} // only execute once!
   }
 
   deserialize(json = {}) {
-    this.fields.forEach((field, name) => {
+    this.META.fields.forEach((field, name) => {
       const value = _.find(
         [json[name], field.initial, this[name], field],
         notNil,
@@ -71,16 +157,12 @@ const _Object = class {
     })
   }
 
-  serialize(keys = [...this.fields.keys()]) {
+  serialize(keys = [...this.META.fields.keys()]) {
     const json = _.pick(this, keys)
-    for (const [key, value] of Object.entries(json)) {
-      const field = this.constructor.fields[key]
-      if (field.serialize) {
-        json[key] = field.serialize(json[key])
-      } else if (value && value.serialize) {
-        json[key] = value.serialize()
-      }
-    }
+    Object.keys(json).forEach(key => {
+      const field = this.META.fields.get(key)
+      json[key] = field.serialize(json[key])
+    })
     return _.pickBy(json, notNil)
   }
 }
