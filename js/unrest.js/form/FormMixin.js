@@ -3,16 +3,6 @@ import _ from 'lodash'
 import config from './config'
 import schema from '../schema'
 
-const prepInput = (field, form) => {
-  // converts a schema field to input options
-  const default_tag = field.choices ? 'ur-select' : 'ur-input'
-  return _.defaults({}, field, {
-    tagName: default_tag,
-    label: schema.unslugify(field.name),
-    id: `${form.prefix}__${field.name}`,
-  })
-}
-
 export default {
   init: function() {
     this.inputs = []
@@ -49,11 +39,18 @@ export default {
         Array.from(fields)
           .filter(([name, _obj]) => fieldnames.indexOf(name) !== -1)
           .map(schema.prep) // #! TODO is this necessary for Object/Model or just raw schema
-          .forEach(field => {
-            const opts = prepInput(field, this)
-            const cls = config.tag2class[opts.tagName]
-            this.inputs.push(new cls(opts))
-          })
+          .forEach(this.addInput)
+      },
+      addInput: field => {
+        // converts a schema field to input options
+        const opts = {
+          tagName: 'ur-input',
+          label: schema.unslugify(field.name),
+          id: `${this.prefix}__${field.name}`,
+        }
+        _.assign(opts, field)
+        const cls = config.tag2class[opts.tagName]
+        this.inputs.push(new cls(opts))
       },
 
       checkValidity: () => {

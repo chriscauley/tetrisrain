@@ -51,9 +51,12 @@ const String = (initial, opts = {}) => {
   opts.type = 'string'
   const field = Field(initial, opts)
   field.validators.push(v => {
+    if (_.isNil(v) || v === '') {
+      return // this will be caught by required validator
+    }
     assert(
       typeof v === 'string',
-      `ValueError: ${field} requires a string not ${v} ${typeof v}`,
+      `ValueError: ${field} requires a string not ${v}`,
     )
   })
   return field
