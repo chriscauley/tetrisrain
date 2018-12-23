@@ -1,7 +1,17 @@
 import _ from 'lodash'
 
-import config from './config'
+//import config from './config'
 import schema from '../schema'
+import Input from './Input'
+import Select from './Select'
+
+const getCls = opts => {
+  // config will be used here eventually
+  if (opts.choices) {
+    return Select
+  }
+  return Input
+}
 
 export default {
   init: function() {
@@ -49,7 +59,7 @@ export default {
           id: `${this.prefix}__${field.name}`,
         }
         _.assign(opts, field)
-        const cls = config.tag2class[opts.tagName]
+        const cls = getCls(opts)
         this.inputs.push(new cls(opts))
       },
 
