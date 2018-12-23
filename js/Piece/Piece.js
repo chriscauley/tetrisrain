@@ -121,6 +121,7 @@ export default class Piece extends uR.Object {
     shape: undefined,
     _needs_split: false,
     _is_current: false,
+    locked: false, // locked pieces can't be shaked
   }
   constructor(opts) {
     _.defaults(opts, {

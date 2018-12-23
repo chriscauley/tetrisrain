@@ -50,6 +50,7 @@ export default class Board extends uR.Object {
         board: this,
         y: this.H - i - 1,
         x: 0,
+        locked: true,
       })
       this.pieces.push(p)
       p.set()
@@ -352,7 +353,8 @@ export default class Board extends uR.Object {
   }
 
   detectShake() {
-    this.pieces.forEach(p => (p._can_shake = true))
+    // mark all not locked pieces as able to move
+    this.pieces.forEach(p => (p._can_shake = !p.locked))
     this.getLine(this.H - 1).forEach(s => (s.piece._can_shake = false))
     _.range(this.H, this.skyline - 1).forEach(y =>
       this.getLine(y).forEach(s => {
