@@ -11,7 +11,10 @@ import storage from './unrest.js/storage'
 import './ui.tag'
 
 _.merge(uR.schema.config.name, {
-  d_level: { choices: _.range(5, 30, 5) },
+  d_level: {
+    choices: _.range(5, 60, 5),
+    help_text: 'Number of lines to clear to go to the next level.',
+  },
   c_level: { choices: _.range(1, 10) },
   piece_generator: { choices: Piece.GENERATORS },
 })
@@ -41,6 +44,7 @@ export default class Game extends Random.Mixin(uR.Object) {
   constructor(opts) {
     super(opts)
     this.saved_games = new storage.Storage('saved_games')
+    //console.log(this.saved_games)
     this.DEBUG = ~window.location.search.indexOf('debug')
     this.makeVars()
     this.container = document.getElementById('game')
@@ -50,7 +54,7 @@ export default class Game extends Random.Mixin(uR.Object) {
     this.board = new Board({ game: this })
 
     this.reset()
-    //uR.element.alert('ur-form',{},{object: this})
+    uR.element.alert('ur-form', {}, { object: this })
   }
 
   makeVars() {
