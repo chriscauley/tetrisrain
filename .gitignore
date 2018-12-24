@@ -1,6 +1,11 @@
+# node stuff
 yarn.lock
 yarn-error.log
-*~
 .cache/
 dist
 node_modules
+
+# python stuff
+.venv
+__pycache__
+main/db.sqlite3
