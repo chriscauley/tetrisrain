@@ -6,8 +6,7 @@
   "author": "chriscauley <chris@lablackey.com>",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist && parcel client/index.html --public-url /static/",
-    "watch": "rm -rf dist && parcel watch client/index.html --public-url /static/",
+    "build": "rm -rf dist && parcel build client/index.html --public-url /static/",
     "serve": "rm -rf dist && parcel client/index.html --public-url /static/",
     "lint": "eslint client",
     "test-unrest": "parcel client/js/unrest.js/tests/index.html"
