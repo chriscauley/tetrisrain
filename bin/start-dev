@@ -1,8 +1,8 @@
 #!/bin/bash
 
 . .venv/bin/activate
-DJANGO='python manage.py runserver 0.0.0.0:8999'
-YARN='yarn watch'
+DJANGO='python manage.py runserver 0.0.0.0:8083'
+YARN='yarn serve'
 
 if [[ $1 == "tmux" ]];then
     tmux new-session -s ur-conf   $DJANGO

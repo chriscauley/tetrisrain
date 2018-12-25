@@ -6,10 +6,11 @@
   "author": "chriscauley <chris@lablackey.com>",
   "license": "MIT",
   "scripts": {
-    "build": "parcel build index.html",
-    "serve": "parcel index.html -p 8083",
-    "lint": "eslint js/*",
-    "test-unrest": "parcel js/unrest.js/tests/index.html"
+    "build": "rm -rf dist && parcel client/index.html --public-url /static/",
+    "watch": "rm -rf dist && parcel watch client/index.html --public-url /static/",
+    "serve": "rm -rf dist && parcel client/index.html --public-url /static/",
+    "lint": "eslint client",
+    "test-unrest": "parcel client/js/unrest.js/tests/index.html"
   },
   "dependencies": {
     "@babel/core": "^7.1.5",
