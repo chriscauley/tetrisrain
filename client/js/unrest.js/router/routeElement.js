@@ -7,7 +7,7 @@ export default (element_name, opts = {}) => {
     const tagName = element_name.toUpperCase()
     const _current = router._current_tag
     const attrs = {
-      parent: element.config[data.ur_modal ? 'mount_to' : 'mount_alerts_to'],
+      parent: element.config[data.ur_modal ? 'mount_alerts_to':'mount_to'],
       clear: true,
     }
     if (_current && _current.root.tagName === tagName) {
