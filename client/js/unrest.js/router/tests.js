@@ -31,7 +31,7 @@ describe('uR.router', () => {
     testText('bar')
 
     // because these all start with uR.router.MODAL_PREFIX, they should be in ur-alerts
-    expect(!!document.querySelector("#ur-alerts test-tag")).to.be.true
+    expect(!!document.querySelector('#ur-alerts test-tag')).to.be.true
   })
 
   it('loads the right tag when the link is clicked', () => {
