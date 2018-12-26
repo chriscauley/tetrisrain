@@ -4,6 +4,7 @@ import element from './element'
 import schema from './schema'
 import form from './form'
 import css from './css'
+import router from './router'
 
 Object.assign(uR, {
   ready: Ready(),
@@ -12,7 +13,10 @@ Object.assign(uR, {
   schema,
   form,
   css,
+  router,
 })
+
+uR.ready(() => uR.router.ready.start())
 
 window.onload = uR.ready.start
 window.uR = uR

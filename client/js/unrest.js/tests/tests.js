@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { expect } from 'chai'
 
 import uR from '../'
+import _routerTests from '../router/tests'
 
 describe('uR.Object', () => {
   it('serializes itself to the correct value', () => {
