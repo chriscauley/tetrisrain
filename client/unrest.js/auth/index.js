@@ -7,8 +7,8 @@ const auth = {
     register: '#!/auth/register/',
     login: '#!/auth/login/',
     reset: '/user.json',
-    register_ajax: '/auth/register/',
-    login_ajax: '/auth/login/',
+    register_ajax: '/api/auth/register/',
+    login_ajax: '/api/auth/login/',
   },
 }
 //#! TODO should routes.add and the urls be in a separate file?
