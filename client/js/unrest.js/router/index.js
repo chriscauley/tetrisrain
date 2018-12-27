@@ -1,4 +1,5 @@
 import onClick from './onClick'
+import resolve from './resolve'
 import route from './route'
 import routeElement from './routeElement'
 import router from './router'
@@ -6,6 +7,7 @@ import router from './router'
 Object.assign(router, {
   route,
   routeElement,
+  resolve,
 })
 
 router.ready(() => {

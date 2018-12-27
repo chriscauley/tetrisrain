@@ -37,13 +37,14 @@ export default (href, data = {}) => {
     }
   }
 
-  router._stale = true
   if (path_match || hash_match) {
     pushState(href)
+    router._stale = true
     return
   } else if (router.default_route) {
     extend(data, { matches: [] })
     router.default_route(pathname, data)
+    router._stale = true
     return
   }
   // #! TODO router.do404();
@@ -52,6 +53,6 @@ export default (href, data = {}) => {
   // This could paobably be more elegant
   if (router._stale || new_url.href !== old_url.href) {
     // We're not in the single page app, reload if necessary
-    window.location = new_url.href
+    // #! TODO window.location = new_url.href
   }
 }
