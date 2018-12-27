@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { expect } from 'chai'
 
-import router from './index'
+import router from '../router'
 import _tt from './_test_tags.tag'
 
 const ROUTES = {
