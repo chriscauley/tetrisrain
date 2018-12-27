@@ -10,7 +10,9 @@ Object.assign(router, {
 
 router.ready(() => {
   document.addEventListener('click', onClick)
-  router.route(window.location.href)
+
+  // if router has not been activated, trigger for current location
+  !router._stale && router.route(window.location.href)
 })
 
 export default router

@@ -4,8 +4,6 @@ import router from './router'
 import pushState from './pushState'
 import resolve from './resolve'
 
-let _is_stale
-
 export default (href, data = {}) => {
   const new_url = new URL(
     href,
@@ -34,13 +32,14 @@ export default (href, data = {}) => {
     extend(data, { matches: path_match })
     document.body.dataset.ur_path = pathname
     router._routes[path_match.key](pathname, data)
-    if (_is_stale) {
+    if (router._stale) {
       window.location.hash = ''
     }
   }
+
+  router._stale = true
   if (path_match || hash_match) {
     pushState(href)
-    _is_stale = true
     return
   } else if (router.default_route) {
     extend(data, { matches: [] })
@@ -51,11 +50,8 @@ export default (href, data = {}) => {
 
   // #! TODO The following is used for django pages + back button
   // This could paobably be more elegant
-  if (_is_stale || new_url.href !== old_url.href) {
+  if (router._stale || new_url.href !== old_url.href) {
     // We're not in the single page app, reload if necessary
     window.location = new_url.href
   }
-  _is_stale = true
-  data.one && data.one.route && data.one.route()
-  data.on && data.on.route && data.on.route()
 }
