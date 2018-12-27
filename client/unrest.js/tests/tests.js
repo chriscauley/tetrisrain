@@ -1,4 +1,6 @@
 import _ from 'lodash'
+import _uR from '../index' // necessary to trigger uR.ready
+import _tt from './_test_tags.tag'
 
 //import objectTests from './ObjectTests'
 //import routerTests from './routerTests'
