@@ -5,6 +5,8 @@ import schema from './schema'
 import form from './form'
 import css from './css'
 import router from './router'
+import ajax from './ajax'
+import auth from './auth'
 
 Object.assign(uR, {
   ready: Ready(),
@@ -14,9 +16,14 @@ Object.assign(uR, {
   form,
   css,
   router,
+  ajax,
+  auth,
 })
 
-uR.ready(() => uR.router.ready.start())
+uR.ready(() => {
+  uR.router.ready.start()
+  uR.auth.reset()
+})
 
 window.onload = uR.ready.start
 window.uR = uR
