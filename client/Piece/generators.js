@@ -2,25 +2,37 @@ import _ from 'lodash'
 import Piece from './Piece'
 
 const remove = {
-  nth: (board, slope) => {
+  nth: (board, _slope) => {
     const W = board.W
     const c_level = board.game.c_level
-    let i = 0
-    const increment = Math.sign(W)
     return s => {
-      i += increment
-      return !!(
-        Math.floor((i - slope * s.y) / c_level) % Math.floor(W / c_level)
-      )
+      const start = (_slope * s.y) % W
+      const end = (start + c_level) % W
+      if (start < end) {
+        return s.dx <= start || s.dx > end
+      }
+      return s.dx > end && s.dx <= start
     }
   },
   random: (board, _slope) => {
     const { W } = board
     const { random, c_level } = board.game
-    const places = random.shuffle(_.range(W).map(i => i > c_level))
+    const places = random.shuffle(_.range(W).map(i => i >= c_level))
     return s => places[s.dx]
   },
 }
+
+_.range(30).forEach(y => {
+  const s = {
+    y,
+    dx: 0,
+  }
+  const B = {
+    game: { c_level: 3 },
+    W: 10,
+  }
+  remove.nth(B)(s)
+})
 
 Piece.Line = opts => {
   _.defaults(opts, {
@@ -36,7 +48,7 @@ Piece.Line = opts => {
       board: opts.board,
       y: opts.y,
     }))
-    .filter(opts.remove(opts.board, 4))
+    .filter(opts.remove(opts.board, 3))
   return new Piece(opts)
 }
 
