@@ -7,6 +7,9 @@ import Select from './Select'
 
 const getCls = opts => {
   // config will be used here eventually
+  if (opts.type === 'boolean') {
+    opts.choices = [['false', 'No'], ['true', 'Yes']]
+  }
   if (opts.choices) {
     return Select
   }

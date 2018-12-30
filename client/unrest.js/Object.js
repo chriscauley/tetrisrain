@@ -6,6 +6,15 @@ const assert = (bool, exception) => {
   }
 }
 
+const ForeignKey = (model, opts = {}) => {
+  const field = Field(undefined, opts)
+  Object.assign({
+    deserialize: pk => model.object.get(pk),
+    serialize: (obj = field) => obj.pk,
+  })
+  return field
+}
+
 const Field = (initial, opts = {}) => {
   const field = {
     initial,
@@ -63,7 +72,12 @@ const String = (initial, opts = {}) => {
 }
 
 const _Number = Int
-const Boolean = Field
+const Boolean = (initial, opts = {}) => {
+  opts.type = 'boolean'
+  opts.coerce = v => v && v !== 'false'
+  const field = Field(initial, opts)
+  return field
+}
 
 const TYPES = {
   number: _Number,
@@ -174,6 +188,7 @@ const uR = {
   Field,
   List,
   String,
+  ForeignKey,
   Object: _Object,
 }
 
