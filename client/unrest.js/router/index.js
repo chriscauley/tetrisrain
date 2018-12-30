@@ -3,11 +3,13 @@ import resolve from './resolve'
 import route from './route'
 import routeElement from './routeElement'
 import router from './router'
+import clearHash from './clearHash'
 
 Object.assign(router, {
   route,
   routeElement,
   resolve,
+  clearHash,
 })
 
 router.ready(() => {

@@ -37,16 +37,13 @@ export default (href, data = {}) => {
     }
   }
 
-  if (path_match || hash_match) {
-    pushState(href)
-    router._stale = true
-    return
-  } else if (router.default_route) {
-    extend(data, { matches: [] })
-    router.default_route(pathname, data)
-    router._stale = true
-    return
+  if (router.default_route && !path_match && !router._stale) {
+    router.default_route(pathname)
   }
+
+  pushState(href)
+  router._stale = true
+
   // #! TODO router.do404();
 
   // #! TODO The following is used for django pages + back button
