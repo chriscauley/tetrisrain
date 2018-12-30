@@ -51,6 +51,28 @@ const spectre = {
   },
   error: 'label label-error',
   hide: 'd-hide',
+  text: {
+    primary: 'text-primary',
+    secondary: 'text-secondary',
+    dark: 'text-dark',
+    gray: 'text-gray',
+    light: 'text-light',
+    success: 'text-success',
+    warning: 'text-warning',
+    error: 'text-error',
+    red: 'text-error',
+  },
+  bg: {
+    primary: 'bg-primary p-1',
+    secondary: 'bg-secondary p-1',
+    dark: 'bg-dark p-1',
+    gray: 'bg-gray p-1',
+    light: 'bg-light p-1',
+    success: 'bg-success p-1',
+    warning: 'bg-warning p-1',
+    error: 'bg-error p-1',
+    red: 'bg-error p-1',
+  },
 }
 
 // #! TODO
