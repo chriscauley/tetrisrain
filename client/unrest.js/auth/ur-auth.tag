@@ -3,10 +3,16 @@ import auth from './index'
 
 <ur-auth-start>
   <div class={theme.outer}>
-    <div class={theme.header}>Please login to continue</div>
+    <div class={theme.header}>
+      <div class={theme.header_title}>{auth.GREETING}</div>
+    </div>
     <div class={theme.content}>
-      <a href={auth.urls.register} class={css.btn.primary}>Create New Account</a>
-      <a href={auth.urls.login} class={css.btn.secondary}>Login</a>
+      <p>
+        <a href={auth.urls.register} class={css.btn.primary}>Create New Account</a>
+      </p>
+      <p>
+        <a href={auth.urls.login} class={css.btn.default}>Login</a>
+      </p>
     </div>
   </div>
 <script>

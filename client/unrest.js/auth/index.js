@@ -10,6 +10,7 @@ const auth = {
     register_ajax: '/api/auth/register/',
     login_ajax: '/api/auth/login/',
   },
+  GREETING: 'Please Login to Continue',
 }
 //#! TODO should routes.add and the urls be in a separate file?
 import router from '../router'

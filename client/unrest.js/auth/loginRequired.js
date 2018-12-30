@@ -19,6 +19,9 @@ export default (func, data = {}) => {
         if (data) {
           auth.setUser(data.user)
         }
+        if (window.location.href.indexOf('/auth/') !== -1) {
+          router.clearHash()
+        }
         func(...args)
       }
       if (!auth.user || data.force) {
