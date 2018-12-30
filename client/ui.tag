@@ -1,5 +1,6 @@
 import { debounce } from 'lodash'
 import config from './config'
+import ThemeMixin from './unrest.js/css/ThemeMixin'
 
 <scores>
   <div each={ name in names }>
@@ -157,3 +158,40 @@ import config from './config'
     this.parent.game.load(this.value = e.item.name)
   }
 </level-editor>
+
+<tr-help>
+  <div class={theme.outer}>
+    <div class={theme.header}>
+      <div class={theme.header_title}>Welcome to Tetris Rain!</div>
+    </div>
+    <div class={theme.content}>
+      <p>
+        This is a Tetris game I'm working on. You can close this to start playing, and hit <code>?</code> at any time to bring up this menu. There are several key differences between this and classic tetris that you should be aware of.
+      </p>
+      <ul>
+        <li>
+          <b>No Clock</b> - The goal of this game is to play your best tetris game, so the pieces only move down when you tell them to.
+        </li>
+        <li>
+          <b>Shake (aka cascade)</b> - If pieces are unsupported they will turn red. When this happens you can press <code>z</code> to shake the board and cause them to fall
+        </li>
+        <li>
+          <b>Ghost</b> The semi-transparent piece mirroring your every move is the ghost. This is to help you play faster. Press <code>space</code> to drop your piece to the ghost. (saves you the time of pressing <code>down</code> repeatedly)
+        </li>
+        <li>
+          <b>How to win</b> - Much of the game UX is not written yet (sorry!). When you eliminate all the lines, keep playing or refresh the window to start a new game.
+        </li>
+        <li>
+          <b>How to lose</b> - If you royally screw up, the game will reset when you hit the top
+        </li>
+        <li>
+          <b>Game settings</b> - When the game loads a settings menu will appear. Tweaking these should alter the game experience.
+        </li>
+      </ul>
+    </div>
+  </div>
+
+<script>
+  this.mixin(ThemeMixin)
+</script>
+</tr-help>

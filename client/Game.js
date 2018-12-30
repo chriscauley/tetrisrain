@@ -54,7 +54,12 @@ export default class Game extends Random.Mixin(uR.Object) {
     this.board = new Board({ game: this })
 
     this.reset()
-    uR.element.alert('ur-form', {}, { object: this })
+    if (!uR.storage.get('help-closed')) {
+      uR.router.route('#!/help/')
+      uR.storage.set('help-closed', 1)
+    } else {
+      uR.element.alert('ur-form', {}, { object: this })
+    }
   }
 
   makeVars() {
@@ -163,6 +168,7 @@ export default class Game extends Random.Mixin(uR.Object) {
     this._act = {
       left: () => this.current_piece.moveLeft(),
       right: () => this.current_piece.moveRight(),
+      question: () => uR.router.route('#!/help/'),
 
       down: () => {
         if (!this.current_piece.moveDown()) {

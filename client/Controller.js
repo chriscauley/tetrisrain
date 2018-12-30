@@ -11,6 +11,7 @@ export default class Controller {
       32: 'space',
       16: 'shift',
       90: 'z',
+      191: 'question', // '/?'
     }
     const letters = 'abcdefghijklmnopqrstuvwxyz'
     this._action_map = {
