@@ -8,8 +8,13 @@ export default {
     this.theme = this.css[opts.ur_modal ? 'modal' : 'default']
 
     if (opts.ur_modal) {
+      if (opts.cancel) {
+        this.on('unmount', opts.cancel)
+      }
       create('div', {
-        onclick: () => this.unmount(),
+        onclick: () => {
+          this.unmount()
+        },
         className: this.theme.mask,
         parent: this.root,
       })

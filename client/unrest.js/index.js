@@ -7,6 +7,7 @@ import css from './css'
 import router from './router'
 import ajax from './ajax'
 import auth from './auth'
+import storage from './storage'
 
 Object.assign(uR, {
   ready: Ready(),
@@ -18,6 +19,7 @@ Object.assign(uR, {
   router,
   ajax,
   auth,
+  storage,
 })
 
 uR.ready(() => {
