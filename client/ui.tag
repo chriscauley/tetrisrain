@@ -166,7 +166,7 @@ import ThemeMixin from './unrest.js/css/ThemeMixin'
     </div>
     <div class={theme.content}>
       <p>
-        This is a Tetris game I'm working on. You can close this to start playing, and hit <code>?</code> at any time to bring up this menu. There are several key differences between this and classic tetris that you should be aware of.
+        This is a Tetris game I'm working on. There are several key differences between this and classic tetris that you should be aware of. You can <a href="#">close this to start playing</a>, and hit <code>?</code> at any time to bring up this menu. <span if={first_time}>Seriously, just close this and start playing. You can come back if you get confused.</span>
       </p>
       <ul>
         <li>
@@ -187,11 +187,24 @@ import ThemeMixin from './unrest.js/css/ThemeMixin'
         <li>
           <b>Game settings</b> - When the game loads a settings menu will appear. Tweaking these should alter the game experience.
         </li>
+        <li>
+          <b class={css.text.red}>Trigger line</b> - If the "skyline" (top of top most piece) moves above the red line, the board will move up to compensate.
+        </li>
+        <li>
+          <b class={css.text.primary}>Deep line</b> - Lines will not clear below the "deep line" (watery looking stuff at the bottom of the board). Lower the skyline to expose and clear these lines. Because of current settings this will rarely come into play.
+        </li>
+        <li>
+          <b class={css.bg.warning}>Gold bricks</b> - ???
+        </li>
       </ul>
+      <center>
+        <a href="#" class={css.btn.primary}>Start Playing</a>
+      </center>
     </div>
   </div>
 
 <script>
   this.mixin(ThemeMixin)
+  this.first_time = !uR.storage.get("help-closed")
 </script>
 </tr-help>

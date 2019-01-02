@@ -2,7 +2,6 @@ import _ from 'lodash'
 
 import Board from './Board'
 import Controller from './Controller'
-import config from './config'
 import Piece from './Piece'
 import uR from './unrest.js'
 import Random from 'ur-random'
@@ -12,11 +11,17 @@ import './ui.tag'
 
 _.merge(uR.schema.config.name, {
   d_level: {
-    choices: _.range(5, 60, 5),
+    choices: _.range(8, 60, 4),
     help_text: 'Number of lines to clear to go to the next level.',
   },
   c_level: { choices: _.range(1, 10) },
   piece_generator: { choices: Piece.GENERATORS },
+  piece_shapes: {
+    choices: [['ljzstoi', 'all'], 't', 'zszst', 'ljoi', 'oi'],
+  },
+  _SEED: {
+    choices: [['', 'Random'], '123', '456', '789'],
+  },
 })
 
 export default class Game extends Random.Mixin(uR.Object) {
@@ -24,24 +29,28 @@ export default class Game extends Random.Mixin(uR.Object) {
     a_level: 1, // determines speed of clock (unused)
     b_level: 20, // distance from top before death
     c_level: 3, // number of holes in each line
-    d_level: 10, // number of lines in the level
+    d_level: 12, // number of lines in the level
     piece_generator: 'Random', // used to fill up to d_level
     _SEED: uR.String(undefined, { required: false }),
+    piece_shapes: 'ljzstoi',
+    shuffle_pieces: false,
 
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
-    pieces: [],
     actions: [],
   }
   static editable_fieldnames = [
-    'a_level',
-    'b_level',
+    //'a_level',
+    //'b_level',
     'c_level',
     'd_level',
     'piece_generator',
     '_SEED',
+    'shuffle_pieces',
+    'piece_shapes',
   ]
   constructor(opts) {
+    opts = opts || uR.storage.get('GAME_CONFIG')
     super(opts)
     this.saved_games = new storage.Storage('saved_games')
     //console.log(this.saved_games)
@@ -57,29 +66,18 @@ export default class Game extends Random.Mixin(uR.Object) {
     if (!uR.storage.get('help-closed')) {
       uR.router.route('#!/help/')
       uR.storage.set('help-closed', 1)
-    } else {
-      uR.element.alert('ur-form', {}, { object: this })
     }
   }
 
   makeVars() {
-    for (let i = 0; i < 1; i++) {
-      //this.pieces = this.pieces.concat(['z', 'z', 'z', 'z', 'z', 'i'])
-      //this.pieces = this.pieces.concat(['i', 'l', 'j', 'o'])
-      this.pieces = this.pieces.concat(['t', 't', 't', 't', 't', 'i'])
-      //this.pieces = this.pieces.concat(['i','i','i','i','i','i','i','i',])
-      //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j', 'i', 'i'])
-      //this.pieces = this.pieces.concat(['i','i','i','i'])
-      //this.pieces = this.pieces.concat(['l', 'j', 'l', 'j'])
-    }
-
     this.level = 1
     this.speed = this.speed0 = 700
     this.speedK = 60
   }
 
   reset(id) {
-    this.id = id || 'autosave'
+    this.pieces = []
+    this.PIECE_SHAPES = this.piece_shapes.split('')
     this.current_piece && this.current_piece.removePixi()
     this.current_piece = undefined
     this.swapped_piece = undefined
@@ -91,6 +89,7 @@ export default class Game extends Random.Mixin(uR.Object) {
     this.getPiece()
     this.scores && this.scores.reset()
     this.updatePieceList()
+    this.root && this.root.update()
   }
 
   replay() {
@@ -131,6 +130,7 @@ export default class Game extends Random.Mixin(uR.Object) {
 
   deserialize(data) {
     super.deserialize(data)
+    data._SEED && this.random && this.random.set(data._SEED) // #! TODO could be in unrest
     if (this.board) {
       this.reset()
       this.replay()
@@ -139,7 +139,11 @@ export default class Game extends Random.Mixin(uR.Object) {
 
   updatePieceList() {
     while (this.pieces.length <= this.turn + this.n_preview + 2) {
-      this.pieces.push(config.PIECE_LIST[this.random.int(config.N_TYPES)].shape)
+      if (this.shuffle_pieces) {
+        this.pieces.push(this.random.choice(this.PIECE_SHAPES))
+      } else {
+        this.pieces = this.pieces.concat(this.PIECE_SHAPES)
+      }
     }
     return this.pieces[this.turn]
   }

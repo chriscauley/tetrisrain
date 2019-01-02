@@ -12,7 +12,8 @@ import Game from './Game'
     <hr />
     <controls />
     <scores game={game} />
-    <level-editor game={game} />
+    <!--<level-editor game={game} />-->
+    <a href="#!/settings/">Game Settings</a>
   </div>
   <div id="debug"></div>
 
@@ -43,6 +44,14 @@ this.on('mount',() => {
     <tr>
       <td><b>shift</b></td>
       <td>Swap</td>
+    </tr>
+    <tr>
+      <td><b>z</b></td>
+      <td>Shake</td>
+    </tr>
+    <tr>
+      <td><b>?</b></td>
+      <td>Halp!</td>
     </tr>
   </table>
 </controls>
