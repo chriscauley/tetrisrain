@@ -9,13 +9,15 @@
     "build": "rm -rf dist && parcel build client/index.html --public-url /static/",
     "serve": "rm -rf dist && parcel client/index.html --public-url /static/",
     "lint": "eslint client",
-    "test-unrest": "parcel client/js/unrest.js/tests/index.html"
+    "test-unrest": "D=client/unrest.js/tests && rm -rf dist/* && cp -r $D/dummy dist && parcel $D/index.html"
   },
   "dependencies": {
     "@babel/core": "^7.1.5",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "ajax": "^0.0.4",
     "babel-eslint": "^10.0.1",
     "config": "^2.0.1",
+    "cookie": "^0.3.1",
     "eslint": "^5.9.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-prettier": "^3.0.0",
