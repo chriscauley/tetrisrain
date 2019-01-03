@@ -23,7 +23,7 @@ import ThemeMixin from '../css/ThemeMixin'
           <button class={ css.btn.success } onclick={ submit } disabled={!valid}>
             { opts.success_text }</button>
           <button class={ css.btn.cancel } if={ opts.cancel } onclick={ cancel }>
-            { cancel_text }</button>
+            { opts.cancel_text }</button>
         </div>
 
       </form>
@@ -48,7 +48,7 @@ submit(e) {
     this.update();
     return;
   }
-  this.opts.submit()
+  this.opts.submit(this)
 }
 
 cancel() {

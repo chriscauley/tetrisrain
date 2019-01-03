@@ -29,18 +29,19 @@ export default {
     _.assign(this, {
       addInputs: (opts = this.opts) => {
         const { object, model, _schema } = opts
-        let fields, fieldnames
+        let fields, fieldnames, submit
         if (object) {
           fields = new Map([...object.META.fields])
           fieldnames = object.constructor.editable_fieldnames || []
-          this.opts.submit = () => {
+          submit = () => {
             object.deserialize(this.getData())
             this.unmount()
           }
         } else if (model) {
-          fields = new Map([...constructor.META.fields])
+          model.__makeMeta()
+          fields = new Map([...model.META.fields])
           fieldnames = model.editable_fieldnames || []
-          this.opts.submit = () => {
+          submit = () => {
             new opts.model(this.getData())
             this.unmount()
           }
@@ -49,6 +50,11 @@ export default {
         } else {
           throw 'ValueError: <ur-form> requires a schema, constructor, or object'
         }
+
+        // called by tag when form is submitted
+        opts.submit = opts.submit || submit
+
+        // pre-process and create the inputs
         Array.from(fields)
           .filter(([name, _obj]) => fieldnames.indexOf(name) !== -1)
           .map(schema.prep) // #! TODO is this necessary for Object/Model or just raw schema
@@ -59,9 +65,12 @@ export default {
         const opts = {
           tagName: 'ur-input',
           label: schema.unslugify(field.name),
-          id: `${this.prefix}__${field.name}`,
+          id: `${this.prefix || ''}__${field.name}`,
         }
         _.assign(opts, field)
+        if (this.opts.initial) {
+          opts.initial = this.opts.initial[opts.name]
+        }
         const cls = getCls(opts)
         this.inputs.push(new cls(opts))
       },
