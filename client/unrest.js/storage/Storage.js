@@ -74,6 +74,7 @@ export default class Storage {
     this.times[key] = new Date().valueOf()
     this.keys.indexOf(key) === -1 ? this.keys.push(key) : undefined
     this._save()
+    return this.get(key)
   }
   has(key) {
     return this.keys.indexOf(key) !== -1

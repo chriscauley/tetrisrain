@@ -28,7 +28,9 @@ export default (href, data = {}) => {
       },
     })
     router._routes[hash_match.key](new_url.hash, data)
-  } else if (path_match) {
+  }
+
+  if (path_match) {
     extend(data, { matches: path_match })
     document.body.dataset.ur_path = pathname
     router._routes[path_match.key](pathname, data)
@@ -36,8 +38,7 @@ export default (href, data = {}) => {
       window.location.hash = ''
     }
   }
-
-  if (router.default_route && !path_match && !router._stale) {
+  if (!hash_match && !path_match && router.default_route) {
     router.default_route(pathname)
   }
 
