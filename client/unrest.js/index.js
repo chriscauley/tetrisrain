@@ -8,6 +8,7 @@ import router from './router'
 import ajax from './ajax'
 import auth from './auth'
 import storage from './storage'
+import db from './db'
 
 Object.assign(uR, {
   ready: Ready(),
@@ -20,11 +21,15 @@ Object.assign(uR, {
   ajax,
   auth,
   storage,
+  db,
 })
 
 uR.ready(() => {
-  uR.router.ready.start()
-  uR.auth.reset()
+  uR.db.ready.start()
+  uR.db.ready(() => {
+    uR.auth.reset()
+    uR.router.ready.start()
+  })
 })
 
 window.onload = uR.ready.start
