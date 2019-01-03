@@ -27,7 +27,7 @@ const Field = (initial, opts = {}) => {
     validators: [],
     coerce: v => v,
     toString: () => `${field.model.name}.${field.name}`,
-    model: {}, // set by makeMeta on an Object
+    model: {}, // set by __makeMeta on an Object
     deserialize: v => v,
     type: opts.type,
     required: opts.required || opts.required === undefined,
@@ -101,16 +101,15 @@ const List = type => {
 const notNil = _.negate(_.isNil)
 
 const _Object = class _Object {
-  static id = 0
-  //fields = {} // defines the data structure to be serialized
+  static fields = { id: 0 } // defines the data structure to be serialized
   //opts = {} // non-data initialization options
+  //manager = // Storage class to be used for Objects
 
   constructor(opts) {
     this.opts = opts // maybe move this.opts and this.fields into this.META?
     this.makeOpts(opts)
     this.makeMeta()
     this.deserialize(opts)
-    this.id = ++this.constructor.id
   }
 
   makeOpts(opts) {
@@ -121,18 +120,24 @@ const _Object = class _Object {
   }
 
   makeMeta() {
-    this.constructor.makeMeta()
+    this.constructor.__makeMeta()
     this.META = this.constructor.META
   }
 
-  static makeMeta() {
-    // #! TODO should this be static?
+  static __makeMeta() {
+    // this is for model level setup (eg primitives to fields or adding manager)
+    // this should eventually be part of a uR.db.register(APP_NAME)
+    // followed by uR.db.APP_NAME.register(Model)
     this.META = {}
     let cls = this
+    let manager = this.manager
+    uR.db[cls.app_label] = uR.db[cls.app_label] || {}
+    uR.db[cls.app_label][cls.model_name] = cls
     const fieldsets = []
     while (cls !== _Object) {
       fieldsets.push(cls.fields)
       cls = Object.getPrototypeOf(cls)
+      manager = manager || cls.manager
     }
     const fields = (this.META.fields = new Map(
       Object.entries(_.defaults({}, ...fieldsets)),
@@ -148,7 +153,11 @@ const _Object = class _Object {
       field.model = this
     })
 
-    this.makeMeta = () => {} // only execute once!
+    if (manager) {
+      this.objects = new manager(this)
+    }
+
+    this.__makeMeta = () => {} // only execute once!
   }
 
   deserialize(json = {}) {
