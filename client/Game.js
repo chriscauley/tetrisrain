@@ -5,7 +5,6 @@ import Controller from './Controller'
 import Piece from './Piece'
 import uR from './unrest.js'
 import Random from 'ur-random'
-import storage from './unrest.js/storage'
 
 import './ui.tag'
 
@@ -20,24 +19,26 @@ _.merge(uR.schema.config.name, {
     choices: [['ljzstoi', 'all'], 't', 'zszst', 'ljoi', 'oi'],
   },
   _SEED: {
-    choices: [['', 'Random'], '123', '456', '789'],
+    choices: [['', 'Random'], 123, 456, 789],
   },
 })
 
 export default class Game extends Random.Mixin(uR.Object) {
+  static app_label = 'main'
+  static model_name = 'Game'
+  static manager = uR.db.Manager
   static fields = {
     a_level: 1, // determines speed of clock (unused)
     b_level: 20, // distance from top before death
     c_level: 3, // number of holes in each line
     d_level: 12, // number of lines in the level
     piece_generator: 'Random', // used to fill up to d_level
-    _SEED: uR.String(undefined, { required: false }),
+    _SEED: uR.Int(undefined, { required: false }),
     piece_shapes: 'ljzstoi',
     shuffle_pieces: false,
 
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
-    actions: [],
   }
   static editable_fieldnames = [
     //'a_level',
@@ -52,8 +53,10 @@ export default class Game extends Random.Mixin(uR.Object) {
   constructor(opts) {
     opts = opts || uR.storage.get('GAME_CONFIG')
     super(opts)
-    this.saved_games = new storage.Storage('saved_games')
-    //console.log(this.saved_games)
+    this.actions = []
+  }
+
+  play() {
     this.DEBUG = ~window.location.search.indexOf('debug')
     this.makeVars()
     this.container = document.getElementById('game')
@@ -89,7 +92,7 @@ export default class Game extends Random.Mixin(uR.Object) {
     this.getPiece()
     this.scores && this.scores.reset()
     this.updatePieceList()
-    this.root && this.root.update()
+    this.tag && this.tag.update()
   }
 
   replay() {
@@ -117,15 +120,6 @@ export default class Game extends Random.Mixin(uR.Object) {
       this.gameOver()
       return
     }
-  }
-
-  save(name) {
-    this.saved_games.set(name, this.serialize())
-  }
-
-  load(name) {
-    const data = this.saved_games.get(name)
-    this.deserialize(data)
   }
 
   deserialize(data) {
@@ -221,7 +215,7 @@ export default class Game extends Random.Mixin(uR.Object) {
       this.act[key] = () => {
         this.actions.push(key)
         this._act[key]()
-        this.root.update()
+        this.tag.update()
       }
     }
   }

@@ -1,16 +1,20 @@
 import uR from './unrest.js'
 import Game from './Game'
 
-import './root.tag'
+import './tr-game.tag'
 
 uR.auth.GREETING = 'Welcome to Tetris Rain!'
-
+uR.db.ready(() => Game.__makeMeta())
 uR.router.add({
   '#!/help/': uR.router.routeElement('tr-help'),
+  '#!/game/(\\d+)/': uR.router.routeElement('tr-game'),
   '#!/settings/': uR.router.routeElement('ur-form', {
     model: Game,
     submit: form => {
-      uR.storage.set('GAME_CONFIG', form.getData())
+      const data = uR.storage.set('GAME_CONFIG', form.getData())
+      Game.objects.create(data).then(obj => {
+        uR.router.route(`#!/game/${obj.id}/`)
+      })
       form.unmount()
       uR.router.default_route()
     },
@@ -19,10 +23,11 @@ uR.router.add({
   }),
 })
 
-if (window.GAME) {
+uR.router.default_route = uR.auth.loginRequired(() =>
+  uR.router.route('#!/settings/'),
+)
+
+if (window.HMR) {
   window.location.reload()
-} else {
-  uR.router.default_route = uR.auth.loginRequired(
-    uR.router.routeElement('root'),
-  )
 }
+window.HMR = true
