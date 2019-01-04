@@ -102,7 +102,7 @@ const notNil = _.negate(_.isNil)
 
 const _Object = class _Object {
   static fields = { id: 0 } // defines the data structure to be serialized
-  //opts = {} // non-data initialization options
+  static opts = {} // non-data initialization options
   //manager = // Storage class to be used for Objects
 
   constructor(opts) {
@@ -133,14 +133,16 @@ const _Object = class _Object {
     let manager = this.manager
     uR.db[cls.app_label] = uR.db[cls.app_label] || {}
     uR.db[cls.app_label][cls.model_name] = cls
-    const fieldsets = []
+    const fieldsets = [cls.fields]
     while (cls !== _Object) {
-      fieldsets.push(cls.fields)
       cls = Object.getPrototypeOf(cls)
+      if (cls.hasOwnProperty('fields')) {
+        fieldsets.push(cls.fields)
+      }
       manager = manager || cls.manager
     }
     const fields = (this.META.fields = new Map(
-      Object.entries(_.defaults({}, ...fieldsets)),
+      Object.entries(_.defaults({}, ..._.reverse(fieldsets))),
     ))
     fields.forEach((field, name) => {
       const type = TYPES[typeof field]
