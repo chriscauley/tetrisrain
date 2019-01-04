@@ -1,10 +1,13 @@
 import uR from './unrest.js'
-import Game from './Game'
+import Game, { Play } from './Game'
 
 import './tr-game.tag'
 
 uR.auth.GREETING = 'Welcome to Tetris Rain!'
-uR.db.ready(() => Game.__makeMeta())
+uR.db.ready(() => {
+  Game.__makeMeta()
+  Play.__makeMeta()
+})
 uR.router.add({
   '#!/help/': uR.router.routeElement('tr-help'),
   '#!/game/(\\d+)/': uR.router.routeElement('tr-game'),

@@ -11,15 +11,14 @@ import _tb from './tetris-board.tag'
 export default class Board extends uR.Object {
   static fields = {
     W: 10,
-    DEEP: 8,
     pieces: uR.List(Piece),
-    x_offset: 5,
   }
   static opts = {
     game: uR.REQUIRED,
     scale: 20, // px per block
     pieces: [],
     red_line: 5,
+    x_offset: 5,
   }
   constructor(opts) {
     super(opts)
@@ -157,6 +156,20 @@ export default class Board extends uR.Object {
     this.findGoldBars()
     this.detectShake()
     this.tickPieces()
+    this.checkVictory()
+  }
+
+  checkVictory() {
+    if (!this.pieces.filter(p => p.locked).length) {
+      uR.db.main.Play.objects
+        .create({
+          game: this.game.id,
+          actions: this.game.actions,
+        })
+        .then(() => {
+          throw 'Not Implemented'
+        })
+    }
   }
 
   wipeLines(ys) {

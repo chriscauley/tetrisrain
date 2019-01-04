@@ -24,7 +24,10 @@ this.on('before-mount',() => {
   this.game = uR.db.main.Game.objects[this.opts.matches[1]]
   this.game.tag = this
 })
-this.on('mount',() => this.game.play())
+this.on('mount',() => {
+  this.game.play()
+  window.GAME = this.game
+})
 
 </tr-game>
 

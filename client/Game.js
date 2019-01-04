@@ -23,6 +23,18 @@ _.merge(uR.schema.config.name, {
   },
 })
 
+export const Play = class Play extends uR.Object {
+  static app_label = 'main'
+  static model_name = 'Play'
+  static manager = uR.db.Manager
+  static fields = {
+    actions: [],
+    game: uR.ForeignKey(Game),
+  }
+}
+
+window.Play = Play
+
 export default class Game extends Random.Mixin(uR.Object) {
   static app_label = 'main'
   static model_name = 'Game'
