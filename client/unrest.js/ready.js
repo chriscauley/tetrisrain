@@ -16,6 +16,14 @@ const Ready = (isReady = () => false, _ready = []) => {
     while (isReady() && _ready.length) {
       _ready.shift()()
     }
+    while (isReady() && ready._then.length) {
+      ready._then.shift()()
+    }
+  }
+  ready._then = []
+  ready.then = (...args) => {
+    ready._then = ready._then.concat(args)
+    ready()
   }
   ready.start = function() {
     isReady = () => true

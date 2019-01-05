@@ -24,9 +24,9 @@ Object.assign(uR, {
   db,
 })
 
-uR.ready(() => {
+uR.ready.then(() => {
   uR.db.ready.start()
-  uR.db.ready(() => {
+  uR.db.ready.then(() => {
     uR.auth.reset()
     uR.router.ready.start()
   })
