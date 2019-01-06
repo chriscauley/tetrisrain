@@ -29,7 +29,10 @@ export const Play = class Play extends uR.Object {
   static manager = uR.db.Manager
   static fields = {
     actions: [],
-    game: uR.ForeignKey(Game),
+    game: uR.ForeignKey('main.Game'),
+  }
+  getPieceCount() {
+    return this.actions.filter(m => m === 'drop').length
   }
 }
 

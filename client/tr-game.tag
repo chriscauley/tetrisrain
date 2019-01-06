@@ -14,6 +14,7 @@ import Game from './Game'
     <scores game={game} />
     <!--<level-editor game={game} />-->
     <a href="#!/settings/">Game Settings</a>
+    <a href="#!/history/">Player History</a>
   </div>
   <div id="debug"></div>
 

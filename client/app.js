@@ -1,6 +1,7 @@
 import uR from './unrest.js'
 import Game, { Play } from './Game'
 
+import './tags'
 import './tr-game.tag'
 import './routes'
 
