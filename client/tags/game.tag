@@ -1,5 +1,3 @@
-import Game from './Game'
-
 <tr-game>
   <div id="game">
     <div class="ui">
