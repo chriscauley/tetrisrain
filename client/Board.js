@@ -159,16 +159,23 @@ export default class Board extends uR.Object {
     this.checkVictory()
   }
 
-  checkVictory() {
-    if (!this.pieces.filter(p => p.locked).length) {
-      uR.db.main.Play.objects
+  savePlay() {
+    if (!this.play) {
+      return uR.db.main.Play.objects
         .create({
           game: this.game.id,
           actions: this.game.actions,
         })
-        .then(() => {
-          throw 'Not Implemented'
-        })
+        .then(obj => (this.play = obj))
+    }
+    return this.play
+  }
+
+  checkVictory() {
+    if (!this.pieces.filter(p => p.locked).length) {
+      this.savePlay().then(() => {
+        throw 'Not Implemented'
+      })
     }
   }
 

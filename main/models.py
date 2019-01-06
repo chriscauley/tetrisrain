@@ -10,3 +10,5 @@ class Game(JsonModel):
 class Play(UserModel):
     json_fields = ['game_id','id','data']
     game = models.ForeignKey(Game,on_delete=models.CASCADE)
+    class Meta:
+        ordering = ('id',)
