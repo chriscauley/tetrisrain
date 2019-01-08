@@ -9,6 +9,7 @@ export default class Manager {
   }
 
   refresh() {
+    // #! TODO should be db.ready.block or db.ready.ajax
     db.ready.stop()
     ajax(this.base_url)
       .then(response => {
@@ -29,6 +30,8 @@ export default class Manager {
       method: 'POST',
       data: data,
     }).then(this.set)
+
+  save = obj => this.create(obj.serialize())
 
   set = data => {
     const obj = new this.model(data)

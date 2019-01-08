@@ -8,9 +8,20 @@ const assert = (bool, exception) => {
 
 const ForeignKey = (model, opts = {}) => {
   const field = Field(undefined, opts)
-  Object.assign({
-    deserialize: pk => model.object.get(pk),
-    serialize: (obj = field) => obj.pk,
+  uR.db.ready(() => {
+    if (typeof model === 'string') {
+      model = _.get(uR.db, model)
+    }
+    field.deserialize = pk => model.objects.get(pk)
+  })
+  Object.assign(field, {
+    deserialize: (pk, json) => {
+      if (json[field.name + '_id']) {
+        return json[field.name + '_id']
+      }
+      return pk
+    },
+    serialize: (obj = field) => obj,
   })
   return field
 }
@@ -79,29 +90,31 @@ const Boolean = (initial, opts = {}) => {
   return field
 }
 
-const TYPES = {
-  number: _Number,
-  string: String,
-  boolean: Boolean,
-}
-
 const List = type => {
+  let deserialize = list => list
+  if (typeof type === 'function') {
+    deserialize = list => list.map(item => new type(item))
+  }
   return {
     serialize: list =>
       list.map(item =>
         _.isFunction(item.serialize) ? item.serialize() : item,
       ),
-    deserialize: list =>
-      list.map(item => {
-        return item instanceof type ? item : new type(item)
-      }),
+    deserialize,
   }
+}
+
+const TYPES = {
+  number: _Number,
+  string: String,
+  boolean: Boolean,
+  array: List,
 }
 
 const notNil = _.negate(_.isNil)
 
 const _Object = class _Object {
-  static fields = { id: 0 } // defines the data structure to be serialized
+  //static fields = { id: 0 } // defines the data structure to be serialized
   static opts = {} // non-data initialization options
   //manager = // Storage class to be used for Objects
 
@@ -145,7 +158,13 @@ const _Object = class _Object {
       Object.entries(_.defaults({}, ..._.reverse(fieldsets))),
     ))
     fields.forEach((field, name) => {
-      const type = TYPES[typeof field]
+      let _type = typeof field
+      if (_type !== 'object') {
+        // pass
+      } else if (Array.isArray(field)) {
+        _type = 'array'
+      }
+      const type = TYPES[_type]
 
       // primitives are lazily coerced
       if (type) {
@@ -169,7 +188,7 @@ const _Object = class _Object {
         notNil,
       )
       if (field.deserialize) {
-        this[name] = field.deserialize(value)
+        this[name] = field.deserialize(value, json)
       } else if (typeof field === 'function') {
         // this is not a 100% accurate test for when to use new
         // https://stackoverflow.com/a/40922715

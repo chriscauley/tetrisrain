@@ -11,6 +11,7 @@
 */
 
 const Ready = (isReady = () => false, _ready = []) => {
+  let stop_count = 1
   const ready = (...args) => {
     _ready = _ready.concat(args)
     while (isReady() && _ready.length) {
@@ -26,10 +27,16 @@ const Ready = (isReady = () => false, _ready = []) => {
     ready()
   }
   ready.start = function() {
-    isReady = () => true
-    ready()
+    if (stop_count) {
+      stop_count--
+    }
+    if (!stop_count) {
+      isReady = () => true
+      ready()
+    }
   }
   ready.stop = function() {
+    stop_count += 1
     isReady = () => false
   }
   return ready
