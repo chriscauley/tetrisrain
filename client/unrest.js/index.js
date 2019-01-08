@@ -1,3 +1,5 @@
+import hash from 'object-hash'
+
 import uR from './Object'
 import Ready from './ready'
 import element from './element'
@@ -22,9 +24,15 @@ Object.assign(uR, {
   auth,
   storage,
   db,
+  _icons: {},
+  icon: i => uR._icons[i] || 'fa fa-' + i,
 })
 
 uR.ready.then(() => {
+  if (typeof document !== 'undefined') {
+    const scripts = [...document.querySelectorAll('script')].map(s => s.src)
+    uR.SCRIPT_HASH = hash(scripts)
+  }
   uR.db.ready.start()
   uR.db.ready.then(() => {
     uR.auth.reset()
@@ -32,7 +40,9 @@ uR.ready.then(() => {
   })
 })
 
-window.onload = uR.ready.start
-window.uR = uR
+if (typeof window !== 'undefined') {
+  window.onload = uR.ready.start
+  window.uR = uR
+}
 
 export default uR
