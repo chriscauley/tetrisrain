@@ -8,7 +8,7 @@ import ThemeMixin from '../unrest.js/css/ThemeMixin'
       </div>
     </div>
     <div class={theme.content}>
-      <table>
+      <table class={css.table}>
         <thead>
           <tr>
             <th>id</th>
@@ -18,8 +18,14 @@ import ThemeMixin from '../unrest.js/css/ThemeMixin'
         </thead>
         <tbody>
           <tr each={play,i in items} key={play.id}>
-            <th>{play.id}</th>
-            <td>{play.game.id}</td>
+            <th>
+              {play.id}
+              <a href="#!/replay/{play.id}/" class={uR.icon('repeat')}></a>
+            </th>
+            <td>
+              {play.game}
+              <a href="#!/game/{play.game}/" class={uR.icon('repeat')}></a>
+            </td>
             <td>{play.getPieceCount()}</td>
           </tr>
         </tbody>
@@ -29,6 +35,10 @@ import ThemeMixin from '../unrest.js/css/ThemeMixin'
 <script>
 this.mixin(ThemeMixin)
 this.items = []
+this.on("mount",() => {
+  uR.SCRIPT_HASH
+  this.update()
+})
 this.on("update", () => {
   this.items = [...uR.db.main.Play.objects.items.values()]
 })

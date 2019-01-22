@@ -5,6 +5,7 @@ uR.router.add({
   '#!/help/': uR.router.routeElement('tr-help'),
   '#!/game/(\\d+)/': uR.router.routeElement('tr-game'),
   '#!/history/': uR.router.routeElement('tr-history'),
+  '#!/replay/(\\d+)/': uR.router.routeElement('tr-game', { replay: true }),
   '#!/settings/': uR.router.routeElement('ur-form', {
     model: Game,
     submit: form => {

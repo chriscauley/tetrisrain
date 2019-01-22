@@ -20,11 +20,17 @@ this.on('before-mount',() => {
   // this should be done pre mount, and then during mount need to call
   // this.game.buildCanvas() or something
   // this will also get rid of some of the setTimeout(f,0) in many other places
-  this.game = uR.db.main.Game.objects[this.opts.matches[1]]
+  if (opts.replay) {
+    this.play = uR.db.main.Play.objects[this.opts.matches[1]]
+    this.game = uR.db.main.Game.objects[this.play.game]
+  } else {
+    this.game = uR.db.main.Game.objects[this.opts.matches[1]]
+  }
   this.game.tag = this
 })
 this.on('mount',() => {
   this.game.play()
+  if (this.play) { this.game.replay(this.play) }
   window.GAME = this.game
 })
 
