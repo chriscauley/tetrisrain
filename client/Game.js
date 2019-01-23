@@ -30,6 +30,8 @@ export const Play = class Play extends uR.Object {
   static fields = {
     actions: [],
     game: uR.ForeignKey('main.Game'),
+    id: 0, // #! TODO should be from parent class, or maybe from manager?
+    hash: '',
   }
   getPieceCount() {
     return this.actions.filter(m => m === 'drop').length
@@ -52,6 +54,7 @@ export default class Game extends Random.Mixin(uR.Object) {
     piece_shapes: 'ljzstoi',
     shuffle_pieces: false,
 
+    id: 0, // #! TODO should be from parent class, or maybe from manager?
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
   }
@@ -110,7 +113,9 @@ export default class Game extends Random.Mixin(uR.Object) {
     this.tag && this.tag.update()
   }
 
-  replay() {
+  replay(replay) {
+    this.actions = replay.actions
+    this.replay = replay
     this.step = 0
     this.reset()
     this.stepReplay()

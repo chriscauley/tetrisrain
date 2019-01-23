@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import hash from 'object-hash'
 import { range, inRange, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
@@ -160,22 +161,30 @@ export default class Board extends uR.Object {
   }
 
   savePlay() {
-    if (!this.play) {
-      return uR.db.main.Play.objects
-        .create({
-          game: this.game.id,
-          actions: this.game.actions,
-        })
-        .then(obj => (this.play = obj))
+    let data = {
+      game: this.game.id,
+      actions: this.game.actions,
     }
-    return this.play
+    const current_hash = (data.hash = hash(this.serialize()))
+    const replay = this.game.replay
+    if (replay) {
+      data = this.game.replay.serialize()
+      if (replay.hash && replay.hash !== current_hash) {
+        throw 'Hash mismatch on replay #' + replay.id
+      } else {
+        console.log('hash matched!') // eslint-disable-line
+      }
+      data.hash = current_hash
+    }
+    return uR.db.main.Play.objects.create(data).then(obj => (this.play = obj))
   }
 
   checkVictory() {
     if (!this.pieces.filter(p => p.locked).length) {
-      this.savePlay().then(() => {
+      /*this.savePlay().then(() => {
         throw 'Not Implemented'
-      })
+      })*/
+      alert('You win!')
     }
   }
 
