@@ -18,6 +18,12 @@ export class Square extends uR.Object {
     super(opts)
     this._drop = 0 // counter used for moving it down
   }
+  validate() {
+    if (this.piece.board.get(this.x, this.y) !== this) {
+      return false
+    }
+    return true
+  }
   makePixi() {
     this.sprite = uP.sprites.getColor(this.piece.color, {
       width: this.piece.board.scale,
@@ -275,20 +281,23 @@ export default class Piece extends uR.Object {
 
     if (orphans.length) {
       // stick all the orphans on the same piece, we'll retry split after
-      const shift = _.pick(orphans[0], ['dx', 'dy', 'x', 'y'])
+      const first = orphans[0]
+      const piece_opts = {
+        x: first.x,
+        y: first.y,
+        squares: orphans.map(s => ({
+          dx: s.x - first.x,
+          dy: s.y - first.y,
+        })),
+      }
 
-      orphans.forEach(s => {
-        this.pixi.removeChild(s.sprite)
-        s.dx -= shift.dx
-        s.dy -= shift.dy
-      })
+      orphans.forEach(s => s.kill())
       const piece = new Piece({
-        x: shift.x,
-        y: shift.y,
-        squares: orphans,
+        ...piece_opts,
         board: this.board,
         color: this.color,
       })
+      piece.set()
       this.board.pieces.push(piece)
 
       if (orphans.length > 1) {
@@ -299,6 +308,7 @@ export default class Piece extends uR.Object {
     // reset to home_square (if moved)
     this.recenter(home_square.dx, home_square.dy)
     this.redraw(true)
+    this.pixi.removeChild(this.ghost)
   }
 
   toTexture() {
