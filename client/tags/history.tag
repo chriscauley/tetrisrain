@@ -1,4 +1,4 @@
-import ThemeMixin from '../unrest.js/css/ThemeMixin'
+import ThemeMixin from 'unrest.js/css/ThemeMixin'
 
 <tr-history>
   <div class={theme.outer}>

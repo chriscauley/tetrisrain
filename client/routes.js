@@ -1,4 +1,4 @@
-import uR from './unrest.js'
+import uR from 'unrest.js'
 import Game from './Game'
 
 uR.router.add({

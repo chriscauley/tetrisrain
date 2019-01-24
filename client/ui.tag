@@ -1,6 +1,6 @@
 import { debounce } from 'lodash'
 import config from './config'
-import ThemeMixin from './unrest.js/css/ThemeMixin'
+import ThemeMixin from 'unrest.js/css/ThemeMixin'
 
 <scores>
   <div each={ name in names }>

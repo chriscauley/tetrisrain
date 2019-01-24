@@ -3,7 +3,7 @@ import _ from 'lodash'
 import Board from './Board'
 import Controller from './Controller'
 import Piece from './Piece'
-import uR from './unrest.js'
+import uR from 'unrest.js'
 import Random from 'ur-random'
 
 import './ui.tag'
@@ -23,13 +23,15 @@ _.merge(uR.schema.config.name, {
   },
 })
 
-export const Play = class Play extends uR.Object {
+const { Int, ForeignKey, APIManager, Model } = uR.db
+
+export const Play = class Play extends Model {
   static app_label = 'main'
   static model_name = 'Play'
-  static manager = uR.db.Manager
+  static manager = APIManager
   static fields = {
     actions: [],
-    game: uR.ForeignKey('main.Game'),
+    game: ForeignKey('main.Game'),
     id: 0, // #! TODO should be from parent class, or maybe from manager?
     hash: '',
   }
@@ -40,17 +42,17 @@ export const Play = class Play extends uR.Object {
 
 window.Play = Play
 
-export default class Game extends Random.Mixin(uR.Object) {
+export default class Game extends Random.Mixin(Model) {
   static app_label = 'main'
   static model_name = 'Game'
-  static manager = uR.db.Manager
+  static manager = APIManager
   static fields = {
     a_level: 1, // determines speed of clock (unused)
     b_level: 20, // distance from top before death
     c_level: 3, // number of holes in each line
     d_level: 12, // number of lines in the level
     piece_generator: 'Random', // used to fill up to d_level
-    _SEED: uR.Int(undefined, { required: false }),
+    _SEED: Int(undefined, { required: false }),
     piece_shapes: 'ljzstoi',
     shuffle_pieces: false,
 

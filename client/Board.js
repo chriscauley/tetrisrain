@@ -4,15 +4,19 @@ import { range, inRange, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
 import config from './config'
-import uR from './unrest.js'
+import uR from 'unrest.js'
 import uP from './pixi'
 import Piece from './Piece'
 import _tb from './tetris-board.tag'
 
-export default class Board extends uR.Object {
+const { List, Model } = uR.db
+
+export default class Board extends Model {
+  static app_label = 'main'
+  static model_name = 'Board'
   static fields = {
     W: 10,
-    pieces: uR.List(Piece),
+    pieces: List(Piece),
   }
   static opts = {
     game: uR.REQUIRED,
