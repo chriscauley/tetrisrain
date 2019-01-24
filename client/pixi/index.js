@@ -4,7 +4,7 @@ import * as PIXI from 'pixi.js'
 import sprites from './sprites'
 import _layers from 'pixi-layers' // importing this modifies PIXI library
 import animation from './animation'
-import uR from 'unrest.js'
+import uR from 'unrest.io'
 
 const uP = (window.uP = {
   ready: new uR.Ready(),

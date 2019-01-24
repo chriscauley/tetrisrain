@@ -9,7 +9,7 @@
     "build": "rm -rf dist && parcel build client/index.html --public-url /static/",
     "serve": "rm -rf dist && parcel client/index.html --public-url /static/",
     "lint": "eslint client",
-    "test-unrest": "D=client/unrest.js/tests && rm -rf dist/* && cp -r $D/dummy dist && parcel $D/index.html"
+    "test-unrest": "D=client/unrest.io/tests && rm -rf dist/* && cp -r $D/dummy dist && parcel $D/index.html"
   },
   "dependencies": {
     "@babel/core": "^7.1.5",

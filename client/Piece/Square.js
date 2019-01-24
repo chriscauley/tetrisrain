@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
 import uP from '../pixi'
-import uR from 'unrest.js'
+import uR from 'unrest.io'
 import edge from './edge'
 
 const { Int, Model } = uR.db

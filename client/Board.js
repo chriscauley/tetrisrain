@@ -4,7 +4,7 @@ import { range, inRange, find, sum } from 'lodash'
 
 import Pallet from './Pallet'
 import config from './config'
-import uR from 'unrest.js'
+import uR from 'unrest.io'
 import uP from './pixi'
 import Piece from './Piece'
 import _tb from './tetris-board.tag'

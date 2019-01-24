@@ -3,7 +3,7 @@ import _ from 'lodash'
 import newElement from '../newElement'
 import config from '../config'
 import uP from '../pixi'
-import uR from 'unrest.js'
+import uR from 'unrest.io'
 import Square from './Square'
 
 const { Int, List, Model } = uR.db

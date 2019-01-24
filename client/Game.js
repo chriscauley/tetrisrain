@@ -3,7 +3,7 @@ import _ from 'lodash'
 import Board from './Board'
 import Controller from './Controller'
 import Piece from './Piece'
-import uR from 'unrest.js'
+import uR from 'unrest.io'
 import Random from 'ur-random'
 
 import './ui.tag'
