@@ -27,14 +27,13 @@ export default class Board extends Model {
   }
   constructor(opts) {
     super(opts)
+    window.B = this
 
     // nested arrays of zeros make up the initial board
     this.pallet = new Pallet({ board: this })
     this.H = this.MAX_H = 100 // set so makePixi can work
     this.makePixi()
     this.reset()
-    window.B = this
-    window.BP = this.pieces
     /*uR.element.create(
       "tetris-board",
       { parent: "#game" },

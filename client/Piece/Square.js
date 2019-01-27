@@ -7,8 +7,7 @@ import edge from './edge'
 const { Int, Model } = uR.db
 
 export default class Square extends Model {
-  model_name = 'Square'
-  app_label = 'main'
+  static slug = 'main.Square'
   static fields = {
     dx: Int(),
     dy: Int(),
