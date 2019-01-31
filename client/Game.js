@@ -87,7 +87,11 @@ export default class Game extends Random.Mixin(Model) {
     this.container = document.getElementById('game')
 
     this.makeActions()
-    this.controller = new Controller(this)
+    if (window.GAME) {
+      window.GAME.controller.bindGame(this)
+    } else {
+      new Controller(this).bindGame(this)
+    }
     this.board = new Board({ game: this })
 
     this.reset()

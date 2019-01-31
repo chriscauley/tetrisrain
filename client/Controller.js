@@ -1,6 +1,5 @@
 export default class Controller {
-  constructor(game) {
-    this.game = game
+  constructor() {
     document.addEventListener('keydown', this.onKeyDown.bind(this))
     document.addEventListener('keyup', this.onKeyUp.bind(this))
     this._key_map = {
@@ -25,6 +24,11 @@ export default class Controller {
         this._key_map[i + 65] = letters[i]
       }
     }
+    this.reset()
+  }
+  bindGame(game) {
+    game.controller = this
+    this.game = game
     this.action_up_map = {
       space: 'lock',
     }
@@ -36,9 +40,7 @@ export default class Controller {
         this.action_up_map[a] = this.game.act[this.action_up_map[a]]
       }
     }
-    this.reset()
   }
-
   reset() {
     this.active = {}
     this.events = []
