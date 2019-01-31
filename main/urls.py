@@ -10,7 +10,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/nopass/',include('unrest.nopass.urls')),
     re_path('api/(main).(Play)/$', main.views.save_play),
-    re_path('api/(main).(Game)/$', unrest.views.list_view),
+    re_path('api/(main).(Game)/$', main.views.save_game),
     path("user.json",unrest.views.user_json),
     path("api/auth/register/",nopass_create),
 ]
