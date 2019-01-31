@@ -46,7 +46,11 @@ export default class Game extends Random.Mixin(Model) {
   static app_label = 'main'
   static model_name = 'Game'
   static manager = APIManager
+  __str__() {
+    return this.name || `Game #${this.id}`
+  }
   static fields = {
+    name: String('', { required: false }),
     a_level: 1, // determines speed of clock (unused)
     b_level: 20, // distance from top before death
     c_level: 3, // number of holes in each line
@@ -61,6 +65,7 @@ export default class Game extends Random.Mixin(Model) {
     visible_height: 20, // number of lines visible
   }
   static editable_fieldnames = [
+    'name',
     //'a_level',
     //'b_level',
     'c_level',
