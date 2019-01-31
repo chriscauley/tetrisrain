@@ -6,6 +6,7 @@ import './routes'
 
 uR.auth.GREETING = 'Welcome to Tetris Rain!'
 uR.ready(() => {
+  uR.admin.start()
   Game.__makeMeta()
   Play.__makeMeta()
 })
