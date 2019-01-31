@@ -11,10 +11,6 @@ uR.ready(() => {
   Play.__makeMeta()
 })
 
-uR.router.default_route = uR.auth.loginRequired(() =>
-  uR.router.route('#!/settings/'),
-)
-
 if (window.HMR) {
   window.location.reload()
 }

@@ -6,12 +6,11 @@
     </div>
   </div>
   <div id="settings">
-    <h3><b>Project<i> Zoidberg</i></b></h3>
+    <h3><a href="#"><b>Project<i> Zoidberg</i></b></a></h3>
     <hr />
     <controls />
     <scores game={game} />
     <!--<level-editor game={game} />-->
-    <a href="#!/settings/">Game Settings</a>
     <a href="#!/history/">Player History</a>
   </div>
   <div id="debug"></div>
@@ -32,6 +31,7 @@ this.on('mount',() => {
   this.game.play()
   if (this.play) { this.game.replay(this.play) }
   window.GAME = this.game
+  uR.element.emptyElement(document.getElementById("ur-alerts"))
 })
 
 </tr-game>
