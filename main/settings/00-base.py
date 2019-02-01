@@ -7,7 +7,8 @@ SITE_ID = 1
 SECRET_KEY = 'n9)&^*bb+ey^)5kd(uc0@*z4=*=$agdq%c^_22xs+d@3hhgd7b'
 
 ALLOWED_HOSTS = [
-  'tetris.tfibhodc.com',
+    'tetris.tfibhodc.com',
+    'playingtetris.com',
 ]
 
 
