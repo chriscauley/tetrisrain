@@ -333,7 +333,7 @@ export default class Board extends Model {
       })
     this._repiece()
   }
-  print() {
+  print(attr = '_id') {
     /*eslint-disable */
     //const c = '0123456789abcdefghijklmnopqrstuvwxyz'
     /*for (let y = this.skyline; y < this.H; y++) {
@@ -342,9 +342,13 @@ export default class Board extends Model {
       console.log(ids.join(' '))
     }
     console.log('\n')*/
-    for (let y = this.skyline; y < this.H; y++) {
+    for (let y = this.skyline; y < this.skyline+10; y++) {
       const squares = this.squares.slice(y * this.W, (y + 1) * this.W)
-      const ids = [y, ...squares.map(s => (s ? s.piece.id.toString().padStart(2,' ') : '  '))]
+      const ids = [
+        y,
+        " ",
+          ...squares.map(s => (s ? s.piece[attr].toString().padStart(3,' ') : '   '))
+      ]
       console.log(ids.join(' '))
     }
     console.log('\n\n')
@@ -375,6 +379,7 @@ export default class Board extends Model {
   set(x, y, value) {
     const i = this._xy2i(x, y)
     if (this.squares[i]) {
+      window.FAIL_SQUARE = value
       throw `Cannot place square in unempty square ${x},${y}`
     }
     this.squares[i] = value

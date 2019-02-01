@@ -8,6 +8,17 @@ import Square from './Square'
 
 const { Int, List, Model } = uR.db
 
+//const checkFail = (piece, message) => {
+//   const fails = piece.squares.filter(s => !s.validate())
+//   if (fails.length) {
+//     console.error(piece)
+//     console.error(fails)
+//     console.error(fails.length, piece.squares.length)
+//   }
+// }
+
+let _id = 0
+
 export default class Piece extends Model {
   static model_name = 'Piece'
   static app_label = 'main'
@@ -36,6 +47,7 @@ export default class Piece extends Model {
       }))
     }
     super(opts)
+    this._id = _id++
     this.r = 0 // current rotation
     this._opts = opts
     this.max_r = template ? template.rotations : 0 // 0,2,4 depending on shape
@@ -193,7 +205,7 @@ export default class Piece extends Model {
         color: this.color,
       })
       piece.set()
-      this.board.pieces.push(piece)
+      //checkFail(piece,"orphans")
 
       if (orphans.length > 1) {
         piece._needs_split = true
@@ -204,6 +216,7 @@ export default class Piece extends Model {
     this.recenter(home_square.dx, home_square.dy)
     this.redraw(true)
     this.pixi.removeChild(this.ghost)
+    //checkFail(this,"original")
   }
 
   toTexture() {
