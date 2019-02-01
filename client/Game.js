@@ -15,9 +15,9 @@ _.merge(uR.schema.config.name, {
   },
   c_level: { choices: _.range(1, 10) },
   piece_generator: { choices: Piece.GENERATORS },
-  piece_shapes: {
-    choices: [['ljzstoi', 'all'], 't', 'zszst', 'ljoi', 'oi'],
-  },
+  //piece_shapes: {
+  //  choices: [['ljzstoi', 'all'], 't', 'zszst', 'ljoi', 'oi'],
+  //},
   _SEED: {
     choices: [['', 'Random'], 123, 456, 789],
   },
