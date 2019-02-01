@@ -11,7 +11,10 @@
     <controls />
     <scores game={game} />
     <!--<level-editor game={game} />-->
-    <a href="#!/history/">Player History</a>
+    <!--<a href="#!/history/">Player History</a>-->
+    <a href={window.location.href}>Restart</a>
+    <br/>
+    <a href="#">Select Game</a>
   </div>
   <div id="debug"></div>
 
