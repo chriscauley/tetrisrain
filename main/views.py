@@ -1,8 +1,14 @@
-from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse, HttpResponse
 import json
 
 import unrest.views
 from main.models import Play, Game
+
+@ensure_csrf_cookie
+def index(request):
+    f = open('dist/index.html','r')
+    return HttpResponse(f.read())
 
 def save_game(request, app_label, model_name):
     if not request.method == "POST":

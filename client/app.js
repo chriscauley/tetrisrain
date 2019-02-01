@@ -5,6 +5,7 @@ import './tags'
 import './routes'
 
 uR.auth.GREETING = 'Welcome to Tetris Rain!'
+uR.auth.auto = true
 uR.ready(() => {
   uR.admin.start()
   Game.__makeMeta()
