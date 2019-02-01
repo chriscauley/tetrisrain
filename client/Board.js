@@ -169,9 +169,9 @@ export default class Board extends Model {
       actions: this.game.actions,
     }
     const current_hash = (data.hash = hash(this.serialize()))
-    const replay = this.game.replay
+    const replay = this.game.replaying
     if (replay) {
-      data = this.game.replay.serialize()
+      data = replay.serialize()
       if (replay.hash && replay.hash !== current_hash) {
         throw 'Hash mismatch on replay #' + replay.id
       } else {
@@ -184,10 +184,9 @@ export default class Board extends Model {
 
   checkVictory() {
     if (!this.pieces.filter(p => p.locked).length) {
-      /*this.savePlay().then(() => {
-        throw 'Not Implemented'
-      })*/
-      alert('You win!')
+      this.savePlay().then(play => {
+        uR.router.route(`#!/score/${play.id}/`)
+      })
     }
   }
 
