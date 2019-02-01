@@ -35,8 +35,9 @@ export const Play = class Play extends Model {
     id: 0, // #! TODO should be from parent class, or maybe from manager?
     hash: '',
   }
-  getPieceCount() {
-    return this.actions.filter(m => m === 'drop').length
+  constructor(opts) {
+    super(opts)
+    this.piece_count = this.actions.filter(m => m === 'drop').length
   }
 }
 
@@ -64,6 +65,7 @@ export default class Game extends Random.Mixin(Model) {
     n_preview: 5, // number of pieces visible in preview
     visible_height: 20, // number of lines visible
   }
+  href = `#/game/${this.id}/`
   static editable_fieldnames = [
     'name',
     //'a_level',
@@ -126,7 +128,7 @@ export default class Game extends Random.Mixin(Model) {
 
   replay(replay) {
     this.actions = replay.actions
-    this.replay = replay
+    this.replaying = replay
     this.step = 0
     this.reset()
     this.stepReplay()
