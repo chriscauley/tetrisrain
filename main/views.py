@@ -2,7 +2,7 @@ from django.http import JsonResponse
 import json
 
 import unrest.views
-from main.models import Play
+from main.models import Play, Game
 
 def save_game(request, app_label, model_name):
     if not request.method == "POST":

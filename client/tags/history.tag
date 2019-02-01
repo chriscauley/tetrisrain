@@ -13,7 +13,7 @@ import ThemeMixin from 'unrest.io/css/ThemeMixin'
           <tr>
             <th>id</th>
             <th>game_id</th>
-            <th>getPieceCount</th>
+            <th>Piece Count</th>
           </tr>
         </thead>
         <tbody>
@@ -26,7 +26,7 @@ import ThemeMixin from 'unrest.io/css/ThemeMixin'
               {play.game}
               <a href="#!/game/{play.game}/" class={uR.icon('repeat')}></a>
             </td>
-            <td>{play.getPieceCount()}</td>
+            <td>{play.piece_count}</td>
           </tr>
         </tbody>
       </table>
