@@ -22,7 +22,7 @@ import uR from 'unrest.io'
   </div>
 <script>
   this.mixin(uR.css.ThemeMixin)
-  const games = uR.db.main.Game.objects.all()//.filter(g=>g.name)
+  const games = uR.db.main.Game.objects.filter(g=>g.name)
   this.games = games.map(game => {
     const plays = _.sortBy(
       uR.db.main.Play.objects.filter(p => p.game === game),

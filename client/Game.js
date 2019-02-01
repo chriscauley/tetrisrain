@@ -53,7 +53,7 @@ export default class Game extends Random.Mixin(Model) {
   static fields = {
     name: String('', { required: false }),
     a_level: 1, // determines speed of clock (unused)
-    b_level: 20, // distance from top before death
+    b_level: 30, // distance from top before death
     c_level: 3, // number of holes in each line
     d_level: 12, // number of lines in the level
     piece_generator: 'Random', // used to fill up to d_level
